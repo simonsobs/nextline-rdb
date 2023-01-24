@@ -37,8 +37,9 @@ jobs:
       - name: Install packages
         run: |
           pip install --upgrade pip
-          pip install -e '.[host,tests]'
+          pip install --use-pep517 -e '.[host,tests]'
           pip install --upgrade hatch
+          pip list
 
       - name: Run tests
         run: hatch run cov
