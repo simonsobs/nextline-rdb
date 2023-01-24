@@ -22,7 +22,7 @@ classifiers = [
   "Programming Language :: Python :: Implementation :: CPython",
   "Programming Language :: Python :: Implementation :: PyPy",
 ]
-dependencies = []
+dependencies = ["alembic>=1.9", "SQLAlchemy>=2.0.0rc3"]
 dynamic = ["version"]
 
 [project.optional-dependencies]
