@@ -1,8 +1,7 @@
 from nextlinegraphql import spec
 
-class Plugin:
 
+class Plugin:
     @spec.hookimpl
     def configure(self):
         pass
-
