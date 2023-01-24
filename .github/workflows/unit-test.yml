@@ -9,7 +9,7 @@ on:
       - "**"
 
 concurrency:
-  group: test-${{ github.head_ref }}
+  group: unit-test-${{ github.head_ref }}
   cancel-in-progress: true
 
 env:
