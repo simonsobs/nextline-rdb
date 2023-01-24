@@ -25,6 +25,10 @@ classifiers = [
 dependencies = []
 dynamic = ["version"]
 
+[project.optional-dependencies]
+host = ["nextline-graphql>=0.3.5"]
+
+
 [project.urls]
 Documentation = "https://github.com/simonsobs/nextline-rdb#readme"
 Issues = "https://github.com/simonsobs/nextline-rdb/issues"

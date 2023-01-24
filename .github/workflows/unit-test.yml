@@ -37,6 +37,7 @@ jobs:
       - name: Install packages
         run: |
           pip install --upgrade pip
+          pip install -e '.[host]'
           pip install --upgrade hatch
 
       - name: Run tests

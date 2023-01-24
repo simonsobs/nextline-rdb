@@ -23,6 +23,7 @@ jobs:
       - name: Install packages
         run: |
           pip install --upgrade pip
+          pip install -e '.[host]'
           pip install --upgrade mypy
 
       - name: Run mypy
