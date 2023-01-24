@@ -31,6 +31,9 @@ Documentation = "https://github.com/unknown/nextline-rdb#readme"
 Issues = "https://github.com/unknown/nextline-rdb/issues"
 Source = "https://github.com/unknown/nextline-rdb"
 
+[project.entry-points."nextline"]
+rdb = "nextline_rdb:Plugin"
+
 [tool.hatch.version]
 path = "src/nextline_rdb/__about__.py"
 
