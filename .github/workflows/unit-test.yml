@@ -38,8 +38,7 @@ jobs:
         run: |
           pip install --upgrade pip
           pip install --use-pep517 -e '.[host,tests]'
-          pip install --upgrade hatch
           pip list
 
       - name: Run tests
-        run: hatch run cov
+        run: pytest -vv --cov --cov-report=xml
