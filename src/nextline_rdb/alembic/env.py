@@ -2,11 +2,11 @@ import logging
 import logging.config
 
 from alembic import context
-from sqlalchemy import create_engine
-
 from nextlinegraphql.config import load_settings
 from nextlinegraphql.hook import load_plugins
-from nextlinegraphql.plugins.db import models
+from sqlalchemy import create_engine
+
+from nextline_rdb import models
 
 settings = load_settings(hook=load_plugins())
 url = settings.db.url

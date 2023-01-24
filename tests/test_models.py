@@ -7,9 +7,9 @@ from nextline import Nextline
 from nextline.utils import agen_with_wait
 from sqlalchemy.orm import Session
 
-from nextlinegraphql.plugins.db import DB
-from nextlinegraphql.plugins.db import models as db_models
-from nextlinegraphql.plugins.db import write_db
+from nextline_rdb import DB
+from nextline_rdb import models as db_models
+from nextline_rdb import write_db
 
 
 def test_one(db: DB, run_nextline, statement):

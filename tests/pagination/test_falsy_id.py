@@ -1,6 +1,6 @@
 import pytest
 
-from nextlinegraphql.plugins.db.pagination import SortField, load_models
+from nextline_rdb.pagination import SortField, load_models
 
 from .models import Entity
 

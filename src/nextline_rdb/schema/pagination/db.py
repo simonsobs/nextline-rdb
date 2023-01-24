@@ -4,14 +4,14 @@ import base64
 from functools import partial
 from typing import TYPE_CHECKING, Callable, List, Optional, TypeVar
 
-from nextlinegraphql.plugins.db.pagination import load_models
+from nextline_rdb.pagination import load_models
 
 from .connection import Connection, Edge, query_connection
 
 if TYPE_CHECKING:
     from strawberry.types import Info
 
-    from nextlinegraphql.plugins.db import models as db_models
+    from nextline_rdb import models as db_models
 
 
 def encode_id(id: int) -> str:

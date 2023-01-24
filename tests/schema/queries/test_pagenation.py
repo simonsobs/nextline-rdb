@@ -4,10 +4,10 @@ from typing import Any, Optional, TypedDict
 
 import pytest
 from async_asgi_testclient import TestClient
-
-from nextlinegraphql.plugins.db import DB
-from nextlinegraphql.plugins.db.models import Run
 from nextlinegraphql.plugins.graphql.test import gql_request, gql_request_response
+
+from nextline_rdb import DB
+from nextline_rdb.models import Run
 
 from ..graphql import QUERY_HISTORY_RUNS
 
@@ -422,10 +422,10 @@ def app(db: DB):
     # entry in the DB. The factory.create_app() needs to be refactored so this
     # override is not needed.
     import strawberry
+    from nextlinegraphql.custom.strawberry import GraphQL
     from starlette.applications import Starlette
 
-    from nextlinegraphql.custom.strawberry import GraphQL
-    from nextlinegraphql.plugins.db.schema import Query
+    from nextline_rdb.schema import Query
 
     schema = strawberry.Schema(query=Query)
 

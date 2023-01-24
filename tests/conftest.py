@@ -4,7 +4,6 @@ import threading
 
 import pytest
 from async_asgi_testclient import TestClient
-
 from nextlinegraphql import create_app
 
 
