@@ -13,9 +13,9 @@ A plugin for [nextline-graphql](https://github.com/simonsobs/nextline-graphql)
 **Table of Contents**
 
 - [Nextline RDB](#nextline-rdb)
-	- [Installation](#installation)
-	- [License](#license)
-	- [Contact](#contact)
+  - [Installation](#installation)
+  - [License](#license)
+  - [Contact](#contact)
 
 ## Installation
 
