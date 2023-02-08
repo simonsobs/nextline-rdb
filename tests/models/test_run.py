@@ -13,8 +13,8 @@ def test_one():
         model = Run(
             run_no=run_no,
             state="running",
-            started_at=datetime.datetime.now(),
-            ended_at=datetime.datetime.now(),
+            started_at=datetime.datetime.utcnow(),
+            ended_at=datetime.datetime.utcnow(),
             script="pass",
         )
         session.add(model)
