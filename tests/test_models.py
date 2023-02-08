@@ -23,7 +23,7 @@ def test_one(db: DB, run_nextline, statement):
         assert run.started_at
         assert run.ended_at
         assert statement == run.script
-        assert run.exception is None
+        assert not run.exception
 
         traces = session.query(db_models.Trace).all()  # type: ignore
         assert 5 == len(traces)
