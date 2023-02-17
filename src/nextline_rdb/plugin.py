@@ -2,8 +2,8 @@ from logging import getLogger
 from pathlib import Path
 from typing import Mapping, MutableMapping, Optional, Tuple
 
+from apluggy import asynccontextmanager
 from dynaconf import Dynaconf, Validator
-from nextlinegraphql.custom.decorator import asynccontextmanager
 from nextlinegraphql.hook import spec
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
