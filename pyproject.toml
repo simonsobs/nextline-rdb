@@ -27,7 +27,7 @@ dependencies = ["alembic>=1.9", "SQLAlchemy>=2.0"]
 dynamic = ["version"]
 
 [project.optional-dependencies]
-host = ["nextline-graphql==0.4.3"]
+host = ["nextline-graphql>=0.4.3"]
 tests = [
   "async-asgi-testclient>=1.4",
   "pytest-asyncio>=0.18",
