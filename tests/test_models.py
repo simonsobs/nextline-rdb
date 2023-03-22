@@ -90,7 +90,8 @@ async def run_statement(nextline: Nextline, statement: Optional[str] = None):
     await asyncio.sleep(0.01)
     await nextline.reset(statement=statement)
     await asyncio.sleep(0.01)
-    await nextline.run()
+    async with nextline.run_session():
+        pass
     await asyncio.sleep(0.01)
 
 
