@@ -5,3 +5,8 @@
 
 [db]
 url = "sqlite:///:memory:?check_same_thread=false"
+
+[logging]
+dynaconf_merge = { loggers = { nextline_rdb = { handlers = [
+	"default",
+], level = "DEBUG" } } }
