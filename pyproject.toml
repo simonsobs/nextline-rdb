@@ -42,7 +42,7 @@ Documentation = "https://github.com/simonsobs/nextline-rdb#readme"
 Issues = "https://github.com/simonsobs/nextline-rdb/issues"
 Source = "https://github.com/simonsobs/nextline-rdb"
 
-[project.entry-points."nextline"]
+[project.entry-points."nextline_graphql"]
 rdb = "nextline_rdb:Plugin"
 
 [tool.hatch.version]
