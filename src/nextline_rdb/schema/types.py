@@ -19,7 +19,6 @@ def query_connection_run(
     first: Optional[int] = None,
     last: Optional[int] = None,
 ) -> Connection[RunHistory]:
-
     Model = db_models.Run
     NodeType = RunHistory
     return query_connection(info, before, after, first, last, Model, NodeType)
@@ -32,7 +31,6 @@ def query_connection_trace(
     first: Optional[int] = None,
     last: Optional[int] = None,
 ) -> Connection[TraceHistory]:
-
     Model = db_models.Trace
     NodeType = TraceHistory
     return query_connection(info, before, after, first, last, Model, NodeType)
@@ -45,7 +43,6 @@ def query_connection_prompt(
     first: Optional[int] = None,
     last: Optional[int] = None,
 ) -> Connection[PromptHistory]:
-
     Model = db_models.Prompt
     NodeType = PromptHistory
     return query_connection(info, before, after, first, last, Model, NodeType)
@@ -58,7 +55,6 @@ def query_connection_stdout(
     first: Optional[int] = None,
     last: Optional[int] = None,
 ) -> Connection[StdoutHistory]:
-
     Model = db_models.Stdout
     NodeType = StdoutHistory
     return query_connection(info, before, after, first, last, Model, NodeType)
@@ -76,7 +72,6 @@ def query_connection(
     Model,
     NodeType: Type[_T],
 ) -> Connection[_T]:
-
     id_field = inspect(Model).primary_key[0].name
     # TODO: handle multiple primary keys
 

@@ -309,7 +309,6 @@ async def test_empty(sample_empty, client, first_or_last, number):
 
 
 async def assert_results(client: TestClient, variables, expected):
-
     expected_page_info = PageInfo(
         hasPreviousPage=expected[0],
         hasNextPage=expected[1],

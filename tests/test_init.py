@@ -8,7 +8,6 @@ from nextline_rdb import DB
 
 
 def test_one(caplog):
-
     url = 'sqlite:///:memory:?check_same_thread=false'
 
     with caplog.at_level(logging.DEBUG):
@@ -29,7 +28,6 @@ def test_one(caplog):
 
 
 def print_logrecords(records):
-
     format = "{levelname:8s} [{name}] {message}"
     formatter = logging.Formatter(format, style="{")
 
@@ -40,7 +38,6 @@ def print_logrecords(records):
 
 
 def test_alembic():
-
     url = 'sqlite:///:memory:?check_same_thread=false'
     db = DB(url=url)
 

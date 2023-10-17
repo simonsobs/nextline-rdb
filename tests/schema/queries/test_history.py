@@ -6,7 +6,6 @@ from ..graphql import QUERY_HISTORY
 
 
 async def test_one(client: TestClient):
-
     await run_statement(client)
 
     data = await gql_request(client, QUERY_HISTORY)

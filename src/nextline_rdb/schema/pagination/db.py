@@ -36,7 +36,6 @@ def load_connection(
     first: Optional[int] = None,
     last: Optional[int] = None,
 ) -> Connection[_T]:
-
     query_edges = partial(
         load_edges,
         Model=Model,
@@ -65,7 +64,6 @@ def load_edges(
     first: Optional[int] = None,
     last: Optional[int] = None,
 ) -> list[Edge[_T]]:
-
     session = info.context["session"]
 
     models = load_models(
