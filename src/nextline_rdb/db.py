@@ -1,8 +1,9 @@
 import contextlib
+from collections.abc import Iterator
 from dataclasses import dataclass, field
 from logging import getLogger
 from pathlib import Path
-from typing import Iterator, Optional
+from typing import Optional
 
 from alembic.config import Config
 from alembic.migration import MigrationContext

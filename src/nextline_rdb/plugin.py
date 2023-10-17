@@ -1,6 +1,7 @@
+from collections.abc import Mapping, MutableMapping
 from logging import getLogger
 from pathlib import Path
-from typing import Mapping, MutableMapping, Optional
+from typing import Optional
 
 from apluggy import asynccontextmanager
 from dynaconf import Dynaconf, Validator
