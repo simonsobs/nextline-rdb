@@ -103,9 +103,9 @@ async def control_execution(nextline: Nextline):
         new_ids, prev_ids = ids - prev_ids, ids  # type: ignore
 
         tasks = {asyncio.create_task(control_trace(nextline, id_)) for id_ in new_ids}
-        _, pending = await agen.asend(tasks)  # type: ignore
+        _, pending = await agen.asend(tasks)
 
-    await asyncio.gather(*pending)
+    await asyncio.gather(*pending)  # type: ignore
 
 
 async def control_trace(nextline: Nextline, trace_no):
