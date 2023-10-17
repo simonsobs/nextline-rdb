@@ -1,7 +1,7 @@
 from datetime import datetime
 from typing import List, Type, Union
 
-from sqlalchemy import ForeignKey, MetaData, UniqueConstraint
+from sqlalchemy import ForeignKey, MetaData, Text, UniqueConstraint
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 
 # https://docs.sqlalchemy.org/en/14/core/constraints.html#configuring-a-naming-convention-for-a-metadata-collection
@@ -34,8 +34,8 @@ class Run(Base):
     state: Mapped[Union[str, None]]
     started_at: Mapped[Union[datetime, None]]
     ended_at: Mapped[Union[datetime, None]]
-    script: Mapped[Union[str, None]]
-    exception: Mapped[Union[str, None]]
+    script: Mapped[Union[str, None]] = mapped_column(Text)
+    exception: Mapped[Union[str, None]] = mapped_column(Text)
 
     traces: Mapped[List["Trace"]] = relationship(back_populates="run")
     prompts: Mapped[List["Prompt"]] = relationship(back_populates="run")
