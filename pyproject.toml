@@ -6,7 +6,7 @@ build-backend = "hatchling.build"
 name = "nextline-rdb"
 description = ''
 readme = "README.md"
-requires-python = ">=3.8"
+requires-python = ">=3.10"
 license = "MIT"
 keywords = []
 authors = [
@@ -17,10 +17,9 @@ classifiers = [
   "Intended Audience :: Science/Research",
   "License :: OSI Approved :: MIT License",
   "Programming Language :: Python",
-  "Programming Language :: Python :: 3.8",
-  "Programming Language :: Python :: 3.9",
   "Programming Language :: Python :: 3.10",
   "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
   "Programming Language :: Python :: Implementation :: CPython",
 ]
 dependencies = ["alembic>=1.9", "SQLAlchemy>=2.0"]
@@ -57,7 +56,7 @@ cov = "pytest --cov-report=term-missing --cov-config=pyproject.toml --cov=src/ne
 no-cov = "cov --no-cov {args}"
 
 [[tool.hatch.envs.test.matrix]]
-python = ["38", "39", "310", "311"]
+python = ["310", "311", "312"]
 
 [tool.pytest.ini_options]
 asyncio_mode = "auto"
@@ -69,7 +68,7 @@ norecursedirs = "src/nextline_rdb/alembic build"
 
 [tool.black]
 skip-string-normalization = true
-target_version = ['py38', 'py39', 'py310', 'py311']
+target_version = ['py310', 'py311', 'py312']
 exclude = '''(?x)(
    src/nextline_rdb/aalembic/versions/.*\.py$
     | example_script/.*\.py$
