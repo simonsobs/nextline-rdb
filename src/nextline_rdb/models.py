@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import Type, Union
+from typing import Type
 
 from sqlalchemy import ForeignKey, MetaData, Text, UniqueConstraint
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
@@ -24,18 +24,18 @@ class Base(DeclarativeBase):
 class Hello(Base):
     __tablename__ = "hello"
     id: Mapped[int] = mapped_column(primary_key=True, index=True)
-    message: Mapped[Union[str, None]]
+    message: Mapped[str | None]
 
 
 class Run(Base):
     __tablename__ = "run"
     id: Mapped[int] = mapped_column(primary_key=True, index=True)
     run_no: Mapped[int] = mapped_column(unique=True)
-    state: Mapped[Union[str, None]]
-    started_at: Mapped[Union[datetime, None]]
-    ended_at: Mapped[Union[datetime, None]]
-    script: Mapped[Union[str, None]] = mapped_column(Text)
-    exception: Mapped[Union[str, None]] = mapped_column(Text)
+    state: Mapped[str | None]
+    started_at: Mapped[datetime | None]
+    ended_at: Mapped[datetime | None]
+    script: Mapped[str | None] = mapped_column(Text)
+    exception: Mapped[str | None] = mapped_column(Text)
 
     traces: Mapped[list["Trace"]] = relationship(back_populates="run")
     prompts: Mapped[list["Prompt"]] = relationship(back_populates="run")
@@ -52,9 +52,9 @@ class Trace(Base):
     trace_no: Mapped[int]
     state: Mapped[str]
     thread_no: Mapped[int]
-    task_no: Mapped[Union[int, None]]
+    task_no: Mapped[int | None]
     started_at: Mapped[datetime]
-    ended_at: Mapped[Union[datetime, None]]
+    ended_at: Mapped[datetime | None]
 
     run_id: Mapped[int] = mapped_column(ForeignKey('run.id'))
     run: Mapped[Run] = relationship(back_populates='traces')
@@ -77,11 +77,11 @@ class Prompt(Base):
     open: Mapped[bool]
     event: Mapped[str]
     started_at: Mapped[datetime]
-    file_name: Mapped[Union[str, None]]
-    line_no: Mapped[Union[int, None]]
-    stdout: Mapped[Union[str, None]]
-    command: Mapped[Union[str, None]]
-    ended_at: Mapped[Union[datetime, None]]
+    file_name: Mapped[str | None]
+    line_no: Mapped[int | None]
+    stdout: Mapped[str | None]
+    command: Mapped[str | None]
+    ended_at: Mapped[datetime | None]
 
     run_id: Mapped[int] = mapped_column(ForeignKey('run.id'))
     run: Mapped[Run] = relationship(back_populates='prompts')
@@ -100,8 +100,8 @@ class Stdout(Base):
     id: Mapped[int] = mapped_column(primary_key=True, index=True)
     run_no: Mapped[int]
     trace_no: Mapped[int]
-    text: Mapped[Union[str, None]]
-    written_at: Mapped[Union[datetime, None]]
+    text: Mapped[str | None]
+    written_at: Mapped[datetime | None]
 
     run_id: Mapped[int] = mapped_column(ForeignKey('run.id'))
     run: Mapped[Run] = relationship(back_populates='stdouts')
@@ -113,5 +113,5 @@ class Stdout(Base):
         return f"<{self.__class__.__name__} {self.text!r}>"
 
 
-ModelType = Union[Type[Run], Type[Trace], Type[Prompt], Type[Stdout]]
+ModelType = Type[Run] | Type[Trace] | Type[Prompt] | Type[Stdout]
 # https://python-forum.io/thread-27697.html

@@ -4,7 +4,7 @@ import asyncio
 from collections import deque
 from contextlib import asynccontextmanager
 from logging import getLogger
-from typing import TYPE_CHECKING, Deque, Union
+from typing import TYPE_CHECKING, Deque
 
 from sqlalchemy import select
 
@@ -40,7 +40,7 @@ async def subscribe_run_info(nextline: Nextline, db: DB):
         run_no = run_info.run_no
         with db.session() as session:
             with session.begin():
-                model: Union[db_models.Run, None]
+                model: db_models.Run | None
                 if run_info.state == "initialized":
                     model = db_models.Run(
                         run_no=run_no,
@@ -67,7 +67,7 @@ async def subscribe_trace_info(nextline: Nextline, db: DB):
     async for trace_info in nextline.subscribe_trace_info():
         with db.session() as session:
             with session.begin():
-                model: Union[db_models.Trace, None]
+                model: db_models.Trace | None
                 stmt_runs = select(db_models.Run).filter_by(run_no=trace_info.run_no)
                 while not (run := session.execute(stmt_runs).scalar_one_or_none()):
                     await asyncio.sleep(0)
@@ -101,7 +101,7 @@ async def subscribe_prompt_info(nextline: Nextline, db: DB):
             continue
         with db.session() as session:
             with session.begin():
-                model: Union[db_models.Prompt, None]
+                model: db_models.Prompt | None
                 stmt_runs = select(db_models.Run).filter_by(run_no=prompt_info.run_no)
                 while not (run := session.execute(stmt_runs).scalar_one_or_none()):
                     await asyncio.sleep(0)

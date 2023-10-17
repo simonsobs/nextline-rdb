@@ -1,4 +1,4 @@
-from typing import Type, Union
+from typing import Type
 
 from sqlalchemy import MetaData
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
@@ -21,8 +21,8 @@ class Base(DeclarativeBase):
 class Entity(Base):
     __tablename__ = "entity"
     id: Mapped[int] = mapped_column(primary_key=True, index=True)
-    num: Mapped[Union[int, None]]
-    txt: Mapped[Union[str, None]]
+    num: Mapped[int | None]
+    txt: Mapped[str | None]
 
     def __repr__(self):
         return f"<{self.__class__.__name__} {self.id!r}, {self.num!r}, {self.txt!r}>"
