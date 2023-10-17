@@ -3,7 +3,6 @@
 Strawberry doc: https://strawberry.rocks/docs/guides/pagination
 Relay doc: https://relay.dev/graphql/connections.htm
 """
-from __future__ import annotations
 
 from typing import Callable, Generic, Optional, TypeVar
 
@@ -41,7 +40,6 @@ def query_connection(
     first: Optional[int] = None,
     last: Optional[int] = None,
 ) -> Connection[_T]:
-
     forward = after or (first is not None)
     backward = before or (last is not None)
 
