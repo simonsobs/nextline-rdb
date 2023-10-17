@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import base64
 from functools import partial
-from typing import TYPE_CHECKING, Callable, List, Optional, TypeVar
+from typing import TYPE_CHECKING, Callable, Optional, TypeVar
 
 from nextline_rdb.pagination import load_models
 
@@ -64,7 +64,7 @@ def load_edges(
     after: Optional[str] = None,
     first: Optional[int] = None,
     last: Optional[int] = None,
-) -> List[Edge[_T]]:
+) -> list[Edge[_T]]:
 
     session = info.context["session"]
 

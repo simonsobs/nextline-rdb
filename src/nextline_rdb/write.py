@@ -4,7 +4,7 @@ import asyncio
 from collections import deque
 from contextlib import asynccontextmanager
 from logging import getLogger
-from typing import TYPE_CHECKING, Deque, List, Union
+from typing import TYPE_CHECKING, Deque, Union
 
 from sqlalchemy import select
 
@@ -140,7 +140,6 @@ async def subscribe_prompt_info(nextline: Nextline, db: DB):
 
 
 async def subscribe_stdout(nextline: Nextline, db: DB):
-
     run_info = None
     stdout_info_list: Deque[StdoutInfo] = deque()
     lock = asyncio.Condition()
@@ -158,7 +157,7 @@ async def subscribe_stdout(nextline: Nextline, db: DB):
         if not run_info.state == "finished":
             continue
         async with lock:
-            to_save: List[StdoutInfo] = []
+            to_save: list[StdoutInfo] = []
             while stdout_info_list:
                 info = stdout_info_list.popleft()
                 if info.run_no < run_info.run_no:

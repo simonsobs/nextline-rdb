@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import List, Type, Union
+from typing import Type, Union
 
 from sqlalchemy import ForeignKey, MetaData, Text, UniqueConstraint
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
@@ -37,9 +37,9 @@ class Run(Base):
     script: Mapped[Union[str, None]] = mapped_column(Text)
     exception: Mapped[Union[str, None]] = mapped_column(Text)
 
-    traces: Mapped[List["Trace"]] = relationship(back_populates="run")
-    prompts: Mapped[List["Prompt"]] = relationship(back_populates="run")
-    stdouts: Mapped[List["Stdout"]] = relationship(back_populates="run")
+    traces: Mapped[list["Trace"]] = relationship(back_populates="run")
+    prompts: Mapped[list["Prompt"]] = relationship(back_populates="run")
+    stdouts: Mapped[list["Stdout"]] = relationship(back_populates="run")
 
     def __repr__(self):
         return f"<{self.__class__.__name__} {self.run_no!r}>"
@@ -59,8 +59,8 @@ class Trace(Base):
     run_id: Mapped[int] = mapped_column(ForeignKey('run.id'))
     run: Mapped[Run] = relationship(back_populates='traces')
 
-    prompts: Mapped[List["Prompt"]] = relationship(back_populates="trace")
-    stdouts: Mapped[List["Stdout"]] = relationship(back_populates="trace")
+    prompts: Mapped[list["Prompt"]] = relationship(back_populates="trace")
+    stdouts: Mapped[list["Stdout"]] = relationship(back_populates="trace")
 
     __table_args__ = (UniqueConstraint("run_no", "trace_no"),)
 

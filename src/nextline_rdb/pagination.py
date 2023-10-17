@@ -1,4 +1,4 @@
-from typing import List, NamedTuple, Optional, Tuple, TypeVar, cast
+from typing import NamedTuple, Optional, TypeVar, cast
 
 from sqlalchemy import func, select
 from sqlalchemy.orm import aliased
@@ -19,7 +19,7 @@ class SortField(NamedTuple):
     desc: bool = False
 
 
-Sort = List[SortField]
+Sort = list[SortField]
 
 _Id = TypeVar("_Id")
 
@@ -96,7 +96,7 @@ def compose_statement(
 
         subq = select(cte.c.row_number.label("cursor"))
         subq = subq.where(getattr(cte.c, id_field) == cursor)
-        subq = cast(Select[Tuple], subq.subquery())
+        subq = cast(Select[tuple], subq.subquery())
 
         Alias = aliased(Model, cte)  # type: ignore
         stmt = select(Alias).select_from(cte)

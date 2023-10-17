@@ -1,6 +1,6 @@
 import asyncio
 from pathlib import Path
-from typing import Optional, Set, cast
+from typing import Optional, cast
 
 import pytest
 from nextline import Nextline
@@ -96,7 +96,7 @@ async def run_statement(nextline: Nextline, statement: Optional[str] = None):
 
 
 async def control_execution(nextline: Nextline):
-    prev_ids: Set[int] = set()
+    prev_ids = set[int]()
     agen = agen_with_wait(nextline.subscribe_trace_ids())
     async for ids_ in agen:
         ids = set(ids_)

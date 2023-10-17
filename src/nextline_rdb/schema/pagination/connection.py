@@ -5,7 +5,7 @@ Relay doc: https://relay.dev/graphql/connections.htm
 """
 from __future__ import annotations
 
-from typing import Callable, Generic, List, Optional, TypeVar
+from typing import Callable, Generic, Optional, TypeVar
 
 import strawberry
 from strawberry.types import Info
@@ -30,12 +30,12 @@ class PageInfo:
 @strawberry.type
 class Connection(Generic[_T]):
     page_info: PageInfo
-    edges: List[Edge[_T]]
+    edges: list[Edge[_T]]
 
 
 def query_connection(
     info: Info,
-    query_edges: Callable[..., List[Edge[_T]]],
+    query_edges: Callable[..., list[Edge[_T]]],
     before: Optional[str] = None,
     after: Optional[str] = None,
     first: Optional[int] = None,

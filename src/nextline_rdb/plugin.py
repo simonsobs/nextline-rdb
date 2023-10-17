@@ -1,6 +1,6 @@
 from logging import getLogger
 from pathlib import Path
-from typing import Mapping, MutableMapping, Optional, Tuple
+from typing import Mapping, MutableMapping, Optional
 
 from apluggy import asynccontextmanager
 from dynaconf import Dynaconf, Validator
@@ -30,17 +30,17 @@ SETTINGS_FOR_MIGRATION = (str(MIGRATION_CONFIG_PATH),)
 
 class Plugin:
     @spec.hookimpl
-    def dynaconf_preload(self) -> Optional[Tuple[str, ...]]:
+    def dynaconf_preload(self) -> Optional[tuple[str, ...]]:
         return PRELOAD
 
     @spec.hookimpl
-    def dynaconf_settings_files(self) -> Optional[Tuple[str, ...]]:
+    def dynaconf_settings_files(self) -> Optional[tuple[str, ...]]:
         if Path.cwd() == HERE:
             return SETTINGS_FOR_MIGRATION
         return SETTINGS
 
     @spec.hookimpl
-    def dynaconf_validators(self) -> Optional[Tuple[Validator, ...]]:
+    def dynaconf_validators(self) -> Optional[tuple[Validator, ...]]:
         return VALIDATORS
 
     @spec.hookimpl

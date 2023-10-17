@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import datetime
-from typing import List, Optional, Type, TypeVar
+from typing import Optional, Type, TypeVar
 
 import strawberry
 from sqlalchemy import inspect
@@ -116,15 +116,15 @@ class RunHistory:
     # )
 
     @strawberry.field
-    def traces(self) -> List["TraceHistory"]:
+    def traces(self) -> list["TraceHistory"]:
         return [TraceHistory.from_model(m) for m in self._model.traces]  # type: ignore
 
     @strawberry.field
-    def prompts(self) -> List["PromptHistory"]:
+    def prompts(self) -> list["PromptHistory"]:
         return [PromptHistory.from_model(m) for m in self._model.prompts]  # type: ignore
 
     @strawberry.field
-    def stdouts(self) -> List["StdoutHistory"]:
+    def stdouts(self) -> list["StdoutHistory"]:
         return [StdoutHistory.from_model(m) for m in self._model.stdouts]  # type: ignore
 
     @classmethod
@@ -166,11 +166,11 @@ class TraceHistory:
     # )
 
     @strawberry.field
-    def prompts(self) -> List["PromptHistory"]:
+    def prompts(self) -> list["PromptHistory"]:
         return [PromptHistory.from_model(m) for m in self._model.prompts]  # type: ignore
 
     @strawberry.field
-    def stdouts(self) -> List["StdoutHistory"]:
+    def stdouts(self) -> list["StdoutHistory"]:
         return [StdoutHistory.from_model(m) for m in self._model.stdouts]  # type: ignore
 
     @classmethod
