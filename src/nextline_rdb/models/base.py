@@ -1,7 +1,15 @@
 from sqlalchemy import MetaData
 from sqlalchemy.orm import DeclarativeBase
 
-# https://docs.sqlalchemy.org/en/14/core/constraints.html#configuring-a-naming-convention-for-a-metadata-collection
+# Constraints naming conventions
+#
+# SQLAlchemy 2 Doc:
+# https://docs.sqlalchemy.org/en/20/core/constraints.html#configuring-constraint-naming-conventions
+#
+# About the change on "ck":
+# https://stackoverflow.com/a/56000475/7309855
+#
+# Equivalent code in ProductDB:
 # https://github.com/simonsobs/acondbs/blob/7b4e5ab967ce/acondbs/db/sa.py
 convention = {
     "ix": "ix_%(column_0_label)s",
