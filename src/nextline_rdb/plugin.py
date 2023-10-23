@@ -1,4 +1,4 @@
-from collections.abc import Mapping, MutableMapping
+from collections.abc import AsyncIterator, Mapping, MutableMapping
 from logging import getLogger
 from pathlib import Path
 from typing import Optional
@@ -45,11 +45,11 @@ class Plugin:
         return VALIDATORS
 
     @spec.hookimpl
-    def configure(self, settings: Dynaconf):
+    def configure(self, settings: Dynaconf) -> None:
         self._db = DB(settings.db['url'])
 
     @spec.hookimpl
-    def initial_run_no(self):
+    def initial_run_no(self) -> Optional[int]:
         with self._db.session() as session:
             last_run = self._last_run(session)
             if last_run is None:
@@ -58,7 +58,7 @@ class Plugin:
                 return last_run.run_no + 1
 
     @spec.hookimpl
-    def initial_script(self):
+    def initial_script(self) -> Optional[str]:
         with self._db.session() as session:
             last_run = self._last_run(session)
             if last_run is None:
@@ -67,10 +67,10 @@ class Plugin:
                 return last_run.script
 
     @spec.hookimpl
-    def schema(self):
+    def schema(self) -> tuple[type, type | None, type | None]:
         return (Query, Mutation, Subscription)
 
-    def _last_run(self, session: Session):
+    def _last_run(self, session: Session) -> Optional[models.Run]:
         stmt = select(models.Run, func.max(models.Run.run_no))
         if model := session.execute(stmt).scalar_one_or_none():
             return model
@@ -82,7 +82,7 @@ class Plugin:
 
     @spec.hookimpl
     @asynccontextmanager
-    async def lifespan(self, app: Starlette, context: Mapping):
+    async def lifespan(self, app: Starlette, context: Mapping) -> AsyncIterator[None]:
         nextline = context['nextline']
         async with write_db(nextline, self._db):
             yield

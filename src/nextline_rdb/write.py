@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import asyncio
 from collections import deque
+from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
 from logging import getLogger
 from typing import TYPE_CHECKING, Deque
@@ -17,7 +18,9 @@ if TYPE_CHECKING:
 
 
 @asynccontextmanager
-async def write_db(nextline: Nextline, db: DB, timeout_on_exit: float = 3):
+async def write_db(
+    nextline: Nextline, db: DB, timeout_on_exit: float = 3
+) -> AsyncIterator[None]:
     task = asyncio.gather(
         subscribe_run_info(nextline, db),
         subscribe_trace_info(nextline, db),
@@ -35,7 +38,7 @@ async def write_db(nextline: Nextline, db: DB, timeout_on_exit: float = 3):
             raise
 
 
-async def subscribe_run_info(nextline: Nextline, db: DB):
+async def subscribe_run_info(nextline: Nextline, db: DB) -> None:
     async for run_info in nextline.subscribe_run_info():
         run_no = run_info.run_no
         with db.session() as session:
@@ -63,7 +66,7 @@ async def subscribe_run_info(nextline: Nextline, db: DB):
                     model.exception = run_info.exception
 
 
-async def subscribe_trace_info(nextline: Nextline, db: DB):
+async def subscribe_trace_info(nextline: Nextline, db: DB) -> None:
     async for trace_info in nextline.subscribe_trace_info():
         with db.session() as session:
             with session.begin():
@@ -95,7 +98,7 @@ async def subscribe_trace_info(nextline: Nextline, db: DB):
                     model.ended_at = trace_info.ended_at
 
 
-async def subscribe_prompt_info(nextline: Nextline, db: DB):
+async def subscribe_prompt_info(nextline: Nextline, db: DB) -> None:
     async for prompt_info in nextline.subscribe_prompt_info():
         if prompt_info.trace_call_end:  # TODO: remove when unnecessary
             continue
@@ -139,12 +142,12 @@ async def subscribe_prompt_info(nextline: Nextline, db: DB):
                     model.ended_at = prompt_info.ended_at
 
 
-async def subscribe_stdout(nextline: Nextline, db: DB):
+async def subscribe_stdout(nextline: Nextline, db: DB) -> None:
     run_info = None
     stdout_info_list: Deque[StdoutInfo] = deque()
     lock = asyncio.Condition()
 
-    async def f():
+    async def f() -> None:
         nonlocal stdout_info_list
         async for s in nextline.subscribe_stdout():
             # print(s, file=sys.stderr)
