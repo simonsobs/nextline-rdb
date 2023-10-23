@@ -15,7 +15,7 @@ from sqlalchemy.orm import Session
 from . import models
 
 
-def create_tables(engine: Engine):
+def create_tables(engine: Engine) -> None:
     '''Define tables in the database based on the ORM models .
 
     https://docs.sqlalchemy.org/en/20/orm/quickstart.html#emit-create-table-ddl
@@ -78,7 +78,7 @@ ALEMBIC_INI = str(Path(__file__).resolve().parent / 'alembic.ini')
 assert Path(ALEMBIC_INI).is_file()
 
 
-def migrate_to_head(engine):
+def migrate_to_head(engine: Engine) -> None:
     '''Run alembic to upgrade the database to the latest version.'''
     config = Config(ALEMBIC_INI)
 
@@ -94,7 +94,7 @@ def migrate_to_head(engine):
 
     script = ScriptDirectory.from_config(config)
 
-    def upgrade(rev: str, context):
+    def upgrade(rev: str, context):  # type: ignore[no-untyped-def]
         del context
         return script._upgrade_revs('head', rev)
 
