@@ -1,4 +1,5 @@
 import enum
+import math
 from typing import Any
 
 from sqlalchemy import MetaData
@@ -53,5 +54,11 @@ def repr_val(val: Any) -> str:
             return str(val)
         case int():
             return f'{val:_}'
+        case math.inf:
+            return 'float("inf")'
+        case float(neg_inf) if neg_inf == float('-inf'):
+            return 'float("-inf")'
+        case float(nan_val) if math.isnan(nan_val):
+            return 'float("nan")'
         case _:
             return repr(val)
