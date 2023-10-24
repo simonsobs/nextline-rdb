@@ -8,13 +8,13 @@ from nextline_rdb.models import repr_val
 from nextline_rdb.utils.utc import is_timezone_aware
 
 
-@given(st.integers())
+@given(...)
 def test_integers(value: int) -> None:
     repr_ = repr_val(value)
     assert eval(repr_) == value
 
 
-@given(st.floats())
+@given(...)
 def test_floats(value: float) -> None:
     repr_ = repr_val(value)
     eval_ = eval(repr_)
@@ -24,7 +24,7 @@ def test_floats(value: float) -> None:
         assert eval_ == value
 
 
-@given(st.text())
+@given(...)
 def test_text(value: str) -> None:
     repr_ = repr_val(value)
     assert eval(repr_) == value
@@ -37,13 +37,13 @@ class Color(Enum):
 
 
 @given(st.sampled_from(Color))
-def test_enum(value):
+def test_enum(value: Color) -> None:
     repr_ = repr_val(value)
     assert eval(repr_) == value
 
 
 @given(st.datetimes())
-def test_datetimes(value):
+def test_datetimes(value: datetime.datetime) -> None:
     assert not is_timezone_aware(value)
     repr_ = repr_val(value)
     assert datetime  # need for eval
