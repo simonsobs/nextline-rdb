@@ -1,5 +1,6 @@
 import datetime
 from enum import Enum
+from string import ascii_lowercase, ascii_uppercase
 
 from hypothesis import given
 from hypothesis import strategies as st
@@ -40,6 +41,34 @@ class Color(Enum):
 def test_enum(value: Color) -> None:
     repr_ = repr_val(value)
     assert eval(repr_) == value
+
+
+@st.composite
+def st_enum_type(draw: st.DrawFn):
+    '''Generate an Enum type.
+
+    >>> enum_type = st_enum_type().example()
+    >>> list(enum_type)
+    [...]
+
+    Code based on:
+    https://github.com/HypothesisWorks/hypothesis/issues/2693#issuecomment-823710924
+
+    '''
+    names_ = st.text(ascii_lowercase, min_size=1)
+    names = st.builds(lambda x: x.capitalize(), names_).filter(str.isidentifier)
+    values = st.lists(st.text(ascii_uppercase, min_size=1), min_size=1, unique=True)
+    return draw(st.builds(Enum, names, values))
+
+
+@given(st.data())
+def test_arbitrary_enum(data: st.DataObject):
+    enum_type = data.draw(st_enum_type())
+    item = data.draw(st.sampled_from(enum_type))
+    repr_ = repr_val(item)
+    locals()[enum_type.__name__] = enum_type  # so eval can find the type
+    eval_ = eval(repr_)
+    assert eval_ == item
 
 
 @given(st.datetimes())
