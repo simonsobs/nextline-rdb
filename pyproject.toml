@@ -66,6 +66,7 @@ addopts = "--doctest-modules"
 # doctest_optionflags = ["ELLIPSIS", "NORMALIZE_WHITESPACE",]
 doctest_optionflags = ["ELLIPSIS"]
 norecursedirs = "src/nextline_rdb/alembic build"
+filterwarnings = ["ignore::hypothesis.errors.NonInteractiveExampleWarning"]
 
 [tool.black]
 skip-string-normalization = true
