@@ -1,5 +1,6 @@
 __all__ = [
     'Base',
+    'repr_val',
     'Hello',
     'Run',
     'Trace',
@@ -10,7 +11,7 @@ __all__ = [
 
 from typing import Type
 
-from .base import Base
+from .base import Base, repr_val
 from .hello import Hello
 from .prompt import Prompt
 from .run import Run
