@@ -26,5 +26,5 @@ async def test_repr(data: st.DataObject):
             )
             for row in rows:
                 repr_ = repr(row)
-                assert Prompt, datetime
+                assert Prompt, datetime  # type: ignore[truthy-function]
                 assert repr_ == repr(eval(repr_))

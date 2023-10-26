@@ -21,5 +21,5 @@ async def test_repr(data: st.DataObject):
             rows = await session.scalars(select(Run))
             for row in rows:
                 repr_ = repr(row)
-                assert Run, datetime
+                assert Run, datetime  # type: ignore[truthy-function]
                 assert repr_ == repr(eval(repr_))

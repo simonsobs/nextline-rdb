@@ -22,5 +22,5 @@ async def test_repr(data: st.DataObject):
             rows = await session.scalars(select(Trace).options(selectinload(Trace.run)))
             for row in rows:
                 repr_ = repr(row)
-                assert Trace, datetime
+                assert Trace, datetime  # type: ignore[truthy-function]
                 assert repr_ == repr(eval(repr_))
