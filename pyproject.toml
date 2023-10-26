@@ -22,7 +22,12 @@ classifiers = [
   "Programming Language :: Python :: 3.12",
   "Programming Language :: Python :: Implementation :: CPython",
 ]
-dependencies = ["alembic>=1.9", "SQLAlchemy[asyncio]>=2.0", "aiosqlite>=0.10"]
+dependencies = [
+  "alembic>=1.9",
+  "SQLAlchemy[asyncio]>=2.0",
+  "aiosqlite>=0.10",
+  "hypothesis>=6.88",
+]
 dynamic = ["version"]
 
 [project.optional-dependencies]
@@ -33,7 +38,6 @@ tests = [
   "pytest-cov>=3.0",
   "pytest-timeout>=2.1",
   "pytest>=7.0",
-  "hypothesis>=6.88",
 ]
 
 
