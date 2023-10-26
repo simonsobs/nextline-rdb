@@ -33,6 +33,3 @@ class Prompt(Base):
     trace: Mapped['Trace'] = relationship(back_populates='prompts')
 
     __table_args__ = (UniqueConstraint("run_no", "prompt_no"),)
-
-    def __repr__(self):
-        return f"<{self.__class__.__name__} {self.id!r}>"

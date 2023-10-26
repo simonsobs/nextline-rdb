@@ -24,6 +24,3 @@ class Stdout(Base):
 
     trace_id: Mapped[int] = mapped_column(ForeignKey('trace.id'))
     trace: Mapped['Trace'] = relationship(back_populates='stdouts')
-
-    def __repr__(self):
-        return f"<{self.__class__.__name__} {self.text!r}>"

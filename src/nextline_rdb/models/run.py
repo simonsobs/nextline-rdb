@@ -25,6 +25,3 @@ class Run(Base):
     traces: Mapped[list["Trace"]] = relationship(back_populates="run")
     prompts: Mapped[list["Prompt"]] = relationship(back_populates="run")
     stdouts: Mapped[list["Stdout"]] = relationship(back_populates="run")
-
-    def __repr__(self):
-        return f"<{self.__class__.__name__} {self.run_no!r}>"
