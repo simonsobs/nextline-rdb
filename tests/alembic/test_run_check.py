@@ -16,5 +16,5 @@ def test_migration_up_to_date(in_alembic_dir: Path) -> None:
     '''
     del in_alembic_dir
     config = Config(Path.cwd() / 'alembic.ini')
-    command.upgrade(config, "head")
+    command.upgrade(config, "head")  # This line might be unnecessary
     command.check(config)
