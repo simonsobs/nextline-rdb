@@ -4,7 +4,7 @@ from nextline_rdb.models import Run
 
 
 @st.composite
-def st_model_run(draw: st.DrawFn):
+def st_model_run(draw: st.DrawFn) -> Run:
     run_no = draw(st.integers(min_value=1, max_value=2_147_483_647))
     state = draw(st.one_of(st.none(), st.text()))
     started_at = draw(st.one_of(st.none(), st.datetimes()))
