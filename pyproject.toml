@@ -22,7 +22,12 @@ classifiers = [
   "Programming Language :: Python :: 3.12",
   "Programming Language :: Python :: Implementation :: CPython",
 ]
-dependencies = ["alembic>=1.9", "SQLAlchemy>=2.0"]
+dependencies = [
+  "alembic>=1.9",
+  "SQLAlchemy[asyncio]>=2.0",
+  "aiosqlite>=0.10",
+  "hypothesis>=6.88",
+]
 dynamic = ["version"]
 
 [project.optional-dependencies]
@@ -65,6 +70,7 @@ addopts = "--doctest-modules"
 # doctest_optionflags = ["ELLIPSIS", "NORMALIZE_WHITESPACE",]
 doctest_optionflags = ["ELLIPSIS"]
 norecursedirs = "src/nextline_rdb/alembic build"
+filterwarnings = ["ignore::hypothesis.errors.NonInteractiveExampleWarning"]
 
 [tool.black]
 skip-string-normalization = true
@@ -93,9 +99,5 @@ exclude = '''(?x)(
 )'''
 
 [[tool.mypy.overrides]]
-module = [
-  "dynaconf.*",
-  "async_asgi_testclient.*",
-  "apluggy.*",
-]
+module = ["dynaconf.*", "async_asgi_testclient.*", "apluggy.*"]
 ignore_missing_imports = true
