@@ -12,7 +12,15 @@ from alembic.script import ScriptDirectory
 from sqlalchemy import Engine, create_engine
 from sqlalchemy.orm import Session
 
+import nextline_rdb
+
 from . import models
+
+
+ALEMBIC_INI = str(Path(nextline_rdb.__file__).resolve().parent / 'alembic.ini')
+
+
+assert Path(ALEMBIC_INI).is_file()
 
 
 def create_tables(engine: Engine) -> None:
@@ -71,11 +79,6 @@ class DB:
         '''
         with Session(self.engine) as session:
             yield session
-
-
-ALEMBIC_INI = str(Path(__file__).resolve().parent / 'alembic.ini')
-
-assert Path(ALEMBIC_INI).is_file()
 
 
 def migrate_to_head(engine: Engine) -> None:
