@@ -17,16 +17,12 @@ from .write import write_db
 
 HERE = Path(__file__).resolve().parent
 DEFAULT_CONFIG_PATH = HERE / 'default.toml'
-MIGRATION_CONFIG_PATH = HERE / 'migration.toml'
 
 assert DEFAULT_CONFIG_PATH.is_file()
-assert MIGRATION_CONFIG_PATH.is_file()
 
 PRELOAD = (str(DEFAULT_CONFIG_PATH),)
 SETTINGS = ()
 VALIDATORS = (Validator("DB.URL", must_exist=True, is_type_of=str),)
-
-SETTINGS_FOR_MIGRATION = (str(MIGRATION_CONFIG_PATH),)
 
 
 class Plugin:
@@ -36,8 +32,6 @@ class Plugin:
 
     @spec.hookimpl
     def dynaconf_settings_files(self) -> Optional[tuple[str, ...]]:
-        if Path.cwd() == HERE:
-            return SETTINGS_FOR_MIGRATION
         return SETTINGS
 
     @spec.hookimpl

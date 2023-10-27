@@ -82,9 +82,7 @@ def migrate_to_head(engine: Engine) -> None:
     '''Run alembic to upgrade the database to the latest version.'''
     config = Config(ALEMBIC_INI)
 
-    # TODO: Arrange config so that logging doesn't need to be conditionally
-    # configured in alembic/env.py
-
+    # config.set_main_option('sqlalchemy.url', str(engine.url))
     # from alembic import command
     # command.upgrade(config, "head")
 
