@@ -20,12 +20,13 @@ config = context.config
 if config.config_file_name:
     # from logging_tree import printout
     # printout()
-    if "nextlinegraphql" not in logging.root.manager.loggerDict:
-        # Presumably, the alembic command is being executed. If programmatically
-        # called, "nextlinegraphql" is in loggerDict and logging shouldn't be
-        # configured here because it will override the logging configuration.
-        # TODO: rearrange how configuration files are read so that this
-        # conditional configuration of logging becomes cleaner or deleted.
+    if config.cmd_opts is None:
+        # Presumably, alembic.command.upgrade() or other functions from
+        # alembic.command are called rather than the alembic command is
+        # executed from a shell. Do not configure logging here so as to avoid
+        # overriding the logging config.
+        pass
+    else:
         logging.config.fileConfig(config.config_file_name)
 
 
