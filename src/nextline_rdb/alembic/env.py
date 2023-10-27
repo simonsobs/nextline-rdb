@@ -2,20 +2,12 @@ import logging
 import logging.config
 
 from alembic import context
-from nextlinegraphql.config import load_settings
-from nextlinegraphql.hook import load_plugins
 from sqlalchemy import create_engine
 
 from nextline_rdb import models
 
-settings = load_settings(hook=load_plugins())
-url = settings.db.url
-
-# Config in alembic.ini, only used to configure logger
 config = context.config
-
-# E.g., how to access to a config value
-# script_location = config.get_main_option("script_location")
+url = config.get_main_option("sqlalchemy.url")
 
 if config.config_file_name:
     # from logging_tree import printout
@@ -67,6 +59,7 @@ def run_migrations_online() -> None:
     and associate a connection with the context.
 
     """
+    assert url is not None
     connectable = create_engine(url)
 
     with connectable.connect() as connection:
