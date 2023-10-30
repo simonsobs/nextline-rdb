@@ -1,15 +1,19 @@
-from typing import Optional, Protocol
+from typing import Optional, Protocol, Type, TypeVar
 
-from sqlalchemy import URL, create_engine
+from sqlalchemy import create_engine
 from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
 from sqlalchemy.orm import DeclarativeBase, sessionmaker
 
 from nextline_rdb import models
 from nextline_rdb.utils import ensure_async_url, ensure_sync_url
 
+T = TypeVar('T', bound=DeclarativeBase)
 
-class Models(Protocol):
-    Base: DeclarativeBase
+
+class Models(Protocol[T]):
+    '''A module with a class named `Base` that inherits from `DeclarativeBase`.'''
+
+    Base: Type[T]
 
 
 class DB:
@@ -27,7 +31,7 @@ class DB:
 
     def __init__(
         self,
-        url: Optional[str | URL] = None,
+        url: Optional[str] = None,
         models: Models = models,
         echo: bool = False,
     ):
@@ -75,7 +79,7 @@ class AsyncDB:
 
     def __init__(
         self,
-        url: Optional[str | URL] = None,
+        url: Optional[str] = None,
         models: Models = models,
         echo: bool = False,
     ):
