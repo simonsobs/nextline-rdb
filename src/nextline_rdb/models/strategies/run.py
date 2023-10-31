@@ -8,6 +8,21 @@ from nextline_rdb.models import Run
 MAX_INT = 2_147_483_647
 
 
+def st_datetimes(
+    min_value: dt.datetime = dt.datetime.min,
+    max_value: dt.datetime = dt.datetime.max,
+):
+    '''A strategy for naive `datetime` objects without imaginary datetimes or folds.
+
+    Note: timezones and folds are not supported by SQLite.
+    '''
+    return st.datetimes(
+        min_value=min_value,
+        max_value=max_value,
+        allow_imaginary=False,
+    ).filter(lambda dt_: dt_.fold == 0)
+
+
 @st.composite
 def st_model_run(
     draw: st.DrawFn,
@@ -20,11 +35,11 @@ def st_model_run(
     min_started_at = time + dt.timedelta(seconds=1) if time else dt.datetime.min
     run_no = draw(st.integers(min_value=min_run_no, max_value=MAX_INT))
     state = draw(st.one_of(st.none(), st.text()))
-    started_at = draw(st.one_of(st.none(), st.datetimes(min_value=min_started_at)))
+    started_at = draw(st.one_of(st.none(), st_datetimes(min_value=min_started_at)))
     ended_at = (
         None
         if started_at is None
-        else draw(st.one_of(st.none(), st.datetimes(min_value=started_at)))
+        else draw(st.one_of(st.none(), st_datetimes(min_value=started_at)))
     )
     script = draw(st.one_of(st.none(), st.text()))
     exception = draw(st.one_of(st.none(), st.text()))
