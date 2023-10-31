@@ -6,7 +6,7 @@ from sqlalchemy import select
 from sqlalchemy.orm import selectinload
 
 from nextline_rdb.models import Trace
-from nextline_rdb.tests.strategies.models import st_model_trace
+from nextline_rdb.models.strategies import st_model_trace
 
 from ..db import AsyncDB
 

@@ -6,7 +6,7 @@ from sqlalchemy import select
 from sqlalchemy.orm import selectinload
 
 from nextline_rdb.models import Prompt
-from nextline_rdb.tests.strategies.models import st_model_prompt
+from nextline_rdb.models.strategies import st_model_prompt
 
 from ..db import AsyncDB
 

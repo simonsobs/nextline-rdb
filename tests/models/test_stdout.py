@@ -6,7 +6,7 @@ from sqlalchemy import select
 from sqlalchemy.orm import selectinload
 
 from nextline_rdb.models import Stdout
-from nextline_rdb.tests.strategies.models import st_model_stdout
+from nextline_rdb.models.strategies import st_model_stdout
 
 from ..db import AsyncDB
 

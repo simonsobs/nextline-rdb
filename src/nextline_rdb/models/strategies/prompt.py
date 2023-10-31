@@ -2,7 +2,7 @@ from typing import Optional
 
 from hypothesis import strategies as st
 
-from nextline_rdb.models import Trace, Prompt
+from nextline_rdb.models import Prompt, Trace
 
 from .trace import st_model_trace
 
