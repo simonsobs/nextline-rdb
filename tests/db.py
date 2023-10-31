@@ -104,6 +104,6 @@ class AsyncDB:
         await self.start()
         return self
 
-    async def __aexit__(self, exc_type, exc_value, traceback) -> None:
+    async def __aexit__(self, exc_type, exc_value, traceback) -> None:  # type: ignore[no-untyped-def]
         del exc_type, exc_value, traceback
         await self.aclose()
