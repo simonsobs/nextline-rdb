@@ -6,6 +6,7 @@ __all__ = [
     'st_model_trace',
     'SQLITE_INT_MAX',
     'SQLITE_INT_MIN',
+    'st_datetime_ranges',
     'st_datetimes',
     'st_none_or',
     'st_sqlite_ints',
@@ -18,6 +19,7 @@ from .trace import st_model_trace
 from .utils import (
     SQLITE_INT_MAX,
     SQLITE_INT_MIN,
+    st_datetime_ranges,
     st_datetimes,
     st_none_or,
     st_sqlite_ints,

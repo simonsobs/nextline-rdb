@@ -5,7 +5,7 @@ from hypothesis import strategies as st
 
 from nextline_rdb.models import Run
 
-from .utils import st_datetimes, st_none_or, st_sqlite_ints
+from .utils import st_datetime_ranges, st_datetimes, st_none_or, st_sqlite_ints
 
 
 @st.composite
@@ -18,36 +18,19 @@ def st_model_run(
     min_ended_at: Optional[dt.datetime] = None,
     max_ended_at: Optional[dt.datetime] = None,
 ) -> Run:
-    # Validate options
     if min_run_no is None:
         min_run_no = 1
 
-    min_started_at = min_started_at or dt.datetime.min
-    max_started_at = max_started_at or dt.datetime.max
-    min_ended_at = min_ended_at or dt.datetime.min
-    max_ended_at = max_ended_at or dt.datetime.max
-    assert min_started_at <= max_started_at
-    assert min_started_at <= max_ended_at
-    max_started_at = min(max_started_at, max_ended_at)
-    min_ended_at = max(min_started_at, min_ended_at)
-    assert min_ended_at <= max_ended_at
-
-    # Generate model arguments
     run_no = draw(st_sqlite_ints(min_value=min_run_no, max_value=max_run_no))
 
     state = draw(st_none_or(st.text()))
 
-    started_at = draw(
-        st_none_or(st_datetimes(min_value=min_started_at, max_value=max_started_at))
-    )
-    if started_at:
-        min_ended_at = max(started_at, min_ended_at)
-    assert min_ended_at <= max_ended_at
-    ended_at = (
-        None
-        if started_at is None
-        else draw(
-            st_none_or(st_datetimes(min_value=min_ended_at, max_value=max_ended_at))
+    started_at, ended_at = draw(
+        st_datetime_ranges(
+            min_start=min_started_at,
+            max_start=max_started_at,
+            min_end=min_ended_at,
+            max_end=max_ended_at,
         )
     )
 
@@ -55,7 +38,6 @@ def st_model_run(
 
     exception = draw(st_none_or(st.text()))
 
-    # Create model
     model = Run(
         run_no=run_no,
         state=state,
