@@ -1,10 +1,22 @@
 import datetime as dt
-from typing import Optional
+from typing import Optional, TypeVar
 
 from hypothesis import strategies as st
 
 SQLITE_INT_MIN = -9_223_372_036_854_775_808
 SQLITE_INT_MAX = 9_223_372_036_854_775_807
+
+T = TypeVar('T')
+
+
+def st_none_or(st_: st.SearchStrategy[T]) -> st.SearchStrategy[Optional[T]]:
+    '''A strategy for `None` or values from another strategy.
+
+    >>> v = st_none_or(st.integers()).example()
+    >>> v is None or isinstance(v, int)
+    True
+    '''
+    return st.one_of(st.none(), st_)
 
 
 def st_sqlite_ints(
