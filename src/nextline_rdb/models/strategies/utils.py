@@ -2,6 +2,9 @@ import datetime as dt
 
 from hypothesis import strategies as st
 
+SQLITE_INT_MIN = -9_223_372_036_854_775_808
+SQLITE_INT_MAX = 9_223_372_036_854_775_807
+
 
 def st_datetimes(
     min_value: dt.datetime = dt.datetime.min,
