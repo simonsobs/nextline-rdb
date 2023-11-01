@@ -13,6 +13,13 @@ def st_datetimes(
     '''A strategy for naive `datetime` objects without imaginary datetimes or folds.
 
     Note: timezones and folds are not supported by SQLite.
+
+    >>> dt_ = st_datetimes().example()
+    >>> dt_.tzinfo is None
+    True
+
+    >>> dt_.fold
+    0
     '''
     return st.datetimes(
         min_value=min_value,
