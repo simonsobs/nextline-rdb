@@ -3,8 +3,8 @@ from typing import Optional, TypeVar
 
 from hypothesis import strategies as st
 
-SQLITE_INT_MIN = -9_223_372_036_854_775_808
-SQLITE_INT_MAX = 9_223_372_036_854_775_807
+SQLITE_INT_MIN = -9_223_372_036_854_775_808  # 2 ** 63 * -1
+SQLITE_INT_MAX = 9_223_372_036_854_775_807  # 2 ** 63 - 1
 
 T = TypeVar('T')
 
