@@ -3,11 +3,10 @@ from hypothesis import strategies as st
 from sqlalchemy import select
 
 from nextline_rdb.models import Run
-from nextline_rdb.models.strategies import (
+from nextline_rdb.models.strategies import st_model_run, st_model_run_list
+from nextline_rdb.utils.strategies import (
     SQLITE_INT_MAX,
     st_datetimes,
-    st_model_run,
-    st_model_run_list,
     st_none_or,
     st_sqlite_ints,
 )

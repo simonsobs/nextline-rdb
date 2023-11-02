@@ -4,8 +4,12 @@ from typing import Optional
 from hypothesis import strategies as st
 
 from nextline_rdb.models import Run
-
-from .utils import st_datetime_ranges, st_datetimes, st_none_or, st_sqlite_ints
+from nextline_rdb.utils.strategies import (
+    st_datetime_ranges,
+    st_datetimes,
+    st_none_or,
+    st_sqlite_ints,
+)
 
 
 @st.composite
