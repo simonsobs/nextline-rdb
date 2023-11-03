@@ -46,6 +46,7 @@ def test_st_ranges(data: st.DataObject) -> None:
     min_end, max_end = data.draw(st_min_max_end(st_=st_, min_start=min_start))
     allow_start_none = data.draw(st.booleans())
     allow_end_none = data.draw(st.booleans())
+    allow_equal = data.draw(st.booleans())
 
     start, end = data.draw(
         st_ranges(
@@ -56,6 +57,7 @@ def test_st_ranges(data: st.DataObject) -> None:
             max_end=max_end,
             allow_start_none=allow_start_none,
             allow_end_none=allow_end_none,
+            allow_equal=allow_equal,
         )
     )
 
@@ -66,7 +68,10 @@ def test_st_ranges(data: st.DataObject) -> None:
         assert end is not None
 
     if start and end:
-        assert start <= end
+        if allow_equal:
+            assert start <= end
+        else:
+            assert start < end
 
     if start:
         if min_start:

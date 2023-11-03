@@ -77,6 +77,7 @@ def st_ranges(
     max_end: Optional[T] = None,
     allow_start_none: bool = True,
     allow_end_none: bool = True,
+    allow_equal: bool = True,
 ) -> tuple[Optional[T], Optional[T]]:
     '''Generate two values (start, end) from a strategy, where start <= end.
 
@@ -91,6 +92,8 @@ def st_ranges(
     if min_end is not None and max_end is not None:
         assert min_end <= max_end
     st_end = st_in_range(st_, min_end, max_end)
+    if start is not None and not allow_equal:
+        st_end = st_end.filter(lambda x: x > start)
     end = draw(st_none_or(st_end)) if allow_end_none else draw(st_end)
     return start, end
 
