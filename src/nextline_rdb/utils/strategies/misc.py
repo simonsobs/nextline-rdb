@@ -81,9 +81,33 @@ def st_ranges(
 ) -> tuple[Optional[T], Optional[T]]:
     '''Generate two values (start, end) from a strategy, where start <= end.
 
+    The minimum and maximum values can be specified by `min_start`,
+    `max_start`, `min_end`, `max_end`.
+
     `start` (`end`) can be `None` if `allow_start_none` (`allow_end_none`) is `True`.
 
-    >>> start, end = st_ranges(st_sqlite_ints()).example()
+    If `allow_equal` is `False`, `start` and `end` cannot be equal, i.e., `start < end`.
+
+    >>> start, end = st_ranges(
+    ...     st.integers(),
+    ...     min_start=0,
+    ...     max_end=10,
+    ...     allow_start_none=False,
+    ...     allow_end_none=False,
+    ... ).example()
+
+    The results can be, for example, used as min_value and max_value of st.integers().
+
+    >>> i = st.integers(min_value=start, max_value=end).example()
+    >>> start <= i <= end
+    True
+
+    The results can also be used as min_size and max_size of st.lists().
+
+    >>> l = st.lists(st.integers(), min_size=start, max_size=end).example()
+    >>> start <= len(l) <= end
+    True
+
     '''
     max_start = safe_min((max_start, max_end))
     st_start = st_in_range(st_, min_start, max_start)
