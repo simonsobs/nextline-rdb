@@ -55,6 +55,18 @@ def safe_max(vals: Iterable[T], default: Optional[T] = None) -> Optional[T]:
     return max((v for v in vals if v is not None), default=default)
 
 
+def st_in_range(
+    st_: st.SearchStrategy[T],
+    min_value: Optional[T] = None,
+    max_value: Optional[T] = None,
+):
+    if min_value is not None:
+        st_ = st_.filter(lambda x: x >= min_value)
+    if max_value is not None:
+        st_ = st_.filter(lambda x: x <= max_value)
+    return st_
+
+
 @st.composite
 def st_ranges(
     draw: st.DrawFn,
@@ -73,20 +85,12 @@ def st_ranges(
     >>> start, end = st_ranges(st_sqlite_ints()).example()
     '''
     max_start = safe_min((max_start, max_end))
-    st_start = st_
-    if min_start is not None:
-        st_start = st_start.filter(lambda x: x >= min_start)
-    if max_start is not None:
-        st_start = st_start.filter(lambda x: x <= max_start)
+    st_start = st_in_range(st_, min_start, max_start)
     start = draw(st_none_or(st_start)) if allow_start_none else draw(st_start)
     min_end = safe_max((min_start, start, min_end))
     if min_end is not None and max_end is not None:
         assert min_end <= max_end
-    st_end = st_
-    if min_end is not None:
-        st_end = st_end.filter(lambda x: x >= min_end)
-    if max_end is not None:
-        st_end = st_end.filter(lambda x: x <= max_end)
+    st_end = st_in_range(st_, min_end, max_end)
     end = draw(st_none_or(st_end)) if allow_end_none else draw(st_end)
     return start, end
 
