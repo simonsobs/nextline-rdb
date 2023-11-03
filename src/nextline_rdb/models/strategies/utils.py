@@ -1,6 +1,8 @@
 import datetime as dt
 from typing import Optional
 
+from hypothesis import strategies as st
+
 from nextline_rdb.utils.strategies import st_datetimes, st_ranges
 
 
@@ -9,7 +11,7 @@ def st_started_at_ended_at(
     max_start: Optional[dt.datetime] = None,
     min_end: Optional[dt.datetime] = None,
     max_end: Optional[dt.datetime] = None,
-) -> tuple[None, None] | tuple[dt.datetime, Optional[dt.datetime]]:
+) -> st.SearchStrategy[tuple[None, None] | tuple[dt.datetime, Optional[dt.datetime]]]:
     '''
     >>> st_started_at_ended_at().example()
     (...)
