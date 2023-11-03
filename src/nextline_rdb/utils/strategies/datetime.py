@@ -3,7 +3,7 @@ from typing import Optional
 
 from hypothesis import strategies as st
 
-from .misc import st_none_or
+from .misc import st_ranges
 
 
 def st_datetimes(
@@ -34,9 +34,7 @@ def st_datetimes(
     ).filter(lambda dt_: dt_.fold == 0)
 
 
-@st.composite
 def st_datetime_ranges(
-    draw: st.DrawFn,
     min_start: Optional[dt.datetime] = None,
     max_start: Optional[dt.datetime] = None,
     min_end: Optional[dt.datetime] = None,
@@ -46,24 +44,13 @@ def st_datetime_ranges(
     >>> st_datetime_ranges().example()
     (...)
     '''
-    min_start = min_start or dt.datetime.min
-    max_start = max_start or dt.datetime.max
-    min_end = min_end or dt.datetime.min
-    max_end = max_end or dt.datetime.max
-    assert min_start <= max_start
-    assert min_start <= max_end
-    max_start = min(max_start, max_end)
-    min_end = max(min_start, min_end)
-    assert min_end <= max_end
-
-    start = draw(st_none_or(st_datetimes(min_value=min_start, max_value=max_start)))
-    if start:
-        min_end = max(start, min_end)
-    assert min_end <= max_end
-    end = (
-        None
-        if start is None
-        else draw(st_none_or(st_datetimes(min_value=min_end, max_value=max_end)))
-    )
-
-    return start, end
+    return st_ranges(
+        st_=st_datetimes(),
+        min_start=min_start,
+        max_start=max_start,
+        min_end=min_end,
+        max_end=max_end,
+        allow_start_none=True,
+        allow_end_none=True,
+        allow_equal=True,
+    ).filter(lambda x: not (x[0] is None and x[1] is not None))
