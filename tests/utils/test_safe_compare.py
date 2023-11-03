@@ -7,29 +7,17 @@ from nextline_rdb.utils.strategies import st_ranges
 
 @given(st.data())
 def test_allow_equal(data: st.DataObject) -> None:
-    maybe_none, larger = data.draw(
-        st_ranges(
-            st_=st.integers(),
-            allow_start_none=True,
-            allow_end_none=False,
-            allow_equal=True,
-        )
+    none_or_small, none_or_large = data.draw(
+        st_ranges(st_=st.integers(), allow_equal=True)
     )
-    assert larger is not None
-    assert safe_compare(maybe_none) <= larger
-    assert larger >= safe_compare(maybe_none)
+    assert safe_compare(none_or_small) <= safe_compare(none_or_large)
+    assert safe_compare(none_or_large) >= safe_compare(none_or_small)
 
 
 @given(st.data())
 def test_not_allow_equal(data: st.DataObject) -> None:
-    maybe_none, larger = data.draw(
-        st_ranges(
-            st_=st.integers(),
-            allow_start_none=True,
-            allow_end_none=False,
-            allow_equal=False,
-        )
+    none_or_small, none_or_large = data.draw(
+        st_ranges(st_=st.integers(), allow_equal=False)
     )
-    assert larger is not None
-    assert safe_compare(maybe_none) < larger
-    assert larger > safe_compare(maybe_none)
+    assert safe_compare(none_or_small) < safe_compare(none_or_large)
+    assert safe_compare(none_or_large) > safe_compare(none_or_small)
