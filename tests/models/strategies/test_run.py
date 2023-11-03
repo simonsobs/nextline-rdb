@@ -7,7 +7,7 @@ from nextline_rdb.models.strategies import st_model_run, st_model_run_list
 from nextline_rdb.utils.strategies import (
     SQLITE_INT_MAX,
     st_datetimes,
-    st_none_or,
+    st_ranges,
     st_sqlite_ints,
 )
 
@@ -16,30 +16,10 @@ from ...db import AsyncDB
 
 @given(st.data())
 async def test_st_model_run(data: st.DataObject) -> None:
-    min_run_no = data.draw(st_none_or(st_sqlite_ints(min_value=1)), label='min_run_no')
-
-    max_run_no = data.draw(
-        st_none_or(st_sqlite_ints(min_value=min_run_no or 1)), label='max_run_no'
-    )
-
-    min_started_at = data.draw(st_none_or(st_datetimes()), label='min_started_at')
-
-    max_started_at = data.draw(
-        st_none_or(st_datetimes(min_value=min_started_at)), label='max_started_at'
-    )
-
-    min_ended_at = data.draw(
-        st_none_or(st_datetimes(min_value=min_started_at)), label='min_ended_at'
-    )
-
-    min_max_ended_at = (
-        max(min_started_at, min_ended_at)
-        if min_started_at and min_ended_at
-        else (min_started_at or min_ended_at)
-    )
-
-    max_ended_at = data.draw(
-        st_none_or(st_datetimes(min_value=min_max_ended_at)), label='max_ended_at'
+    min_run_no, max_run_no = data.draw(st_ranges(st_=st_sqlite_ints(), min_start=1))
+    min_started_at, max_started_at = data.draw(st_ranges(st_=st_datetimes()))
+    min_ended_at, max_ended_at = data.draw(
+        st_ranges(st_=st_datetimes(), min_start=min_started_at)
     )
 
     run = data.draw(
