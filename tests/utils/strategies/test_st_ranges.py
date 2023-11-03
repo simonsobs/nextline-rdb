@@ -3,6 +3,7 @@ from typing import Optional, TypeVar
 from hypothesis import given
 from hypothesis import strategies as st
 
+from nextline_rdb.utils import safe_compare
 from nextline_rdb.utils.strategies import (
     st_datetimes,
     st_none_or,
@@ -67,20 +68,10 @@ def test_st_ranges(data: st.DataObject) -> None:
     if not allow_end_none:
         assert end is not None
 
-    if start and end:
-        if allow_equal:
-            assert start <= end
-        else:
-            assert start < end
+    if allow_equal:
+        assert safe_compare(start) <= safe_compare(end)
+    else:
+        assert safe_compare(start) < safe_compare(end)
 
-    if start:
-        if min_start:
-            assert min_start <= start
-        if max_start:
-            assert start <= max_start
-
-    if end:
-        if min_end:
-            assert min_end <= end
-        if max_end:
-            assert end <= max_end
+    assert safe_compare(min_start) <= safe_compare(start) <= safe_compare(max_start)
+    assert safe_compare(min_end) <= safe_compare(end) <= safe_compare(max_end)
