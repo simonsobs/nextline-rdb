@@ -120,37 +120,3 @@ def st_ranges(
         st_end = st_end.filter(lambda x: x > start)
     end = draw(st_none_or(st_end)) if allow_end_none else draw(st_end)
     return start, end
-
-
-def st_min_max_tuples(
-    min_min=0,
-    max_min: Optional[int] = None,
-    min_max=0,
-    max_max: Optional[int] = None,
-):
-    '''Generate 2-tuples (min, max) in which min <= max or max is None.
-
-    >>> min_, max_ = st_min_max_tuples(max_max=10).example()
-
-    The results can be, for example, used as min_value and max_value of st.integers().
-
-    >>> i = st.integers(min_value=min_, max_value=max_).example()
-    >>> min_ <= i <= max_
-    True
-
-    The results can also be used to generate lists of a certain length.
-
-    >>> l = st.lists(st.integers(), min_size=min_, max_size=max_).example()
-    >>> min_ <= len(l) <= max_
-    True
-    '''
-    return st_ranges(
-        st_=st.integers(),
-        min_start=min_min,
-        max_start=max_min,
-        min_end=min_max,
-        max_end=max_max,
-        allow_start_none=False,
-        allow_end_none=True,
-        allow_equal=True,
-    )
