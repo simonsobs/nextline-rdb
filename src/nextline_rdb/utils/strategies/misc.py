@@ -1,7 +1,8 @@
-from collections.abc import Iterable
 from typing import Optional, TypeVar
 
 from hypothesis import strategies as st
+
+from nextline_rdb.utils import safe_max, safe_min
 
 SQLITE_INT_MIN = -9_223_372_036_854_775_808  # 2 ** 63 * -1
 SQLITE_INT_MAX = 9_223_372_036_854_775_807  # 2 ** 63 - 1
@@ -43,14 +44,6 @@ def st_sqlite_ints(
         max_value = min(max_value, SQLITE_INT_MAX)
 
     return st.integers(min_value=min_value, max_value=max_value)
-
-
-def safe_min(vals: Iterable[T], default: Optional[T] = None) -> Optional[T]:
-    return min((v for v in vals if v is not None), default=default)
-
-
-def safe_max(vals: Iterable[T], default: Optional[T] = None) -> Optional[T]:
-    return max((v for v in vals if v is not None), default=default)
 
 
 def st_in_range(
