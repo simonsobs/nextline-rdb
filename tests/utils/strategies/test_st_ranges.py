@@ -4,7 +4,6 @@ from hypothesis import given
 from hypothesis import strategies as st
 
 from nextline_rdb.utils.strategies import (
-    BoundedNumericalStrategy,
     st_datetimes,
     st_none_or,
     st_ranges,
@@ -17,28 +16,31 @@ T = TypeVar('T')
 @st.composite
 def st_min_max_start(
     draw: st.DrawFn,
-    st_: BoundedNumericalStrategy[T],
+    st_: st.SearchStrategy[T],
 ) -> tuple[Optional[T], Optional[T]]:
-    min_ = draw(st_none_or(st_()), label='min')
-    max_ = draw(st_none_or(st_(min_value=min_)), label='max')
+    min_ = draw(st_none_or(st_), label='min')
+    st_max = st_.filter(lambda x: x >= min_) if min_ is not None else st_
+    max_ = draw(st_none_or(st_max), label='max')
     return min_, max_
 
 
 @st.composite
 def st_min_max_end(
     draw: st.DrawFn,
-    st_: BoundedNumericalStrategy[T],
+    st_: st.SearchStrategy[T],
     min_start: Optional[T] = None,
 ) -> tuple[Optional[T], Optional[T]]:
-    min_ = draw(st_none_or(st_(min_value=min_start)), label='min')
+    st_min = st_.filter(lambda x: x >= min_start) if min_start is not None else st_
+    min_ = draw(st_none_or(st_min), label='min')
     min_value = min_ if min_ is not None else min_start
-    max_ = draw(st_none_or(st_(min_value=min_value)), label='max')
+    st_max = st_.filter(lambda x: x >= min_value) if min_value is not None else st_
+    max_ = draw(st_none_or(st_max), label='max')
     return min_, max_
 
 
 @given(st.data())
 def test_st_ranges(data: st.DataObject) -> None:
-    st_ = data.draw(st.sampled_from([st_sqlite_ints, st_datetimes]))
+    st_ = data.draw(st.sampled_from([st_sqlite_ints(), st_datetimes()]))
 
     min_start, max_start = data.draw(st_min_max_start(st_=st_))
     min_end, max_end = data.draw(st_min_max_end(st_=st_, min_start=min_start))

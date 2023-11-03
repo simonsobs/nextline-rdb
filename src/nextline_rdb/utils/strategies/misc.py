@@ -1,5 +1,5 @@
 from collections.abc import Iterable
-from typing import Any, Optional, Protocol, TypeVar
+from typing import Optional, TypeVar
 
 from hypothesis import strategies as st
 
@@ -47,13 +47,6 @@ def st_sqlite_ints(
     return st.integers(min_value=min_value, max_value=max_value)
 
 
-class BoundedNumericalStrategy(Protocol[T]):
-    def __call__(
-        self, min_value: T = ..., max_value: T = ..., **kwargs: Any
-    ) -> st.SearchStrategy[T]:
-        ...
-
-
 def safe_min(vals: Iterable[T], default: Optional[T] = None) -> Optional[T]:
     return min((v for v in vals if v is not None), default=default)
 
@@ -65,7 +58,7 @@ def safe_max(vals: Iterable[T], default: Optional[T] = None) -> Optional[T]:
 @st.composite
 def st_ranges(
     draw: st.DrawFn,
-    st_: BoundedNumericalStrategy[T],
+    st_: st.SearchStrategy[T],
     min_start: Optional[T] = None,
     max_start: Optional[T] = None,
     min_end: Optional[T] = None,
@@ -77,15 +70,23 @@ def st_ranges(
 
     `start` (`end`) can be `None` if `allow_start_none` (`allow_end_none`) is `True`.
 
-    >>> start, end = st_ranges(st_sqlite_ints).example()
+    >>> start, end = st_ranges(st_sqlite_ints()).example()
     '''
     max_start = safe_min((max_start, max_end))
-    st_start = st_(min_value=min_start, max_value=max_start)
+    st_start = st_
+    if min_start is not None:
+        st_start = st_start.filter(lambda x: x >= min_start)
+    if max_start is not None:
+        st_start = st_start.filter(lambda x: x <= max_start)
     start = draw(st_none_or(st_start)) if allow_start_none else draw(st_start)
     min_end = safe_max((min_start, start, min_end))
     if min_end is not None and max_end is not None:
         assert min_end <= max_end
-    st_end = st_(min_value=min_end, max_value=max_end)
+    st_end = st_
+    if min_end is not None:
+        st_end = st_end.filter(lambda x: x >= min_end)
+    if max_end is not None:
+        st_end = st_end.filter(lambda x: x <= max_end)
     end = draw(st_none_or(st_end)) if allow_end_none else draw(st_end)
     return start, end
 
