@@ -98,9 +98,7 @@ def st_ranges(
     return start, end
 
 
-@st.composite
 def st_min_max_tuples(
-    draw,
     min_min=0,
     max_min: Optional[int] = None,
     min_max=0,
@@ -122,20 +120,13 @@ def st_min_max_tuples(
     >>> min_ <= len(l) <= max_
     True
     '''
-
-    if max_max is not None:
-        if max_min is not None:
-            assert max_min <= max_max
-        else:
-            max_min = max_max
-
-    min_ = draw(st.integers(min_value=min_min, max_value=max_min))
-
-    min_max = max(min_max, min_)
-
-    if max_max is None:
-        max_ = draw(st.one_of(st.none(), st.integers(min_value=min_max)))
-    else:
-        max_ = draw(st.integers(min_value=min_max, max_value=max_max))
-
-    return min_, max_
+    return st_ranges(
+        st_=st.integers(),
+        min_start=min_min,
+        max_start=max_min,
+        min_end=min_max,
+        max_end=max_max,
+        allow_start_none=False,
+        allow_end_none=True,
+        allow_equal=True,
+    )
