@@ -4,12 +4,8 @@ from sqlalchemy import select
 
 from nextline_rdb.models import Run
 from nextline_rdb.models.strategies import st_model_run, st_model_run_list
-from nextline_rdb.utils.strategies import (
-    SQLITE_INT_MAX,
-    st_datetimes,
-    st_ranges,
-    st_sqlite_ints,
-)
+from nextline_rdb.utils import safe_compare
+from nextline_rdb.utils.strategies import st_datetimes, st_ranges, st_sqlite_ints
 
 from ...db import AsyncDB
 
@@ -33,30 +29,21 @@ async def test_st_model_run(data: st.DataObject) -> None:
         )
     )
 
-    if min_run_no is None:
-        assert 1 <= run.run_no
-    else:
-        assert min_run_no <= run.run_no
+    assert safe_compare(min_run_no) <= run.run_no <= safe_compare(max_run_no)
 
-    if max_run_no is None:
-        assert run.run_no <= SQLITE_INT_MAX
-    else:
-        assert run.run_no <= max_run_no
+    assert (
+        safe_compare(min_started_at)
+        <= safe_compare(run.started_at)
+        <= safe_compare(max_started_at)
+    )
 
-    if min_started_at and run.started_at:
-        assert min_started_at <= run.started_at
+    assert (
+        safe_compare(min_ended_at)
+        <= safe_compare(run.ended_at)
+        <= safe_compare(max_ended_at)
+    )
 
-    if max_started_at and run.started_at:
-        assert run.started_at <= max_started_at
-
-    if min_ended_at and run.ended_at:
-        assert min_ended_at <= run.ended_at
-
-    if max_ended_at and run.ended_at:
-        assert run.ended_at <= max_ended_at
-
-    if run.started_at and run.ended_at:
-        assert run.started_at <= run.ended_at
+    assert safe_compare(run.started_at) <= safe_compare(run.ended_at)
 
     if not run.started_at:
         assert not run.ended_at
