@@ -8,8 +8,6 @@ SQLITE_INT_MAX = 9_223_372_036_854_775_807  # 2 ** 63 - 1
 
 T = TypeVar('T')
 
-# Search strategy with min_value and max_value
-
 
 def st_none_or(st_: st.SearchStrategy[T]) -> st.SearchStrategy[Optional[T]]:
     '''A strategy for `None` or values from another strategy.
