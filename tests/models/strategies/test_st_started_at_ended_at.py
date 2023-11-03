@@ -1,36 +1,14 @@
-import datetime as dt
-from typing import Optional
-
 from hypothesis import given
 from hypothesis import strategies as st
 
 from nextline_rdb.models.strategies import st_started_at_ended_at
-from nextline_rdb.utils.strategies import st_datetimes, st_none_or
-
-
-@st.composite
-def st_min_max_start(
-    draw: st.DrawFn,
-) -> tuple[Optional[dt.datetime], Optional[dt.datetime]]:
-    min_ = draw(st_none_or(st_datetimes()), label='min')
-    max_ = draw(st_none_or(st_datetimes(min_value=min_)), label='max')
-    return min_, max_
-
-
-@st.composite
-def st_min_max_end(
-    draw: st.DrawFn,
-    min_start: Optional[dt.datetime] = None,
-) -> tuple[Optional[dt.datetime], Optional[dt.datetime]]:
-    min_ = draw(st_none_or(st_datetimes(min_value=min_start)), label='min')
-    max_ = draw(st_none_or(st_datetimes(min_value=min_ or min_start)), label='max')
-    return min_, max_
+from nextline_rdb.utils.strategies import st_datetimes, st_ranges
 
 
 @given(st.data())
 def test_st_started_at_ended_at(data: st.DataObject) -> None:
-    min_start, max_start = data.draw(st_min_max_start(), label='start')
-    min_end, max_end = data.draw(st_min_max_end(min_start=min_start), label='end')
+    min_start, max_start = data.draw(st_ranges(st_=st_datetimes()))
+    min_end, max_end = data.draw(st_ranges(st_=st_datetimes(), min_start=min_start))
 
     start, end = data.draw(
         st_started_at_ended_at(
