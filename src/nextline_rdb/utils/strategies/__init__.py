@@ -1,5 +1,4 @@
 __all__ = [
-    'st_datetime_ranges',
     'st_datetimes',
     'SQLITE_INT_MAX',
     'SQLITE_INT_MIN',
@@ -9,5 +8,5 @@ __all__ = [
 ]
 
 
-from .datetime import st_datetime_ranges, st_datetimes
+from .datetime import st_datetimes
 from .misc import SQLITE_INT_MAX, SQLITE_INT_MIN, st_none_or, st_ranges, st_sqlite_ints

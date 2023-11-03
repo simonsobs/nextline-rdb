@@ -4,12 +4,9 @@ from typing import Optional
 from hypothesis import strategies as st
 
 from nextline_rdb.models import Run
-from nextline_rdb.utils.strategies import (
-    st_datetime_ranges,
-    st_datetimes,
-    st_none_or,
-    st_sqlite_ints,
-)
+from nextline_rdb.utils.strategies import st_datetimes, st_none_or, st_sqlite_ints
+
+from .utils import st_started_at_ended_at
 
 
 @st.composite
@@ -30,7 +27,7 @@ def st_model_run(
     state = draw(st_none_or(st.text()))
 
     started_at, ended_at = draw(
-        st_datetime_ranges(
+        st_started_at_ended_at(
             min_start=min_started_at,
             max_start=max_started_at,
             min_end=min_ended_at,

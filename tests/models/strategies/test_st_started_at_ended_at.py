@@ -4,7 +4,8 @@ from typing import Optional
 from hypothesis import given
 from hypothesis import strategies as st
 
-from nextline_rdb.utils.strategies import st_datetime_ranges, st_datetimes, st_none_or
+from nextline_rdb.models.strategies import st_started_at_ended_at
+from nextline_rdb.utils.strategies import st_datetimes, st_none_or
 
 
 @st.composite
@@ -27,12 +28,12 @@ def st_min_max_end(
 
 
 @given(st.data())
-def test_st_datetime_range(data: st.DataObject) -> None:
+def test_st_started_at_ended_at(data: st.DataObject) -> None:
     min_start, max_start = data.draw(st_min_max_start(), label='start')
     min_end, max_end = data.draw(st_min_max_end(min_start=min_start), label='end')
 
     start, end = data.draw(
-        st_datetime_ranges(
+        st_started_at_ended_at(
             min_start=min_start,
             max_start=max_start,
             min_end=min_end,
