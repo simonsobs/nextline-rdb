@@ -87,19 +87,30 @@ class GreaterAndLessThanAny:
 
 
 def safe_compare(value: Generic[T]) -> T | GreaterAndLessThanAny:
-    '''The value itself or an object that returns True for all inequality comparisons.
+    '''The `value` itself if it is not `None`. Otherwise, an object that returns True for all inequality comparisons.
 
-    Suppose you have the following code to assert that `i` is in the range:
+    This function helps you concisely write assertions that compare values that
+    may be `None`.
 
-    if min_ is not None:
-        assert min_ <= i
+    Suppose you have `min_` and `max_` that may be `None`
+    >>> import random
+    >>> min_ = random.choice([None, 1])
+    >>> max_ = random.choice([None, 3])
 
-    if max_ is not None:
-        assert i <= max_
+    and `val` that should be in the range `[min_, max_]`:
+    >>> val = 2
+
+    Without this function, you need to check if `min_` and `max_` are `None`.
+
+    >>> if min_ is not None:
+    ...   assert min_ <= val
+
+    >>> if max_ is not None:
+    ...    assert val <= max_
 
     This function lets you write the same assertion in one line:
 
-    assert safe_compare(min_) <= i <= safe_compare(max_)
+    >>> assert safe_compare(min_) <= val <= safe_compare(max_)
 
     '''
     if value is None:
