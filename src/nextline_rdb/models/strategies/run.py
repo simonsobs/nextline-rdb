@@ -62,14 +62,18 @@ def st_model_run_list(
             min_size=min_size,
             max_size=max_size,
             unique=True,
-        ).map(sorted)
+        ).map(
+            sorted  # type: ignore
+        )
     )
     runs = list[Run]()
     min_started_at = draw(st_datetimes())
     for run_no in run_nos:
         run = draw(
             st_model_run(
-                min_run_no=run_no, max_run_no=run_no, min_started_at=min_started_at
+                min_run_no=run_no,  # type: ignore
+                max_run_no=run_no,  # type: ignore
+                min_started_at=min_started_at,
             )
         )
         if run.started_at is not None:
