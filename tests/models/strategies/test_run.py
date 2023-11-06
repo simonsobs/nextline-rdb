@@ -4,7 +4,7 @@ from sqlalchemy import select
 
 from nextline_rdb.models import Run
 from nextline_rdb.models.strategies import st_model_run, st_model_run_list
-from nextline_rdb.utils import safe_compare
+from nextline_rdb.utils import safe_compare as sc
 from nextline_rdb.utils.strategies import st_datetimes, st_ranges, st_sqlite_ints
 
 from ...db import AsyncDB
@@ -29,21 +29,10 @@ async def test_st_model_run(data: st.DataObject) -> None:
         )
     )
 
-    assert safe_compare(min_run_no) <= run.run_no <= safe_compare(max_run_no)
-
-    assert (
-        safe_compare(min_started_at)
-        <= safe_compare(run.started_at)
-        <= safe_compare(max_started_at)
-    )
-
-    assert (
-        safe_compare(min_ended_at)
-        <= safe_compare(run.ended_at)
-        <= safe_compare(max_ended_at)
-    )
-
-    assert safe_compare(run.started_at) <= safe_compare(run.ended_at)
+    assert sc(min_run_no) <= run.run_no <= sc(max_run_no)
+    assert sc(min_started_at) <= sc(run.started_at) <= sc(max_started_at)
+    assert sc(min_ended_at) <= sc(run.ended_at) <= sc(max_ended_at)
+    assert sc(run.started_at) <= sc(run.ended_at)
 
     if not run.started_at:
         assert not run.ended_at
