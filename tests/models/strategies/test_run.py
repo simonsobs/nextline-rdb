@@ -5,14 +5,24 @@ from sqlalchemy import select
 from nextline_rdb.models import Run
 from nextline_rdb.models.strategies import st_model_run, st_model_run_list
 from nextline_rdb.utils import safe_compare as sc
-from nextline_rdb.utils.strategies import st_datetimes, st_ranges, st_sqlite_ints
+from nextline_rdb.utils.strategies import (
+    st_datetimes,
+    st_none_or,
+    st_ranges,
+    st_sqlite_ints,
+)
 
 from ...db import AsyncDB
 
 
 @given(st.data())
 async def test_st_model_run(data: st.DataObject) -> None:
-    min_run_no, max_run_no = data.draw(st_ranges(st_=st_sqlite_ints(), min_start=1))
+    run_no = data.draw(st_none_or(st_sqlite_ints(min_value=1)))
+    if run_no is None:
+        min_run_no, max_run_no = data.draw(st_ranges(st_=st_sqlite_ints(), min_start=1))
+    else:
+        min_run_no, max_run_no = None, None
+
     min_started_at, max_started_at = data.draw(st_ranges(st_=st_datetimes()))
     min_ended_at, max_ended_at = data.draw(
         st_ranges(st_=st_datetimes(), min_start=min_started_at)
@@ -20,6 +30,7 @@ async def test_st_model_run(data: st.DataObject) -> None:
 
     run = data.draw(
         st_model_run(
+            run_no=run_no,
             min_run_no=min_run_no,
             max_run_no=max_run_no,
             min_started_at=min_started_at,
@@ -29,7 +40,11 @@ async def test_st_model_run(data: st.DataObject) -> None:
         )
     )
 
-    assert sc(min_run_no) <= run.run_no <= sc(max_run_no)
+    if run_no is not None:
+        assert run.run_no == run_no
+    else:
+        assert sc(min_run_no) <= run.run_no <= sc(max_run_no)
+
     assert sc(min_started_at) <= sc(run.started_at) <= sc(max_started_at)
     assert sc(min_ended_at) <= sc(run.ended_at) <= sc(max_ended_at)
     assert sc(run.started_at) <= sc(run.ended_at)

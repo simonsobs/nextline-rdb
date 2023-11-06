@@ -12,6 +12,7 @@ from .utils import st_started_at_ended_at
 @st.composite
 def st_model_run(
     draw: st.DrawFn,
+    run_no: Optional[int] = None,
     min_run_no: Optional[int] = None,
     max_run_no: Optional[int] = None,
     min_started_at: Optional[dt.datetime] = None,
@@ -22,7 +23,8 @@ def st_model_run(
     if min_run_no is None:
         min_run_no = 1
 
-    run_no = draw(st_sqlite_ints(min_value=min_run_no, max_value=max_run_no))
+    if run_no is None:
+        run_no = draw(st_sqlite_ints(min_value=min_run_no, max_value=max_run_no))
 
     state = draw(st_none_or(st.text()))
 
@@ -71,11 +73,11 @@ def st_model_run_list(
     for run_no in run_nos:
         run = draw(
             st_model_run(
-                min_run_no=run_no,  # type: ignore
-                max_run_no=run_no,  # type: ignore
+                run_no=run_no,  # type: ignore
                 min_started_at=min_started_at,
             )
         )
+        assert run.run_no == run_no
         if run.started_at is not None:
             min_started_at = run.started_at + dt.timedelta(seconds=1)
         if run.ended_at is not None:
