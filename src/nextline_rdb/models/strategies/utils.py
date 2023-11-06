@@ -11,6 +11,9 @@ def st_started_at_ended_at(
     max_start: Optional[dt.datetime] = None,
     min_end: Optional[dt.datetime] = None,
     max_end: Optional[dt.datetime] = None,
+    allow_start_none: bool = True,
+    allow_end_none: bool = True,
+    allow_equal: bool = True,
 ) -> st.SearchStrategy[tuple[Optional[dt.datetime], Optional[dt.datetime]]]:
     '''Generate two naive datetime objects: started_at and ended_at.
 
@@ -30,7 +33,7 @@ def st_started_at_ended_at(
         max_start=max_start,
         min_end=min_end,
         max_end=max_end,
-        allow_start_none=True,
-        allow_end_none=True,
-        allow_equal=True,
+        allow_start_none=allow_start_none,
+        allow_end_none=allow_end_none,
+        allow_equal=allow_equal,
     ).filter(lambda x: not (x[0] is None and x[1] is not None))
