@@ -1,5 +1,6 @@
 import datetime as dt
-from typing import Optional
+from collections.abc import Iterable
+from typing import Callable, Optional, cast
 
 from hypothesis import strategies as st
 
@@ -64,19 +65,12 @@ def st_model_run_list(
             min_size=min_size,
             max_size=max_size,
             unique=True,
-        ).map(
-            sorted  # type: ignore
-        )
+        ).map(cast(Callable[[Iterable[int]], list[int]], sorted))
     )
     runs = list[Run]()
     min_started_at = draw(st_datetimes())
     for run_no in run_nos:
-        run = draw(
-            st_model_run(
-                run_no=run_no,  # type: ignore
-                min_started_at=min_started_at,
-            )
-        )
+        run = draw(st_model_run(run_no=run_no, min_started_at=min_started_at))
         assert run.run_no == run_no
         if run.started_at is not None:
             min_started_at = run.started_at + dt.timedelta(seconds=1)
