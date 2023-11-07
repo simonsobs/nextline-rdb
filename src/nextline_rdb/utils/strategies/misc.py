@@ -52,9 +52,9 @@ def st_in_range(
     max_value: Optional[T] = None,
 ):
     if min_value is not None:
-        st_ = st_.filter(lambda x: x >= min_value)
+        st_ = st_.filter(lambda x: x >= min_value)  # type: ignore
     if max_value is not None:
-        st_ = st_.filter(lambda x: x <= max_value)
+        st_ = st_.filter(lambda x: x <= max_value)  # type: ignore
     return st_
 
 
