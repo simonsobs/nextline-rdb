@@ -102,57 +102,23 @@ def st_ranges(
     True
 
     '''
-    return st_start(
-        st_=st_,
-        min_start=min_start,
-        max_start=max_start,
-        max_end=max_end,
-        allow_start_none=allow_start_none,
-    ).flatmap(
-        lambda start: st.tuples(
-            st.just(start),
-            st_end(
-                st_=st_,
-                start=start,
-                min_start=min_start,
-                min_end=min_end,
-                max_end=max_end,
-                allow_end_none=allow_end_none,
-                let_end_none_if_start_none=let_end_none_if_start_none,
-                allow_equal=allow_equal,
-            ),
-        )
+
+    def st_start():
+        _max_start = safe_min((max_start, max_end))
+        _st = st_in_range(st_, min_start, _max_start)
+        return st_none_or(_st) if allow_start_none else _st
+
+    def st_end(start: T | None):
+        _min_end = safe_max((min_start, start, min_end))
+        if min_end is not None and max_end is not None:
+            assert min_end <= max_end  # type: ignore
+        if start is None and let_end_none_if_start_none:
+            return st.none()
+        _st = st_in_range(st_, _min_end, max_end)
+        if start is not None and not allow_equal:
+            _st = _st.filter(lambda x: x > start)
+        return st_none_or(_st) if allow_end_none else _st
+
+    return st_start().flatmap(
+        lambda start: st.tuples(st.just(start), st_end(start=start))
     )
-
-
-def st_start(
-    st_: st.SearchStrategy[T],
-    min_start: T | None,
-    max_start: T | None,
-    max_end: T | None,
-    allow_start_none: bool,
-):
-    max_start = safe_min((max_start, max_end))
-    st_start = st_in_range(st_, min_start, max_start)
-    return st_none_or(st_start) if allow_start_none else st_start
-
-
-def st_end(
-    st_: st.SearchStrategy[T],
-    start: T | None,
-    min_start: T | None,
-    min_end: T | None,
-    max_end: T | None,
-    allow_end_none: bool,
-    let_end_none_if_start_none,
-    allow_equal: bool,
-):
-    min_end = safe_max((min_start, start, min_end))
-    if min_end is not None and max_end is not None:
-        assert min_end <= max_end  # type: ignore
-    if start is None and let_end_none_if_start_none:
-        return st.none()
-    st_end = st_in_range(st_, min_end, max_end)
-    if start is not None and not allow_equal:
-        st_end = st_end.filter(lambda x: x > start)
-    return st_none_or(st_end) if allow_end_none else st_end
