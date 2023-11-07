@@ -32,7 +32,7 @@ def test_st_started_at_ended_at(data: st.DataObject) -> None:
     if not allow_start_none:
         assert start is not None
 
-    if not allow_end_none:
+    if start is not None and not allow_end_none:
         assert end is not None
 
     if allow_equal:

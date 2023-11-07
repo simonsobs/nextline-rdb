@@ -36,4 +36,5 @@ def st_started_at_ended_at(
         allow_start_none=allow_start_none,
         allow_end_none=allow_end_none,
         allow_equal=allow_equal,
-    ).filter(lambda x: not (x[0] is None and x[1] is not None))
+        let_end_none_if_start_none=True,
+    )
