@@ -58,9 +58,7 @@ def st_in_range(
     return st_
 
 
-@st.composite
 def st_ranges(
-    draw: st.DrawFn,
     st_: st.SearchStrategy[T],
     min_start: Optional[T] = None,
     max_start: Optional[T] = None,
@@ -70,7 +68,7 @@ def st_ranges(
     allow_end_none: bool = True,
     let_end_none_if_start_none: bool = False,
     allow_equal: bool = True,
-) -> tuple[Optional[T], Optional[T]]:
+) -> st.SearchStrategy[tuple[Optional[T], Optional[T]]]:
     '''Generate two values (start, end) from a strategy, where start <= end.
 
     The minimum and maximum values can be specified by `min_start`,
@@ -104,28 +102,27 @@ def st_ranges(
     True
 
     '''
-    start = draw(
-        st_start(
-            st_=st_,
-            min_start=min_start,
-            max_start=max_start,
-            max_end=max_end,
-            allow_start_none=allow_start_none,
+    return st_start(
+        st_=st_,
+        min_start=min_start,
+        max_start=max_start,
+        max_end=max_end,
+        allow_start_none=allow_start_none,
+    ).flatmap(
+        lambda start: st.tuples(
+            st.just(start),
+            st_end(
+                st_=st_,
+                start=start,
+                min_start=min_start,
+                min_end=min_end,
+                max_end=max_end,
+                allow_end_none=allow_end_none,
+                let_end_none_if_start_none=let_end_none_if_start_none,
+                allow_equal=allow_equal,
+            ),
         )
     )
-    end = draw(
-        st_end(
-            st_=st_,
-            start=start,
-            min_start=min_start,
-            min_end=min_end,
-            max_end=max_end,
-            allow_end_none=allow_end_none,
-            let_end_none_if_start_none=let_end_none_if_start_none,
-            allow_equal=allow_equal,
-        )
-    )
-    return start, end
 
 
 def st_start(
