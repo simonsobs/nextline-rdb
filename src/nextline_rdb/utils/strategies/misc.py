@@ -1,4 +1,4 @@
-from typing import Optional, TypeVar
+from typing import Optional, Protocol, TypeVar
 
 from hypothesis import strategies as st
 
@@ -8,6 +8,13 @@ SQLITE_INT_MIN = -9_223_372_036_854_775_808  # 2 ** 63 * -1
 SQLITE_INT_MAX = 9_223_372_036_854_775_807  # 2 ** 63 - 1
 
 T = TypeVar('T')
+
+
+class StMinMaxValuesFactory(Protocol[T]):
+    def __call__(
+        self, *, min_value: Optional[T] = None, max_value: Optional[T] = None
+    ) -> st.SearchStrategy[T]:
+        ...
 
 
 def st_none_or(st_: st.SearchStrategy[T]) -> st.SearchStrategy[Optional[T]]:
@@ -46,20 +53,8 @@ def st_sqlite_ints(
     return st.integers(min_value=min_value, max_value=max_value)
 
 
-def st_in_range(
-    st_: st.SearchStrategy[T],
-    min_value: Optional[T] = None,
-    max_value: Optional[T] = None,
-):
-    if min_value is not None:
-        st_ = st_.filter(lambda x: x >= min_value)  # type: ignore
-    if max_value is not None:
-        st_ = st_.filter(lambda x: x <= max_value)  # type: ignore
-    return st_
-
-
 def st_ranges(
-    st_: st.SearchStrategy[T],
+    st_: StMinMaxValuesFactory[T],
     min_start: Optional[T] = None,
     max_start: Optional[T] = None,
     min_end: Optional[T] = None,
@@ -82,7 +77,7 @@ def st_ranges(
     If `allow_equal` is `False`, `start` and `end` cannot be equal, i.e., `start < end`.
 
     >>> start, end = st_ranges(
-    ...     st.integers(),
+    ...     st.integers,
     ...     min_start=0,
     ...     max_end=10,
     ...     allow_start_none=False,
@@ -105,7 +100,7 @@ def st_ranges(
 
     def st_start() -> st.SearchStrategy[Optional[T]]:
         _max_start = safe_min((max_start, max_end))
-        _st = st_in_range(st_, min_start, _max_start)
+        _st = st_(min_value=min_start, max_value=_max_start)
         return st_none_or(_st) if allow_start_none else _st
 
     def st_end(start: T | None) -> st.SearchStrategy[Optional[T]]:
@@ -114,9 +109,9 @@ def st_ranges(
             assert min_end <= max_end  # type: ignore
         if start is None and let_end_none_if_start_none:
             return st.none()
-        _st = st_in_range(st_, _min_end, max_end)
+        _st = st_(min_value=_min_end, max_value=max_end)
         if start is not None and not allow_equal:
-            _st = _st.filter(lambda x: x > start)
+            _st = _st.filter(lambda x: x > start)  # type: ignore
         return st_none_or(_st) if allow_end_none else _st
 
     return st_start().flatmap(

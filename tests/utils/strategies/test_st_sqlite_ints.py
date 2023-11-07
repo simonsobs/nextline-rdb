@@ -17,7 +17,7 @@ T = TypeVar('T')
 @given(st.data())
 def test_st_sqlite_ints(data: st.DataObject) -> None:
     min_, max_ = data.draw(
-        st_ranges(st_=st.integers(), max_start=SQLITE_INT_MAX, min_end=SQLITE_INT_MIN)
+        st_ranges(st_=st.integers, max_start=SQLITE_INT_MAX, min_end=SQLITE_INT_MIN)
     )
 
     i = data.draw(st_sqlite_ints(min_value=min_, max_value=max_))

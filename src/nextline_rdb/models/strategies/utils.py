@@ -28,7 +28,7 @@ def st_started_at_ended_at(
 
     '''
     return st_ranges(
-        st_=st_datetimes(),
+        st_=st_datetimes,
         min_start=min_start,
         max_start=max_start,
         min_end=min_end,
