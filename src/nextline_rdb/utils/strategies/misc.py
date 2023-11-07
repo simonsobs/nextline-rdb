@@ -104,33 +104,55 @@ def st_ranges(
     True
 
     '''
+    start = draw(
+        st_start(
+            st_=st_,
+            min_start=min_start,
+            max_start=max_start,
+            max_end=max_end,
+            allow_start_none=allow_start_none,
+        )
+    )
+    end = draw(
+        st_end(
+            st_=st_,
+            start=start,
+            min_start=min_start,
+            min_end=min_end,
+            max_end=max_end,
+            allow_end_none=allow_end_none,
+            let_end_none_if_start_none=let_end_none_if_start_none,
+            allow_equal=allow_equal,
+        )
+    )
+    return start, end
+
+
+def st_start(
+    st_: st.SearchStrategy[T],
+    min_start: T | None,
+    max_start: T | None,
+    max_end: T | None,
+    allow_start_none: bool,
+):
     max_start = safe_min((max_start, max_end))
     st_start = st_in_range(st_, min_start, max_start)
-    start = draw(st_none_or(st_start)) if allow_start_none else draw(st_start)
-    min_end = safe_max((min_start, start, min_end))
-    if min_end is not None and max_end is not None:
-        assert min_end <= max_end
-    end = draw(st_end(
-        st_=st_,
-        start=start,
-        min_end=min_end,
-        max_end=max_end,
-        allow_end_none=allow_end_none,
-        let_end_none_if_start_none=let_end_none_if_start_none,
-        allow_equal=allow_equal,
-    ))
-    return start, end
+    return st_none_or(st_start) if allow_start_none else st_start
 
 
 def st_end(
     st_: st.SearchStrategy[T],
     start: T | None,
+    min_start: T | None,
     min_end: T | None,
     max_end: T | None,
     allow_end_none: bool,
     let_end_none_if_start_none,
     allow_equal: bool,
 ):
+    min_end = safe_max((min_start, start, min_end))
+    if min_end is not None and max_end is not None:
+        assert min_end <= max_end  # type: ignore
     if start is None and let_end_none_if_start_none:
         return st.none()
     st_end = st_in_range(st_, min_end, max_end)
