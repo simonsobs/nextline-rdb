@@ -55,7 +55,7 @@ def st_model_run(
     )
 
     if generate_traces:
-        run.traces = draw(st_model_trace_list(run=run, min_size=1))
+        draw(st_model_trace_list(run=run, min_size=1, max_size=5))
 
     return run
 
