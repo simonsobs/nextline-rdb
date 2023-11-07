@@ -18,7 +18,7 @@ from ...db import AsyncDB
 
 @given(st.data())
 async def test_st_model_run(data: st.DataObject) -> None:
-    run = data.draw(st_none_or(st_model_run()))
+    run = data.draw(st_none_or(st_model_run(generate_traces=False)))
     trace_no = data.draw(st_none_or(st_sqlite_ints(min_value=1)))
     thread_task_no = data.draw(st_none_or(st_thread_task_no()))
 
@@ -52,7 +52,7 @@ async def test_st_model_run(data: st.DataObject) -> None:
 
 @given(st.data())
 async def test_st_model_trace_lists(data: st.DataObject) -> None:
-    run = data.draw(st_none_or(st_model_run()))
+    run = data.draw(st_none_or(st_model_run(generate_traces=False)))
     max_size = data.draw(st.integers(min_value=0, max_value=10))
     traces = data.draw(st_model_trace_list(run=run, max_size=max_size))
 

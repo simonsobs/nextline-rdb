@@ -33,7 +33,7 @@ def st_model_trace(
     )
 
     if run is None:
-        run = draw(st_model_run())
+        run = draw(st_model_run(generate_traces=False))
 
     started_at, ended_at = draw(
         st_started_at_ended_at(
@@ -73,7 +73,7 @@ def st_model_trace_list(
     min_size: int = 0,
     max_size: Optional[int] = None,
 ) -> list[Trace]:
-    run = run or draw(st_model_run())
+    run = run or draw(st_model_run(generate_traces=False))
     thread_task_nos = draw(
         st.lists(
             st_thread_task_no(), min_size=min_size, max_size=max_size, unique=True

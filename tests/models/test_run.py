@@ -14,7 +14,7 @@ from ..db import AsyncDB
 async def test_repr(data: st.DataObject):
     async with AsyncDB() as db:
         async with db.session.begin() as session:
-            model = data.draw(st_model_run())
+            model = data.draw(st_model_run(generate_traces=False))
             session.add(model)
 
         async with db.session() as session:

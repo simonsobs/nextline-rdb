@@ -14,6 +14,7 @@ from .utils import st_started_at_ended_at
 def st_model_run(
     draw: st.DrawFn,
     run_no: Optional[int] = None,
+    generate_traces: bool = False,
     min_run_no: Optional[int] = None,
     max_run_no: Optional[int] = None,
     min_started_at: Optional[dt.datetime] = None,
@@ -21,6 +22,8 @@ def st_model_run(
     min_ended_at: Optional[dt.datetime] = None,
     max_ended_at: Optional[dt.datetime] = None,
 ) -> Run:
+    from .trace import st_model_trace_list
+
     if min_run_no is None:
         min_run_no = 1
 
@@ -50,12 +53,17 @@ def st_model_run(
         script=script,
         exception=exception,
     )
+
+    if generate_traces:
+        run.traces = draw(st_model_trace_list(run=run, min_size=1))
+
     return run
 
 
 @st.composite
 def st_model_run_list(
     draw: st.DrawFn,
+    generate_traces: bool = False,
     min_size: int = 0,
     max_size: Optional[int] = None,
 ) -> list[Run]:
@@ -70,7 +78,13 @@ def st_model_run_list(
     runs = list[Run]()
     min_started_at = draw(st_datetimes())
     for run_no in run_nos:
-        run = draw(st_model_run(run_no=run_no, min_started_at=min_started_at))
+        run = draw(
+            st_model_run(
+                run_no=run_no,
+                generate_traces=generate_traces,
+                min_started_at=min_started_at,
+            )
+        )
         assert run.run_no == run_no
         if run.started_at is not None:
             min_started_at = run.started_at + dt.timedelta(seconds=1)
