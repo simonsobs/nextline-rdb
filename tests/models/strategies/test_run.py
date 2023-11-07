@@ -79,8 +79,8 @@ async def test_st_model_run_lists(data: st.DataObject) -> None:
             session.add_all(runs)
 
         async with db.session() as session:
-            stmt = select(Run)
-            runs_ = (await session.scalars(stmt)).all()
+            select_run = select(Run)
+            runs_ = (await session.scalars(select_run)).all()
             session.expunge_all()
 
     assert repr(runs) == repr(runs_)
