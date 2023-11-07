@@ -14,13 +14,13 @@ from .utils import st_started_at_ended_at
 def st_model_run(
     draw: st.DrawFn,
     run_no: Optional[int] = None,
-    generate_traces: bool = False,
     min_run_no: Optional[int] = None,
     max_run_no: Optional[int] = None,
     min_started_at: Optional[dt.datetime] = None,
     max_started_at: Optional[dt.datetime] = None,
     min_ended_at: Optional[dt.datetime] = None,
     max_ended_at: Optional[dt.datetime] = None,
+    generate_traces: bool = True,
 ) -> Run:
     from .trace import st_model_trace_list
 
