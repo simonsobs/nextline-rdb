@@ -36,8 +36,8 @@ async def test_st_model_run(data: st.DataObject) -> None:
     assert trace_no is None or trace_no == trace.trace_no
     assert thread_task_no is None or thread_task_no == (trace.thread_no, trace.task_no)
 
-    assert sc(run.started_at) <= sc(trace.started_at)
-    assert sc(trace.started_at) <= sc(trace.ended_at)
+    assert sc(run.started_at) <= trace.started_at
+    assert trace.started_at <= sc(trace.ended_at)
     assert sc(trace.ended_at) <= sc(run.ended_at)
 
     async with AsyncDB() as db:
