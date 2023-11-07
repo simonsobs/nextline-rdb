@@ -103,12 +103,12 @@ def st_ranges(
 
     '''
 
-    def st_start():
+    def st_start() -> st.SearchStrategy[Optional[T]]:
         _max_start = safe_min((max_start, max_end))
         _st = st_in_range(st_, min_start, _max_start)
         return st_none_or(_st) if allow_start_none else _st
 
-    def st_end(start: T | None):
+    def st_end(start: T | None) -> st.SearchStrategy[Optional[T]]:
         _min_end = safe_max((min_start, start, min_end))
         if min_end is not None and max_end is not None:
             assert min_end <= max_end  # type: ignore
