@@ -40,16 +40,8 @@ def st_sqlite_ints(
     >>> int_ <= SQLITE_INT_MAX
     True
     '''
-    if min_value is None:
-        min_value = SQLITE_INT_MIN
-    else:
-        min_value = max(min_value, SQLITE_INT_MIN)
-
-    if max_value is None:
-        max_value = SQLITE_INT_MAX
-    else:
-        max_value = min(max_value, SQLITE_INT_MAX)
-
+    min_value = safe_max((min_value, SQLITE_INT_MIN))
+    max_value = safe_min((max_value, SQLITE_INT_MAX))
     return st.integers(min_value=min_value, max_value=max_value)
 
 
