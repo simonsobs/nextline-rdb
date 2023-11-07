@@ -20,7 +20,7 @@ def st_min_max_start(
     st_: st.SearchStrategy[T],
 ) -> tuple[Optional[T], Optional[T]]:
     min_ = draw(st_none_or(st_), label='min')
-    st_max = st_.filter(lambda x: x >= min_) if min_ is not None else st_
+    st_max = st_.filter(lambda x: x >= min_) if min_ is not None else st_  # type: ignore
     max_ = draw(st_none_or(st_max), label='max')
     return min_, max_
 
@@ -31,10 +31,10 @@ def st_min_max_end(
     st_: st.SearchStrategy[T],
     min_start: Optional[T] = None,
 ) -> tuple[Optional[T], Optional[T]]:
-    st_min = st_.filter(lambda x: x >= min_start) if min_start is not None else st_
+    st_min = st_.filter(lambda x: x >= min_start) if min_start is not None else st_  # type: ignore
     min_ = draw(st_none_or(st_min), label='min')
     min_value = min_ if min_ is not None else min_start
-    st_max = st_.filter(lambda x: x >= min_value) if min_value is not None else st_
+    st_max = st_.filter(lambda x: x >= min_value) if min_value is not None else st_  # type: ignore
     max_ = draw(st_none_or(st_max), label='max')
     return min_, max_
 
