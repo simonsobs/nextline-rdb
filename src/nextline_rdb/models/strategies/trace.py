@@ -17,9 +17,6 @@ def st_model_trace(
     trace_no: Optional[int] = None,
     thread_task_no: Optional[tuple[int, int | None]] = None,
 ) -> Trace:
-    run = run or draw(st_model_run())
-    run_no = run.run_no
-
     if trace_no is None:
         trace_no = draw(st_sqlite_ints(min_value=1))
 
@@ -28,6 +25,16 @@ def st_model_trace(
     thread_task_no = thread_task_no or draw(st_thread_task_no())
     thread_no, task_no = thread_task_no
 
+    trace = Trace(
+        trace_no=trace_no,
+        state=state,
+        thread_no=thread_no,
+        task_no=task_no,
+    )
+
+    if run is None:
+        run = draw(st_model_run())
+
     started_at, ended_at = draw(
         st_started_at_ended_at(
             min_start=run.started_at,
@@ -35,16 +42,14 @@ def st_model_trace(
             allow_start_none=False,
         )
     )
-    trace = Trace(
-        run_no=run_no,
-        trace_no=trace_no,
-        state=state,
-        thread_no=thread_no,
-        task_no=task_no,
-        started_at=started_at,
-        ended_at=ended_at,
-        run=run,
-    )
+
+    assert started_at
+
+    trace.run_no = run.run_no
+    trace.started_at = started_at
+    trace.ended_at = ended_at
+    trace.run = run
+
     return trace
 
 
