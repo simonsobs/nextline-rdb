@@ -68,6 +68,7 @@ def st_ranges(
     max_end: Optional[T] = None,
     allow_start_none: bool = True,
     allow_end_none: bool = True,
+    let_end_none_if_start_none: bool = False,
     allow_equal: bool = True,
 ) -> tuple[Optional[T], Optional[T]]:
     '''Generate two values (start, end) from a strategy, where start <= end.
@@ -76,6 +77,9 @@ def st_ranges(
     `max_start`, `min_end`, `max_end`.
 
     `start` (`end`) can be `None` if `allow_start_none` (`allow_end_none`) is `True`.
+
+    If `let_end_none_if_start_none` is `True`, `end` will be always `None` when
+    `start` is `None` regardless of `allow_end_none`.
 
     If `allow_equal` is `False`, `start` and `end` cannot be equal, i.e., `start < end`.
 
@@ -106,8 +110,30 @@ def st_ranges(
     min_end = safe_max((min_start, start, min_end))
     if min_end is not None and max_end is not None:
         assert min_end <= max_end
+    end = draw(st_end(
+        st_=st_,
+        start=start,
+        min_end=min_end,
+        max_end=max_end,
+        allow_end_none=allow_end_none,
+        let_end_none_if_start_none=let_end_none_if_start_none,
+        allow_equal=allow_equal,
+    ))
+    return start, end
+
+
+def st_end(
+    st_: st.SearchStrategy[T],
+    start: T | None,
+    min_end: T | None,
+    max_end: T | None,
+    allow_end_none: bool,
+    let_end_none_if_start_none,
+    allow_equal: bool,
+):
+    if start is None and let_end_none_if_start_none:
+        return st.none()
     st_end = st_in_range(st_, min_end, max_end)
     if start is not None and not allow_equal:
         st_end = st_end.filter(lambda x: x > start)
-    end = draw(st_none_or(st_end)) if allow_end_none else draw(st_end)
-    return start, end
+    return st_none_or(st_end) if allow_end_none else st_end
