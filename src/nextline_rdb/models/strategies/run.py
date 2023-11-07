@@ -42,7 +42,7 @@ def st_model_run(
 
     exception = draw(st_none_or(st.text()))
 
-    model = Run(
+    run = Run(
         run_no=run_no,
         state=state,
         started_at=started_at,
@@ -50,7 +50,7 @@ def st_model_run(
         script=script,
         exception=exception,
     )
-    return model
+    return run
 
 
 @st.composite

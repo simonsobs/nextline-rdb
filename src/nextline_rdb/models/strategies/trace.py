@@ -35,7 +35,7 @@ def st_model_trace(
             allow_start_none=False,
         )
     )
-    model = Trace(
+    trace = Trace(
         run_no=run_no,
         trace_no=trace_no,
         state=state,
@@ -45,7 +45,7 @@ def st_model_trace(
         ended_at=ended_at,
         run=run,
     )
-    return model
+    return trace
 
 
 def st_thread_task_no() -> st.SearchStrategy[tuple[int, int | None]]:

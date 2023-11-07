@@ -56,8 +56,8 @@ async def test_st_model_run(data: st.DataObject) -> None:
         async with db.session.begin() as session:
             session.add(run)
         async with db.session() as session:
-            stmt = select(Run)
-            run_ = await session.scalar(stmt)
+            select_run = select(Run)
+            run_ = await session.scalar(select_run)
             session.expunge_all()
     assert repr(run) == repr(run_)
 
