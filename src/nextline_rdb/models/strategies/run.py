@@ -24,11 +24,13 @@ def st_model_run(
 ) -> Run:
     from .trace import st_model_trace_list
 
-    if min_run_no is None:
-        min_run_no = 1
+    def st_run_no() -> st.SearchStrategy[int]:
+        if run_no is not None:
+            return st.just(run_no)
+        min_ = min_run_no if min_run_no is not None else 1
+        return st_sqlite_ints(min_value=min_, max_value=max_run_no)
 
-    if run_no is None:
-        run_no = draw(st_sqlite_ints(min_value=min_run_no, max_value=max_run_no))
+    run_no = draw(st_run_no())
 
     state = draw(st_none_or(st.text()))
 
