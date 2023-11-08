@@ -7,7 +7,8 @@ from nextline_rdb.models import Prompt
 from nextline_rdb.models.strategies import (
     st_model_prompt,
     st_model_prompt_list,
-    st_model_trace,
+    st_model_run,
+    st_model_trace_list,
 )
 from nextline_rdb.utils.strategies import st_none_or
 
@@ -35,16 +36,21 @@ async def test_st_model_prompt(data: st.DataObject) -> None:
 
 @given(st.data())
 async def test_st_model_prompt_lists(data: st.DataObject) -> None:
-    trace = data.draw(st_none_or(st_model_trace(generate_prompts=False)))
+    # generate_traces=False because that would generate a trace with prompts
+    if run := data.draw(st_none_or(st_model_run(generate_traces=False))):
+        data.draw(st_none_or(st_model_trace_list(run=run, min_size=0, max_size=5)))
+        assert run.traces is not None
+
     max_size = data.draw(st.integers(min_value=0, max_value=10))
-    prompts = data.draw(st_model_prompt_list(trace=trace, max_size=max_size))
+
+    prompts = data.draw(st_model_prompt_list(run=run, max_size=max_size))
 
     assert len(prompts) <= max_size
 
     if prompts:
-        traces = set(prompt.trace for prompt in prompts)
-        assert len(traces) == 1
-        assert trace is None or trace is traces.pop()
+        runs = set(prompt.trace.run for prompt in prompts)
+        assert len(runs) == 1
+        assert run is None or run is runs.pop()
 
     async with AsyncDB() as db:
         async with db.session.begin() as session:
@@ -54,4 +60,5 @@ async def test_st_model_prompt_lists(data: st.DataObject) -> None:
             select_prompt = select(Prompt)
             prompts_ = (await session.scalars(select_prompt)).all()
             session.expunge_all()
-    assert repr(prompts) == repr(prompts_)
+    prompts = sorted(prompts, key=lambda prompt: prompt.id)
+    assert repr(prompts) == repr(sorted(prompts_, key=lambda prompt: prompt.id))

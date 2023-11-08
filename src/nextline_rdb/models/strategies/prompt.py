@@ -3,7 +3,7 @@ from typing import Callable, Optional, cast
 
 from hypothesis import strategies as st
 
-from nextline_rdb.models import Prompt, Trace
+from nextline_rdb.models import Prompt, Run, Trace
 from nextline_rdb.utils.strategies import st_none_or, st_sqlite_ints
 
 from .trace import st_model_trace
@@ -55,11 +55,15 @@ def st_model_prompt(
 @st.composite
 def st_model_prompt_list(
     draw: st.DrawFn,
-    trace: Optional[Trace] = None,
+    run: Optional[Run] = None,
     min_size: int = 0,
     max_size: Optional[int] = None,
 ) -> list[Prompt]:
-    trace = trace or draw(st_model_trace(generate_prompts=False))
+    # NOTE: Unique constraint: (run_no, prompt_no)
+    run = run or draw(st_model_trace(generate_prompts=False)).run
+
+    if not run.traces:
+        return []
 
     prompt_nos = draw(
         st.lists(
@@ -70,8 +74,12 @@ def st_model_prompt_list(
         ).map(cast(Callable[[Iterable[int]], list[int]], sorted))
     )
 
+    size = len(prompt_nos)
+
+    traces = draw(st.lists(st.sampled_from(run.traces), min_size=size, max_size=size))
+
     prompts = list[Prompt]()
-    for prompt_no in prompt_nos:
+    for trace, prompt_no in zip(traces, prompt_nos):
         prompt = draw(st_model_prompt(prompt_no=prompt_no, trace=trace))
         prompts.append(prompt)
     return prompts
