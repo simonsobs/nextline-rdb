@@ -86,9 +86,8 @@ async def test_st_model_run_lists(data: st.DataObject) -> None:
 
     traces = [trace for run in runs for trace in run.traces]
 
-    times_ = [(run.started_at, run.ended_at) for run in runs]
-    times = [time for t_ in times_ for time in t_ if time]
-    assert times == sorted(times)
+    started_ats = [run.started_at for run in runs if run.started_at]
+    assert started_ats == sorted(started_ats)
 
     async with AsyncDB() as db:
         async with db.session.begin() as session:

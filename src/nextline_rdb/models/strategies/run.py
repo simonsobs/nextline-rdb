@@ -90,7 +90,7 @@ def st_model_run_list(
         assert run.run_no == run_no
         if run.started_at is not None:
             min_started_at = run.started_at + dt.timedelta(seconds=1)
-        if run.ended_at is not None:
-            min_started_at = run.ended_at + dt.timedelta(seconds=1)
+        # if run.ended_at is not None:
+        #     min_started_at = run.ended_at + dt.timedelta(seconds=1)
         runs.append(run)
     return runs
