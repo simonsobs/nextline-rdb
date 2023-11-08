@@ -1,5 +1,6 @@
 __all__ = [
     'st_model_prompt',
+    'st_model_prompt_list',
     'st_model_run',
     'st_model_run_list',
     'st_model_stdout',
@@ -9,7 +10,7 @@ __all__ = [
     'st_started_at_ended_at',
 ]
 
-from .prompt import st_model_prompt
+from .prompt import st_model_prompt, st_model_prompt_list
 from .run import st_model_run, st_model_run_list
 from .stdout import st_model_stdout
 from .trace import st_model_trace, st_model_trace_list, st_thread_task_no
