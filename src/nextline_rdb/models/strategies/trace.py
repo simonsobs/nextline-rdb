@@ -16,8 +16,14 @@ def st_model_trace(
     run: Optional[Run] = None,
     trace_no: Optional[int] = None,
     thread_task_no: Optional[tuple[int, int | None]] = None,
-    generate_prompts: bool = True,
+    generate_prompts: bool = False,
 ) -> Trace:
+    from .prompt import st_model_prompt_list
+
+    if run is not None:
+        # Unable to meet the unique constraint on the prompts table
+        assert not generate_prompts
+
     if trace_no is None:
         trace_no = draw(st_sqlite_ints(min_value=1))
 
@@ -50,6 +56,9 @@ def st_model_trace(
     trace.started_at = started_at
     trace.ended_at = ended_at
     trace.run = run
+
+    if generate_prompts:
+        draw(st_model_prompt_list(run=run, min_size=1, max_size=10))
 
     return trace
 
