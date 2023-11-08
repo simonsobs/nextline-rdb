@@ -17,7 +17,7 @@ from ...db import AsyncDB
 
 
 @given(st.data())
-async def test_st_model_run(data: st.DataObject) -> None:
+async def test_st_model_trace(data: st.DataObject) -> None:
     run = data.draw(st_none_or(st_model_run(generate_traces=False)))
     trace_no = data.draw(st_none_or(st_sqlite_ints(min_value=1)))
     thread_task_no = data.draw(st_none_or(st_thread_task_no()))
