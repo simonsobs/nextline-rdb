@@ -74,7 +74,6 @@ def st_model_trace_list(
     min_size: int = 0,
     max_size: Optional[int] = None,
 ) -> list[Trace]:
-    run = run or draw(st_model_run(generate_traces=False))
     thread_task_nos = draw(
         st.lists(
             st_thread_task_no(), min_size=min_size, max_size=max_size, unique=True
@@ -91,6 +90,7 @@ def st_model_trace_list(
     assert len(thread_task_nos) == len(trace_nos)
     traces = list[Trace]()
     for trace_no, thread_task_no in zip(trace_nos, thread_task_nos):
+        run = run or draw(st_model_run(generate_traces=False))
         trace = draw(
             st_model_trace(
                 run=run,
