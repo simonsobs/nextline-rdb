@@ -16,6 +16,7 @@ def st_model_trace(
     run: Optional[Run] = None,
     trace_no: Optional[int] = None,
     thread_task_no: Optional[tuple[int, int | None]] = None,
+    generate_prompts: bool = True,
 ) -> Trace:
     if trace_no is None:
         trace_no = draw(st_sqlite_ints(min_value=1))
