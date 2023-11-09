@@ -16,7 +16,7 @@ def st_model_prompt(
     prompt_no: Optional[int] = None,
     trace: Optional[Trace] = None,
 ) -> Prompt:
-    trace = trace or draw(st_model_trace(generate_prompts=False))
+    trace = trace or draw(st_model_trace())
     run_no = trace.run_no
     trace_no = trace.trace_no
     if prompt_no is None:
@@ -60,7 +60,7 @@ def st_model_prompt_list(
     max_size: Optional[int] = None,
 ) -> list[Prompt]:
     # NOTE: Unique constraint: (run_no, prompt_no)
-    run = run or draw(st_model_trace(generate_prompts=False)).run
+    run = run or draw(st_model_trace()).run
 
     if not run.traces:
         return []
