@@ -8,7 +8,7 @@ from nextline_rdb.utils import safe_max, safe_min
 def test_safe_min(data: st.DataObject) -> None:
     int_vals = data.draw(st.lists(st.integers()))
     none_vals = data.draw(st.lists(st.none()))
-    vals = data.draw(st.permutations(int_vals + none_vals))
+    vals = data.draw(st.permutations(int_vals + none_vals))  # type: ignore
 
     default_val = data.draw(st.one_of(st.integers(), st.none()))
 
@@ -24,7 +24,7 @@ def test_safe_min(data: st.DataObject) -> None:
 def test_safe_max(data: st.DataObject) -> None:
     int_vals = data.draw(st.lists(st.integers()))
     none_vals = data.draw(st.lists(st.none()))
-    vals = data.draw(st.permutations(int_vals + none_vals))
+    vals = data.draw(st.permutations(int_vals + none_vals))  # type: ignore
 
     default_val = data.draw(st.one_of(st.integers(), st.none()))
 

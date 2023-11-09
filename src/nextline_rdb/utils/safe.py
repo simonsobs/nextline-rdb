@@ -1,5 +1,5 @@
 from collections.abc import Iterable
-from typing import Any, Generic, Optional, TypeVar
+from typing import Any, Optional, TypeVar
 
 T = TypeVar('T')
 
@@ -24,7 +24,7 @@ def safe_min(vals: Iterable[T], default: Optional[T] = None) -> Optional[T]:
     >>> safe_min([], default=-1)
     -1
     '''
-    return min((v for v in vals if v is not None), default=default)
+    return min((v for v in vals if v is not None), default=default)  # type: ignore
 
 
 def safe_max(vals: Iterable[T], default: Optional[T] = None) -> Optional[T]:
@@ -47,7 +47,7 @@ def safe_max(vals: Iterable[T], default: Optional[T] = None) -> Optional[T]:
     >>> safe_max([], default=-1)
     -1
     '''
-    return max((v for v in vals if v is not None), default=default)
+    return max((v for v in vals if v is not None), default=default)  # type: ignore
 
 
 class GreaterAndLessThanAny:
@@ -86,7 +86,7 @@ class GreaterAndLessThanAny:
         return 'GreaterAndLessThanAny()'
 
 
-def safe_compare(value: Generic[T]) -> T | GreaterAndLessThanAny:
+def safe_compare(value: T | None) -> T | GreaterAndLessThanAny:
     '''The `value` itself if it is not `None`. Otherwise, an object that returns True for all inequality comparisons.
 
     This function helps you concisely write assertions that compare values that
