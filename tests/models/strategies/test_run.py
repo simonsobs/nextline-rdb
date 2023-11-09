@@ -3,7 +3,7 @@ from hypothesis import strategies as st
 from sqlalchemy import select
 from sqlalchemy.orm import selectinload
 
-from nextline_rdb.models import Run, Trace, Prompt
+from nextline_rdb.models import Prompt, Run, Stdout, Trace
 from nextline_rdb.models.strategies import st_model_run, st_model_run_list
 from nextline_rdb.utils import safe_compare as sc
 from nextline_rdb.utils.strategies import (
@@ -59,11 +59,13 @@ async def test_st_model_run(data: st.DataObject) -> None:
 
     traces = run.traces
     prompts = run.prompts
+    stdouts = run.stdouts
     if generate_traces:
         assert traces
     else:
         assert not traces
         assert not prompts
+        assert not stdouts
 
     async with AsyncDB() as db:
         async with db.session.begin() as session:
@@ -81,6 +83,7 @@ async def test_st_model_run(data: st.DataObject) -> None:
     assert repr(traces) == repr(sorted(run_.traces, key=lambda trace: trace.id))
     prompts = sorted(prompts, key=lambda prompt: prompt.id)
     assert repr(prompts) == repr(sorted(run_.prompts, key=lambda prompt: prompt.id))
+    stdouts = sorted(stdouts, key=lambda stdout: stdout.id)
 
 
 @given(st.data())
@@ -94,6 +97,7 @@ async def test_st_model_run_lists(data: st.DataObject) -> None:
 
     traces = [trace for run in runs for trace in run.traces]
     prompts = [prompt for run in runs for prompt in run.prompts]
+    stdouts = [stdout for run in runs for stdout in run.stdouts] 
 
     started_ats = [run.started_at for run in runs if run.started_at]
     assert started_ats == sorted(started_ats)
@@ -109,6 +113,8 @@ async def test_st_model_run_lists(data: st.DataObject) -> None:
             traces_ = (await session.scalars(select_trace)).all()
             select_prompt = select(Prompt)
             prompts_ = (await session.scalars(select_prompt)).all()
+            select_stdout = select(Stdout)
+            stdouts_ = (await session.scalars(select_stdout)).all()
             session.expunge_all()
 
     assert repr(runs) == repr(runs_)
@@ -116,3 +122,5 @@ async def test_st_model_run_lists(data: st.DataObject) -> None:
     assert repr(traces) == repr(sorted(traces_, key=lambda trace: trace.id))
     prompts = sorted(prompts, key=lambda prompt: prompt.id)
     assert repr(prompts) == repr(sorted(prompts_, key=lambda prompt: prompt.id))
+    stdouts = sorted(stdouts, key=lambda stdout: stdout.id)
+    assert repr(stdouts) == repr(sorted(stdouts_, key=lambda stdout: stdout.id))
