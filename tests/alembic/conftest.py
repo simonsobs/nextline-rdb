@@ -1,14 +1,32 @@
 from pathlib import Path
 
 import pytest
+from alembic.config import Config
 
-import nextline_rdb
+from nextline_rdb.db import ALEMBIC_INI
 
 
 @pytest.fixture
-def in_alembic_dir(monkeypatch: pytest.MonkeyPatch) -> Path:
-    '''Move to the directory with alembic.ini'''
-    path = Path(nextline_rdb.__file__).parent
-    assert (path / 'alembic.ini').is_file()
-    monkeypatch.chdir(path)
-    return path
+def alembic_config() -> Config:
+    assert Path(ALEMBIC_INI).is_file()
+    config = Config(ALEMBIC_INI)
+    return config
+
+
+@pytest.fixture
+def alembic_config_in_memory(alembic_config: Config) -> Config:
+    config = alembic_config
+    url = 'sqlite://'
+    config.set_main_option('sqlalchemy.url', url)
+    return config
+
+
+@pytest.fixture
+def alembic_config_temp_sqlite(
+    alembic_config: Config, tmp_path_factory: pytest.TempPathFactory
+) -> Config:
+    config = alembic_config
+    dir = tmp_path_factory.mktemp('db')
+    url = f'sqlite:///{dir}/db.sqlite'
+    config.set_main_option('sqlalchemy.url', url)
+    return config
