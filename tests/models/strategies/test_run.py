@@ -3,7 +3,7 @@ from hypothesis import strategies as st
 from sqlalchemy import select
 from sqlalchemy.orm import selectinload
 
-from nextline_rdb.models import Run, Trace
+from nextline_rdb.models import Run, Trace, Prompt
 from nextline_rdb.models.strategies import st_model_run, st_model_run_list
 from nextline_rdb.utils import safe_compare as sc
 from nextline_rdb.utils.strategies import (
@@ -58,21 +58,29 @@ async def test_st_model_run(data: st.DataObject) -> None:
         assert not run.ended_at
 
     traces = run.traces
+    prompts = run.prompts
     if generate_traces:
         assert traces
+    else:
+        assert not traces
+        assert not prompts
 
     async with AsyncDB() as db:
         async with db.session.begin() as session:
             session.add(run)
         async with db.session() as session:
             select_run = select(Run)
-            run_ = await session.scalar(select_run.options(selectinload(Run.traces)))
+            run_ = await session.scalar(
+                select_run.options(selectinload(Run.traces), selectinload(Run.prompts))
+            )
             assert run_
             session.expunge_all()
 
     assert repr(run) == repr(run_)
     traces = sorted(traces, key=lambda trace: trace.id)
     assert repr(traces) == repr(sorted(run_.traces, key=lambda trace: trace.id))
+    prompts = sorted(prompts, key=lambda prompt: prompt.id)
+    assert repr(prompts) == repr(sorted(run_.prompts, key=lambda prompt: prompt.id))
 
 
 @given(st.data())
@@ -85,6 +93,7 @@ async def test_st_model_run_lists(data: st.DataObject) -> None:
     assert run_nos == sorted(run_nos)
 
     traces = [trace for run in runs for trace in run.traces]
+    prompts = [prompt for run in runs for prompt in run.prompts]
 
     started_ats = [run.started_at for run in runs if run.started_at]
     assert started_ats == sorted(started_ats)
@@ -98,8 +107,12 @@ async def test_st_model_run_lists(data: st.DataObject) -> None:
             runs_ = (await session.scalars(select_run)).all()
             select_trace = select(Trace)
             traces_ = (await session.scalars(select_trace)).all()
+            select_prompt = select(Prompt)
+            prompts_ = (await session.scalars(select_prompt)).all()
             session.expunge_all()
 
     assert repr(runs) == repr(runs_)
     traces = sorted(traces, key=lambda trace: trace.id)
     assert repr(traces) == repr(sorted(traces_, key=lambda trace: trace.id))
+    prompts = sorted(prompts, key=lambda prompt: prompt.id)
+    assert repr(prompts) == repr(sorted(prompts_, key=lambda prompt: prompt.id))

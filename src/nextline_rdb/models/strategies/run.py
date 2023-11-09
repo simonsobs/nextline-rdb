@@ -23,6 +23,7 @@ def st_model_run(
     generate_traces: bool = True,
 ) -> Run:
     from .trace import st_model_trace_list
+    from .prompt import st_model_prompt_list
 
     def st_run_no() -> st.SearchStrategy[int]:
         if run_no is not None:
@@ -58,6 +59,7 @@ def st_model_run(
 
     if generate_traces:
         draw(st_model_trace_list(run=run, min_size=1, max_size=5))
+        draw(st_model_prompt_list(run=run, min_size=0, max_size=10))
 
     return run
 
