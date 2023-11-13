@@ -72,7 +72,7 @@ def statement(monkey_patch_syspath):
 
 @pytest.fixture
 async def run_nextline(db: DB, statement):
-    nextline = Nextline(statement)
+    nextline = Nextline(statement, trace_threads=True, trace_modules=True)
     async with write_db(nextline, db):
         async with nextline:
             task_control = asyncio.create_task(control_execution(nextline))
