@@ -4,14 +4,14 @@ from typing import TYPE_CHECKING
 from sqlalchemy import ForeignKey
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from .base import Base
+from .base import Model
 
 if TYPE_CHECKING:
     from .run import Run
     from .trace import Trace
 
 
-class Stdout(Base):
+class Stdout(Model):
     __tablename__ = "stdout"
     id: Mapped[int] = mapped_column(primary_key=True, index=True)
     run_no: Mapped[int]

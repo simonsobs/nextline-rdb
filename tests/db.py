@@ -24,7 +24,7 @@ class DB:
     def __init__(
         self,
         url: Optional[str] = None,
-        model_base_class: Type[DeclarativeBase] = models.Base,
+        model_base_class: Type[DeclarativeBase] = models.Model,
         echo: bool = False,
     ):
         url = url or 'sqlite://'
@@ -72,7 +72,7 @@ class AsyncDB:
     def __init__(
         self,
         url: Optional[str] = None,
-        model_base_class: Type[DeclarativeBase] = models.Base,
+        model_base_class: Type[DeclarativeBase] = models.Model,
         echo: bool = False,
     ):
         url = url or 'sqlite+aiosqlite://'

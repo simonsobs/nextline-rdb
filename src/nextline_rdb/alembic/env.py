@@ -26,7 +26,7 @@ logger = logging.getLogger(__name__)
 logger.info(f'DB URL: {url}')
 
 
-target_metadata = models.Base.metadata
+target_metadata = models.Model.metadata
 
 
 def run_migrations_offline() -> None:

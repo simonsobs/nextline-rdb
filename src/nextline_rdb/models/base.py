@@ -26,7 +26,7 @@ convention = {
 metadata = MetaData(naming_convention=convention)
 
 
-class Base(DeclarativeBase):
+class Model(DeclarativeBase):
     metadata = metadata
 
     def __repr__(self) -> str:

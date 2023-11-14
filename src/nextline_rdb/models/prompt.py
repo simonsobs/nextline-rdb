@@ -4,14 +4,14 @@ from typing import TYPE_CHECKING
 from sqlalchemy import ForeignKey, UniqueConstraint
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from .base import Base
+from .base import Model
 
 if TYPE_CHECKING:
     from .run import Run
     from .trace import Trace
 
 
-class Prompt(Base):
+class Prompt(Model):
     __tablename__ = "prompt"
     id: Mapped[int] = mapped_column(primary_key=True, index=True)
     run_no: Mapped[int]
