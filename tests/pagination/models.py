@@ -1,5 +1,3 @@
-from typing import Type
-
 from sqlalchemy import MetaData
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 
@@ -26,6 +24,3 @@ class Entity(Base):
 
     def __repr__(self):
         return f"<{self.__class__.__name__} {self.id!r}, {self.num!r}, {self.txt!r}>"
-
-
-ModelType = Type[Entity]

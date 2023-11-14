@@ -1,4 +1,4 @@
-from typing import NamedTuple, Optional, TypeVar, cast
+from typing import NamedTuple, Optional, Type, TypeVar, cast
 
 from sqlalchemy import func, select
 from sqlalchemy.orm import aliased
@@ -26,7 +26,7 @@ _Id = TypeVar("_Id")
 
 def load_models(
     session,
-    Model: db_models.ModelType,
+    Model: Type[db_models.Model],
     id_field: str,
     *,
     sort: Optional[Sort] = None,
@@ -50,7 +50,7 @@ def load_models(
 
 
 def compose_statement(
-    Model: db_models.ModelType,
+    Model: Type[db_models.Model],
     id_field: str,
     *,
     sort: Optional[Sort] = None,
