@@ -1,4 +1,4 @@
-from typing import Optional, Protocol, Type, TypeVar
+from typing import Optional, Type
 
 from sqlalchemy import create_engine
 from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
@@ -6,14 +6,6 @@ from sqlalchemy.orm import DeclarativeBase, sessionmaker
 
 from nextline_rdb import models
 from nextline_rdb.utils import ensure_async_url, ensure_sync_url
-
-T = TypeVar('T', bound=DeclarativeBase)
-
-
-class Models(Protocol[T]):
-    '''A module with a class named `Base` that inherits from `DeclarativeBase`.'''
-
-    Base: Type[T]
 
 
 class DB:
@@ -32,13 +24,13 @@ class DB:
     def __init__(
         self,
         url: Optional[str] = None,
-        models: Models = models,
+        model_base_class: Type[DeclarativeBase] = models.Model,
         echo: bool = False,
     ):
         url = url or 'sqlite://'
         self.url = ensure_sync_url(url)
-        self.models = models
-        self.metadata = self.models.Base.metadata
+        self.model_base_class = model_base_class
+        self.metadata = self.model_base_class.metadata
         self.engine = create_engine(self.url, echo=echo)
         self.metadata.create_all(bind=self.engine)
         self.session = sessionmaker(self.engine, expire_on_commit=False)
@@ -80,13 +72,13 @@ class AsyncDB:
     def __init__(
         self,
         url: Optional[str] = None,
-        models: Models = models,
+        model_base_class: Type[DeclarativeBase] = models.Model,
         echo: bool = False,
     ):
         url = url or 'sqlite+aiosqlite://'
         self.url = ensure_async_url(url)
-        self.models = models
-        self.metadata = self.models.Base.metadata
+        self.model_base_class = model_base_class
+        self.metadata = self.model_base_class.metadata
         self.engine = create_async_engine(self.url, echo=echo)
 
     def __repr__(self) -> str:

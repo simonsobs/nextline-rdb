@@ -12,7 +12,6 @@ def db():
 
 async def test_fields(db: AsyncDB):
     assert db.url
-    assert db.models
     assert db.metadata
     assert db.engine
     await db.start()

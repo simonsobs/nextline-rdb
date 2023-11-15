@@ -28,7 +28,7 @@ def create_tables(engine: Engine) -> None:
 
     https://docs.sqlalchemy.org/en/20/orm/quickstart.html#emit-create-table-ddl
     '''
-    models.Base.metadata.create_all(bind=engine)
+    models.Model.metadata.create_all(bind=engine)
 
 
 @dataclass
@@ -103,7 +103,7 @@ def migrate_to_head(engine: Engine) -> None:
     with engine.connect() as connection:
         context.configure(
             connection=connection,
-            target_metadata=models.Base.metadata,
+            target_metadata=models.Model.metadata,
             render_as_batch=True,
         )
         with context.begin_transaction():

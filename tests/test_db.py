@@ -10,7 +10,6 @@ def db():
 
 def test_fields(db: DB):
     assert db.url
-    assert db.models
     assert db.metadata
     assert db.engine
     assert db.session

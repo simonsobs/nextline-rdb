@@ -4,7 +4,7 @@ from typing import TYPE_CHECKING
 from sqlalchemy import Text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from .base import Base
+from .base import Model
 
 if TYPE_CHECKING:
     from .prompt import Prompt
@@ -12,7 +12,7 @@ if TYPE_CHECKING:
     from .trace import Trace
 
 
-class Run(Base):
+class Run(Model):
     __tablename__ = "run"
     id: Mapped[int] = mapped_column(primary_key=True, index=True)
     run_no: Mapped[int] = mapped_column(unique=True)

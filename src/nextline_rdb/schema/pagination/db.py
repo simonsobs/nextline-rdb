@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import base64
 from functools import partial
-from typing import TYPE_CHECKING, Callable, Optional, TypeVar
+from typing import TYPE_CHECKING, Callable, Optional, Type, TypeVar
 
 from nextline_rdb.pagination import load_models
 
@@ -27,7 +27,7 @@ _T = TypeVar("_T")
 
 def load_connection(
     info: Info,
-    Model: db_models.ModelType,
+    Model: Type[db_models.Model],
     id_field: str,
     create_node_from_model: Callable[..., _T],
     *,
@@ -55,7 +55,7 @@ def load_connection(
 
 def load_edges(
     info: Info,
-    Model: db_models.ModelType,
+    Model: Type[db_models.Model],
     id_field: str,
     create_node_from_model: Callable[..., _T],
     *,
