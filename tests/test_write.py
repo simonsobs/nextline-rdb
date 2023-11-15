@@ -4,7 +4,8 @@ from typing import Optional, cast
 
 import pytest
 from nextline import Nextline
-from nextline.utils import agen_with_wait
+from nextline.types import PromptInfo
+from nextline.utils import merge_aiters
 from sqlalchemy.orm import Session
 
 from nextline_rdb import DB
@@ -47,7 +48,7 @@ def test_one(db: DB, run_nextline, statement):
             assert prompt.event
 
         stdouts = session.query(db_models.Stdout).all()  # type: ignore
-        # assert 1 == len(stdouts)
+        assert 1 == len(stdouts)
         # for stdout in stdouts:
         #     assert run_no == stdout.run_no
         #     assert stdout.text
@@ -55,15 +56,15 @@ def test_one(db: DB, run_nextline, statement):
 
 
 @pytest.fixture
-def monkey_patch_syspath(monkeypatch):
+def monkey_patch_syspath(monkeypatch: pytest.MonkeyPatch) -> None:
     here = Path(__file__).resolve().parent
     path = here / 'example_script'
     monkeypatch.syspath_prepend(str(path))
-    yield
+    return
 
 
 @pytest.fixture
-def statement(monkey_patch_syspath):
+def statement(monkey_patch_syspath: None) -> str:
     del monkey_patch_syspath
     here = Path(__file__).resolve().parent
     path = here / 'example_script'
@@ -71,13 +72,11 @@ def statement(monkey_patch_syspath):
 
 
 @pytest.fixture
-async def run_nextline(db: DB, statement):
+async def run_nextline(db: DB, statement: str) -> None:
     nextline = Nextline(statement, trace_threads=True, trace_modules=True)
     async with write_db(nextline, db):
         async with nextline:
-            task_control = asyncio.create_task(control_execution(nextline))
             await run_statement(nextline, statement)
-        await task_control
 
 
 @pytest.fixture
@@ -86,46 +85,36 @@ def db() -> DB:
     return DB(url=url)
 
 
-async def run_statement(nextline: Nextline, statement: Optional[str] = None):
+async def run_statement(nextline: Nextline, statement: Optional[str] = None) -> None:
     await asyncio.sleep(0.01)
     await nextline.reset(statement=statement)
     await asyncio.sleep(0.01)
+    task_control = asyncio.create_task(control(nextline))
     async with nextline.run_session():
         pass
+    await task_control
     await asyncio.sleep(0.01)
 
 
-async def control_execution(nextline: Nextline):
-    prev_ids = set[int]()
-    agen = agen_with_wait(nextline.subscribe_trace_ids())
-    async for ids_ in agen:
-        ids = set(ids_)
-        new_ids, prev_ids = ids - prev_ids, ids  # type: ignore
-
-        tasks = {asyncio.create_task(control_trace(nextline, id_)) for id_ in new_ids}
-        _, pending = await agen.asend(tasks)
-
-    await asyncio.gather(*pending)  # type: ignore
-
-
-async def control_trace(nextline: Nextline, trace_no):
-    file_name = ''
-    async for s in nextline.subscribe_prompt_info_for(trace_no):
-        if not s.open:
-            continue
-        if not file_name == s.file_name:
-            file_name = s.file_name  # type: ignore
-            assert nextline.get_source(file_name)
-        command = 'next'
-        if s.event == 'line':
-            assert s.line_no is not None
-            line = nextline.get_source_line(
-                line_no=s.line_no,
-                file_name=s.file_name,
-            )
-            command = find_command(line) or command
+async def control(nextline: Nextline) -> None:
+    aiters = merge_aiters(nextline.subscribe_state(), nextline.subscribe_prompt_info())
+    async for _, i in aiters:
+        command: Optional[str] = None
+        match i:
+            case 'finished':
+                break
+            case PromptInfo(open=True, event='line', line_no=line_no):
+                assert line_no is not None
+                line = nextline.get_source_line(line_no=line_no, file_name=i.file_name)
+                command = find_command(line) or 'next'
+            case PromptInfo(open=True):
+                command = 'next'
+            case _:
+                continue
+        assert command is not None
+        assert isinstance(i, PromptInfo)
         await asyncio.sleep(0.01)
-        await nextline.send_pdb_command(command, s.prompt_no, trace_no)
+        await nextline.send_pdb_command(command, i.prompt_no, i.trace_no)
 
 
 def find_command(line: str) -> Optional[str]:
