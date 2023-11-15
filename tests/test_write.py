@@ -109,15 +109,15 @@ async def control_execution(nextline: Nextline):
 
 
 async def control_trace(nextline: Nextline, trace_no):
-    file_name = ""
+    file_name = ''
     async for s in nextline.subscribe_prompt_info_for(trace_no):
         if not s.open:
             continue
         if not file_name == s.file_name:
             file_name = s.file_name  # type: ignore
             assert nextline.get_source(file_name)
-        command = "next"
-        if s.event == "line":
+        command = 'next'
+        if s.event == 'line':
             assert s.line_no is not None
             line = nextline.get_source_line(
                 line_no=s.line_no,
@@ -129,15 +129,15 @@ async def control_trace(nextline: Nextline, trace_no):
 
 
 def find_command(line: str) -> Optional[str]:
-    """The Pdb command indicated in a comment
+    '''The Pdb command indicated in a comment
 
-    For example, returns "step" for the line "func()  # step"
-    """
+    For example, returns 'step' for the line 'func()  # step'
+    '''
     import re
 
     if not (comment := extract_comment(line)):
         return None
-    regex = re.compile(r"^# +(\w+) *$")
+    regex = re.compile(r'^# +(\w+) *$')
     match = regex.search(comment)
     if match:
         return match.group(1)
