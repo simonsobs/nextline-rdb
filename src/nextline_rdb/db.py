@@ -60,6 +60,7 @@ class DB:
         self.url = ensure_sync_url(url)
         self.create_engine_kwargs = create_engine_kwargs or {}
         self.engine = create_engine(self.url, **self.create_engine_kwargs)
+        self.migration_revision: str | None = None
 
     def __repr__(self) -> str:
         return f'<{self.__class__.__name__} {self.url!r}>'
@@ -71,8 +72,8 @@ class DB:
         create_tables(self.engine)  # NOTE: unnecessary as alembic is used
         with self.engine.connect() as connection:
             context = MigrationContext.configure(connection)
-            rev = context.get_current_revision()
-        logger.info(f"Alembic migration version: {rev!s}")
+            self.migration_revision = context.get_current_revision()
+        logger.info(f"Alembic migration version: {self.migration_revision!s}")
         self.session = sessionmaker(self.engine, expire_on_commit=False)
 
     def close(self) -> None:

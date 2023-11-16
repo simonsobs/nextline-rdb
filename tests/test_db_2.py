@@ -35,6 +35,11 @@ def test_ensure_sync_url(tmp_url_factory: Callable[[], str]):
         assert db.url == url
 
 
+def test_migration_revision() -> None:
+    with DB() as db:
+        assert db.migration_revision
+
+
 @given(st.data())
 def test_session_nested(tmp_url_factory: Callable[[], str], data: st.DataObject):
     runs = data.draw(st_model_run_list(generate_traces=True, max_size=10))
