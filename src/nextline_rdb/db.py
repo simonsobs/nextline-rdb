@@ -54,36 +54,22 @@ class DB:
     ):
         self.url = url or 'sqlite://'
         self.create_engine_kwargs = create_engine_kwargs or {}
-        self._engine: Engine | None = None
-        self._session: sessionmaker | None = None
+        self.engine = create_engine(self.url, **self.create_engine_kwargs)
+        self.start()
 
     def __repr__(self) -> str:
         return f'<{self.__class__.__name__} {self.url!r}>'
 
-    @property
-    def engine(self) -> Engine:
-        '''The engine with the latest alembic migration version of the table definitions.
-
-        https://docs.sqlalchemy.org/en/20/orm/quickstart.html#create-an-engine
-        '''
-        if self._engine is None:
-            logger = getLogger(__name__)
-            logger.info(f"SQLAlchemy DB URL: {self.url}")
-            self._engine = create_engine(self.url, **self.create_engine_kwargs)
-            migrate_to_head(self._engine)
-            create_tables(self._engine)  # NOTE: unnecessary as alembic is used
-            with self._engine.connect() as connection:
-                context = MigrationContext.configure(connection)
-                rev = context.get_current_revision()
-            logger.info(f"Alembic migration version: {rev!s}")
-        return self._engine
-
-    @property
-    def session(self) -> sessionmaker:
-        '''The session factory.'''
-        if self._session is None:
-            self._session = sessionmaker(self.engine, expire_on_commit=False)
-        return self._session
+    def start(self) -> None:
+        logger = getLogger(__name__)
+        logger.info(f"SQLAlchemy DB URL: {self.url}")
+        migrate_to_head(self.engine)
+        create_tables(self.engine)  # NOTE: unnecessary as alembic is used
+        with self.engine.connect() as connection:
+            context = MigrationContext.configure(connection)
+            rev = context.get_current_revision()
+        logger.info(f"Alembic migration version: {rev!s}")
+        self.session = sessionmaker(self.engine, expire_on_commit=False)
 
 
 def migrate_to_head(engine: Engine) -> None:
