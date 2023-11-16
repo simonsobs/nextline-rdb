@@ -4,7 +4,7 @@ from typing import Callable, Optional, cast
 from hypothesis import strategies as st
 
 from nextline_rdb.models import Run, Trace
-from nextline_rdb.utils.strategies import st_none_or, st_sqlite_ints
+from nextline_rdb.utils.strategies import st_graphql_ints, st_none_or
 
 from .run import st_model_run
 from .utils import st_started_at_ended_at
@@ -25,7 +25,7 @@ def st_model_trace(
         assert not generate_prompts
 
     if trace_no is None:
-        trace_no = draw(st_sqlite_ints(min_value=1))
+        trace_no = draw(st_graphql_ints(min_value=1))
 
     state = draw(st.text())
 
@@ -65,8 +65,8 @@ def st_model_trace(
 
 def st_thread_task_no() -> st.SearchStrategy[tuple[int, int | None]]:
     return st.tuples(
-        st_sqlite_ints(min_value=1),
-        st_none_or(st_sqlite_ints(min_value=1)),
+        st_graphql_ints(min_value=1),
+        st_none_or(st_graphql_ints(min_value=1)),
     )
 
 
@@ -90,7 +90,7 @@ def st_model_trace_list(
     )
     trace_nos = draw(
         st.lists(
-            st_sqlite_ints(min_value=1),
+            st_graphql_ints(min_value=1),
             min_size=len(thread_task_nos),
             max_size=len(thread_task_nos),
             unique=True,

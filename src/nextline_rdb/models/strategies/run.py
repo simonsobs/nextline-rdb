@@ -5,7 +5,7 @@ from typing import Callable, Optional, cast
 from hypothesis import strategies as st
 
 from nextline_rdb.models import Run
-from nextline_rdb.utils.strategies import st_datetimes, st_none_or, st_sqlite_ints
+from nextline_rdb.utils.strategies import st_datetimes, st_graphql_ints, st_none_or
 
 from .utils import st_started_at_ended_at
 
@@ -30,7 +30,7 @@ def st_model_run(
         if run_no is not None:
             return st.just(run_no)
         min_ = min_run_no if min_run_no is not None else 1
-        return st_sqlite_ints(min_value=min_, max_value=max_run_no)
+        return st_graphql_ints(min_value=min_, max_value=max_run_no)
 
     run_no = draw(st_run_no())
 
@@ -75,7 +75,7 @@ def st_model_run_list(
 ) -> list[Run]:
     run_nos = draw(
         st.lists(
-            st_sqlite_ints(min_value=1),
+            st_graphql_ints(min_value=1),
             min_size=min_size,
             max_size=max_size,
             unique=True,

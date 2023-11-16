@@ -4,7 +4,7 @@ from typing import Callable, Optional, cast
 from hypothesis import strategies as st
 
 from nextline_rdb.models import Prompt, Run, Trace
-from nextline_rdb.utils.strategies import st_none_or, st_sqlite_ints
+from nextline_rdb.utils.strategies import st_graphql_ints, st_none_or
 
 from .trace import st_model_trace
 from .utils import st_started_at_ended_at
@@ -20,7 +20,7 @@ def st_model_prompt(
     run_no = trace.run_no
     trace_no = trace.trace_no
     if prompt_no is None:
-        prompt_no = draw(st_sqlite_ints(min_value=1))
+        prompt_no = draw(st_graphql_ints(min_value=1))
     open = draw(st.booleans())
     event = draw(st.text())
     started_at, ended_at = draw(
@@ -31,7 +31,7 @@ def st_model_prompt(
         )
     )
     file_name = draw(st_none_or(st.text()))
-    line_no = draw(st_none_or(st_sqlite_ints(min_value=1)))
+    line_no = draw(st_none_or(st_graphql_ints(min_value=1)))
     stdout = draw(st_none_or(st.text()))
     command = draw(st_none_or(st.text()))
     model = Prompt(
@@ -67,7 +67,7 @@ def st_model_prompt_list(
 
     prompt_nos = draw(
         st.lists(
-            st_sqlite_ints(min_value=1),
+            st_graphql_ints(min_value=1),
             min_size=min_size,
             max_size=max_size,
             unique=True,

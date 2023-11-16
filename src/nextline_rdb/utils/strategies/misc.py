@@ -1,5 +1,6 @@
 from typing import Optional, Protocol, TypeVar
 
+from graphql import GRAPHQL_MAX_INT, GRAPHQL_MIN_INT
 from hypothesis import strategies as st
 
 from nextline_rdb.utils import safe_max, safe_min
@@ -42,6 +43,28 @@ def st_sqlite_ints(
     '''
     min_value = safe_max((min_value, SQLITE_INT_MIN))
     max_value = safe_min((max_value, SQLITE_INT_MAX))
+    return st.integers(min_value=min_value, max_value=max_value)
+
+
+def st_graphql_ints(
+    min_value: Optional[int] = None,
+    max_value: Optional[int] = None,
+) -> st.SearchStrategy[int]:
+    '''A strategy for integers within the range of GraphQL's `Int` type.
+
+    Note: GraphQL's `Int` type is a 32-bit signed integer, i.e., -2,147,483,648
+    to 2,147,483,647, while SQLite's `INTEGER` type is a 64-bit signed integer.
+    The range of GraphQL's `Int` type is a subset of SQLite's `INTEGER` type.
+
+    >>> int_ = st_graphql_ints().example()
+    >>> int_ >= GRAPHQL_MIN_INT
+    True
+
+    >>> int_ <= GRAPHQL_MAX_INT
+    True
+    '''
+    min_value = safe_max((min_value, GRAPHQL_MIN_INT))
+    max_value = safe_min((max_value, GRAPHQL_MAX_INT))
     return st.integers(min_value=min_value, max_value=max_value)
 
 
