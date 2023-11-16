@@ -8,6 +8,7 @@ from sqlalchemy import inspect
 from nextline_rdb.db import DB
 from nextline_rdb.models import Model
 from nextline_rdb.models.strategies import st_model_run_list
+from nextline_rdb.utils import ensure_async_url
 
 
 def object_state(obj: Model) -> str:
@@ -24,6 +25,14 @@ def object_state(obj: Model) -> str:
         return 'detached'
     else:
         raise ValueError(f'Unknown state for {obj}')
+
+
+def test_ensure_sync_url(tmp_url_factory: Callable[[], str]):
+    url = tmp_url_factory()
+    async_url = ensure_async_url(url)
+
+    with DB(url=async_url) as db:
+        assert db.url == url
 
 
 @given(st.data())

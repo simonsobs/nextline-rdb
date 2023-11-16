@@ -10,6 +10,7 @@ from sqlalchemy import Engine, create_engine
 from sqlalchemy.orm import sessionmaker
 
 import nextline_rdb
+from nextline_rdb.utils import ensure_sync_url
 
 from . import models
 
@@ -55,7 +56,8 @@ class DB:
         url: Optional[str] = None,
         create_engine_kwargs: Optional[dict] = None,
     ):
-        self.url = url or 'sqlite://'
+        url = url or 'sqlite://'
+        self.url = ensure_sync_url(url)
         self.create_engine_kwargs = create_engine_kwargs or {}
         self.engine = create_engine(self.url, **self.create_engine_kwargs)
 
