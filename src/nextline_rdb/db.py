@@ -1,4 +1,3 @@
-from dataclasses import dataclass, field
 from logging import getLogger
 from pathlib import Path
 from typing import Optional
@@ -28,7 +27,6 @@ def create_tables(engine: Engine) -> None:
     models.Model.metadata.create_all(bind=engine)
 
 
-@dataclass
 class DB:
     '''The interface to the SQLAlchemy database.
 
@@ -49,10 +47,18 @@ class DB:
 
     '''
 
-    url: str = 'sqlite://'
-    create_engine_kwargs: dict = field(default_factory=dict)
-    _engine: Optional[Engine] = field(init=False, repr=False, default=None)
-    _session: Optional[sessionmaker] = field(init=False, repr=False, default=None)
+    def __init__(
+        self,
+        url: Optional[str] = None,
+        create_engine_kwargs: Optional[dict] = None,
+    ):
+        self.url = url or 'sqlite://'
+        self.create_engine_kwargs = create_engine_kwargs or {}
+        self._engine: Engine | None = None
+        self._session: sessionmaker | None = None
+
+    def __repr__(self) -> str:
+        return f'<{self.__class__.__name__} {self.url!r}>'
 
     @property
     def engine(self) -> Engine:
