@@ -7,9 +7,9 @@ from nextline_rdb.utils import safe_compare, safe_max
 from nextline_rdb.utils.strategies import (
     StMinMaxValuesFactory,
     st_datetimes,
+    st_graphql_ints,
     st_none_or,
     st_ranges,
-    st_sqlite_ints,
 )
 
 T = TypeVar('T')
@@ -44,7 +44,7 @@ def st_min_max_end(
 @given(st.data())
 @settings(max_examples=1000)
 def test_st_ranges(data: st.DataObject) -> None:
-    st_ = data.draw(st.sampled_from([st_sqlite_ints, st_datetimes]))
+    st_ = data.draw(st.sampled_from([st_graphql_ints, st_datetimes]))
 
     min_start, max_start = data.draw(st_min_max_start(st_=st_))  # type: ignore
     min_end, max_end = data.draw(st_min_max_end(st_=st_, min_start=min_start))  # type: ignore

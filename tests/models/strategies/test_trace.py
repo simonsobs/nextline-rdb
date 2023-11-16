@@ -11,7 +11,7 @@ from nextline_rdb.models.strategies import (
 )
 from nextline_rdb.utils import safe_compare as sc
 from nextline_rdb.utils.strategies import st_none_or
-from nextline_rdb.utils.strategies.misc import st_sqlite_ints
+from nextline_rdb.utils.strategies.misc import st_graphql_ints
 
 from ...db import AsyncDB
 
@@ -19,7 +19,7 @@ from ...db import AsyncDB
 @given(st.data())
 async def test_st_model_trace(data: st.DataObject) -> None:
     run = data.draw(st_none_or(st_model_run(generate_traces=False)))
-    trace_no = data.draw(st_none_or(st_sqlite_ints(min_value=1)))
+    trace_no = data.draw(st_none_or(st_graphql_ints(min_value=1)))
     thread_task_no = data.draw(st_none_or(st_thread_task_no()))
     generate_prompts = False if run else data.draw(st.booleans())
 

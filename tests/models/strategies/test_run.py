@@ -8,9 +8,9 @@ from nextline_rdb.models.strategies import st_model_run, st_model_run_list
 from nextline_rdb.utils import safe_compare as sc
 from nextline_rdb.utils.strategies import (
     st_datetimes,
+    st_graphql_ints,
     st_none_or,
     st_ranges,
-    st_sqlite_ints,
 )
 
 from ...db import AsyncDB
@@ -19,9 +19,9 @@ from ...db import AsyncDB
 @given(st.data())
 @settings(max_examples=200)
 async def test_st_model_run(data: st.DataObject) -> None:
-    run_no = data.draw(st_none_or(st_sqlite_ints(min_value=1)))
+    run_no = data.draw(st_none_or(st_graphql_ints(min_value=1)))
     if run_no is None:
-        min_run_no, max_run_no = data.draw(st_ranges(st_=st_sqlite_ints, min_start=1))
+        min_run_no, max_run_no = data.draw(st_ranges(st_=st_graphql_ints, min_start=1))
     else:
         min_run_no, max_run_no = None, None
 
