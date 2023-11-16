@@ -27,8 +27,8 @@ def object_state(obj: Model) -> str:
 
 
 @given(st.data())
-def test_one(tmp_url_factory: Callable[[], str], data: st.DataObject):
-    runs = data.draw(st_model_run_list(generate_traces=True, min_size=1, max_size=2))
+def test_session_nested(tmp_url_factory: Callable[[], str], data: st.DataObject):
+    runs = data.draw(st_model_run_list(generate_traces=True, max_size=10))
 
     url = tmp_url_factory()
 
@@ -38,7 +38,30 @@ def test_one(tmp_url_factory: Callable[[], str], data: st.DataObject):
             session.add_all(runs)
             saved = sorted(session.new, key=lambda x: (x.__class__.__name__, x.id))
             model_classes = {type(x) for x in saved}
-        repr_saved = [repr(m) for m in saved]
+    repr_saved = [repr(m) for m in saved]
+
+    with db.session() as session:
+        loaded = sorted(
+            (m for cls in model_classes for m in session.query(cls)),
+            key=lambda x: (x.__class__.__name__, x.id),
+        )
+        repr_loaded = [repr(m) for m in loaded]
+
+    assert repr_saved == repr_loaded
+
+
+@given(st.data())
+def test_session_begin(tmp_url_factory: Callable[[], str], data: st.DataObject):
+    runs = data.draw(st_model_run_list(generate_traces=True, max_size=10))
+
+    url = tmp_url_factory()
+
+    db = DB(url)
+    with db.session.begin() as session:
+        session.add_all(runs)
+        saved = sorted(session.new, key=lambda x: (x.__class__.__name__, x.id))
+        model_classes = {type(x) for x in saved}
+    repr_saved = [repr(m) for m in saved]
 
     with db.session() as session:
         loaded = sorted(
