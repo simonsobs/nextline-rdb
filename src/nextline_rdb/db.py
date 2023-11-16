@@ -1,5 +1,3 @@
-import contextlib
-from collections.abc import Iterator
 from dataclasses import dataclass, field
 from logging import getLogger
 from pathlib import Path
@@ -10,12 +8,11 @@ from alembic.migration import MigrationContext
 from alembic.runtime.environment import EnvironmentContext
 from alembic.script import ScriptDirectory
 from sqlalchemy import Engine, create_engine
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import sessionmaker
 
 import nextline_rdb
 
 from . import models
-
 
 ALEMBIC_INI = str(Path(nextline_rdb.__file__).resolve().parent / 'alembic.ini')
 
@@ -36,15 +33,26 @@ class DB:
     '''The interface to the SQLAlchemy database.
 
     >>> db = DB()
+
+    The session is yielded within the outer context. The inner context, which
+    exits with commit or rollback, can be used as follows:
+
     >>> with db.session() as session:
     ...     with session.begin():
     ...         pass
+
+    Alternatively, the inner context can be directly entered as follows:
+
+    >>> with db.session.begin() as session:
+    ...     pass
+
 
     '''
 
     url: str = 'sqlite://'
     create_engine_kwargs: dict = field(default_factory=dict)
     _engine: Optional[Engine] = field(init=False, repr=False, default=None)
+    _session: Optional[sessionmaker] = field(init=False, repr=False, default=None)
 
     @property
     def engine(self) -> Engine:
@@ -64,21 +72,12 @@ class DB:
             logger.info(f"Alembic migration version: {rev!s}")
         return self._engine
 
-    @contextlib.contextmanager
-    def session(self) -> Iterator[Session]:
-        '''A database session with session event hooks.
-
-        The session is yielded within the outer context. The inner context, which exits
-        with commit or rollback, can be used as follows:
-
-            with db.session() as session:
-                with session.begin():
-                    ...
-
-        https://docs.sqlalchemy.org/en/20/orm/session_basics.html
-        '''
-        with Session(self.engine) as session:
-            yield session
+    @property
+    def session(self) -> sessionmaker:
+        '''The session factory.'''
+        if self._session is None:
+            self._session = sessionmaker(self.engine, expire_on_commit=False)
+        return self._session
 
 
 def migrate_to_head(engine: Engine) -> None:
