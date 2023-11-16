@@ -12,6 +12,7 @@ def test_one(caplog):
 
     with caplog.at_level(logging.DEBUG):
         db = DB(url=url)
+        db.start()
         engine = db.engine
 
     print_logrecords(caplog.records)
@@ -40,6 +41,7 @@ def print_logrecords(records):
 def test_alembic():
     url = 'sqlite:///:memory:?check_same_thread=false'
     db = DB(url=url)
+    db.start()
 
     with db.engine.connect() as connection:
         context = MigrationContext.configure(connection)

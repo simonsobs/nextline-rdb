@@ -1,4 +1,5 @@
 import asyncio
+from collections.abc import Iterator
 from pathlib import Path
 from typing import Optional, cast
 
@@ -80,9 +81,10 @@ async def run_nextline(db: DB, statement: str) -> None:
 
 
 @pytest.fixture
-def db() -> DB:
+def db() -> Iterator[DB]:
     url = 'sqlite:///:memory:?check_same_thread=false'
-    return DB(url=url)
+    with DB(url=url) as db:
+        yield db
 
 
 async def run_statement(nextline: Nextline, statement: Optional[str] = None) -> None:

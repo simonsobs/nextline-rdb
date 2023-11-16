@@ -30,20 +30,23 @@ def create_tables(engine: Engine) -> None:
 class DB:
     '''The interface to the SQLAlchemy database.
 
+    An example usage:
+    >>> with DB() as db:
+    ...     # Nested session contexts
+    ...     with db.session() as session:
+    ...         with session.begin():
+    ...             pass
+    ...     # Direct begin
+    ...     with db.session.begin() as session:
+    ...         pass
+
+    An alternative usage:
     >>> db = DB()
-
-    The session is yielded within the outer context. The inner context, which
-    exits with commit or rollback, can be used as follows:
-
+    >>> db.start()
     >>> with db.session() as session:
     ...     with session.begin():
     ...         pass
-
-    Alternatively, the inner context can be directly entered as follows:
-
-    >>> with db.session.begin() as session:
-    ...     pass
-
+    >>> db.close()
 
     '''
 
@@ -55,7 +58,6 @@ class DB:
         self.url = url or 'sqlite://'
         self.create_engine_kwargs = create_engine_kwargs or {}
         self.engine = create_engine(self.url, **self.create_engine_kwargs)
-        self.start()
 
     def __repr__(self) -> str:
         return f'<{self.__class__.__name__} {self.url!r}>'
@@ -70,6 +72,16 @@ class DB:
             rev = context.get_current_revision()
         logger.info(f"Alembic migration version: {rev!s}")
         self.session = sessionmaker(self.engine, expire_on_commit=False)
+
+    def close(self) -> None:
+        pass
+
+    def __enter__(self) -> 'DB':
+        self.start()
+        return self
+
+    def __exit__(self, *_, **__) -> None:
+        self.close()
 
 
 def migrate_to_head(engine: Engine) -> None:

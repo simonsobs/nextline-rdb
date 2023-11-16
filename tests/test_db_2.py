@@ -32,22 +32,22 @@ def test_session_nested(tmp_url_factory: Callable[[], str], data: st.DataObject)
 
     url = tmp_url_factory()
 
-    db = DB(url)
-    with db.session() as session:
-        with session.begin():
-            session.add_all(runs)
-            saved = sorted(session.new, key=lambda x: (x.__class__.__name__, x.id))
-            model_classes = {type(x) for x in saved}
-    repr_saved = [repr(m) for m in saved]
+    with DB(url) as db:
+        with db.session() as session:
+            with session.begin():
+                session.add_all(runs)
+                saved = sorted(session.new, key=lambda x: (x.__class__.__name__, x.id))
+                model_classes = {type(x) for x in saved}
+        repr_saved = [repr(m) for m in saved]
 
-    with db.session() as session:
-        loaded = sorted(
-            (m for cls in model_classes for m in session.query(cls)),
-            key=lambda x: (x.__class__.__name__, x.id),
-        )
-        repr_loaded = [repr(m) for m in loaded]
+        with db.session() as session:
+            loaded = sorted(
+                (m for cls in model_classes for m in session.query(cls)),
+                key=lambda x: (x.__class__.__name__, x.id),
+            )
+            repr_loaded = [repr(m) for m in loaded]
 
-    assert repr_saved == repr_loaded
+        assert repr_saved == repr_loaded
 
 
 @given(st.data())
@@ -56,21 +56,21 @@ def test_session_begin(tmp_url_factory: Callable[[], str], data: st.DataObject):
 
     url = tmp_url_factory()
 
-    db = DB(url)
-    with db.session.begin() as session:
-        session.add_all(runs)
-        saved = sorted(session.new, key=lambda x: (x.__class__.__name__, x.id))
-        model_classes = {type(x) for x in saved}
-    repr_saved = [repr(m) for m in saved]
+    with DB(url) as db:
+        with db.session.begin() as session:
+            session.add_all(runs)
+            saved = sorted(session.new, key=lambda x: (x.__class__.__name__, x.id))
+            model_classes = {type(x) for x in saved}
+        repr_saved = [repr(m) for m in saved]
 
-    with db.session() as session:
-        loaded = sorted(
-            (m for cls in model_classes for m in session.query(cls)),
-            key=lambda x: (x.__class__.__name__, x.id),
-        )
-        repr_loaded = [repr(m) for m in loaded]
+        with db.session() as session:
+            loaded = sorted(
+                (m for cls in model_classes for m in session.query(cls)),
+                key=lambda x: (x.__class__.__name__, x.id),
+            )
+            repr_loaded = [repr(m) for m in loaded]
 
-    assert repr_saved == repr_loaded
+        assert repr_saved == repr_loaded
 
 
 @pytest.fixture(scope='session')

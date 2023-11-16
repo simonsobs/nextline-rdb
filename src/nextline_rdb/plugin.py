@@ -41,6 +41,7 @@ class Plugin:
     @spec.hookimpl
     def configure(self, settings: Dynaconf) -> None:
         self._db = DB(settings.db['url'])
+        self._db.start()
 
     @spec.hookimpl
     def initial_run_no(self) -> Optional[int]:
