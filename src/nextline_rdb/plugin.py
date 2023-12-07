@@ -3,12 +3,11 @@ from logging import getLogger
 from pathlib import Path
 from typing import Optional
 
-from apluggy import asynccontextmanager
+from apluggy import PluginManager, asynccontextmanager
 from dynaconf import Dynaconf, Validator
 from nextlinegraphql.hook import spec
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
-from starlette.applications import Starlette
 
 from . import models
 from .db import DB
@@ -77,8 +76,16 @@ class Plugin:
 
     @spec.hookimpl
     @asynccontextmanager
-    async def lifespan(self, app: Starlette, context: Mapping) -> AsyncIterator[None]:
+    async def lifespan(
+        self, hook: PluginManager, context: Mapping
+    ) -> AsyncIterator[None]:
         nextline = context['nextline']
+        run_no: int = max(
+            hook.hook.initial_run_no(), default=nextline._init_options.run_no_start_from
+        )
+        script: str = [*hook.hook.initial_script(), nextline._init_options.statement][0]
+        nextline._init_options.run_no_start_from = run_no
+        nextline._init_options.statement = script
         async with write_db(nextline, self._db):
             yield
 
