@@ -447,4 +447,5 @@ def app(db: DB):
 @pytest.fixture
 def db():
     url = 'sqlite:///:memory:?check_same_thread=false'
-    return DB(url=url)
+    with DB(url=url) as db:
+        yield db

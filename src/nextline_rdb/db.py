@@ -1,6 +1,3 @@
-import contextlib
-from collections.abc import Iterator
-from dataclasses import dataclass, field
 from logging import getLogger
 from pathlib import Path
 from typing import Optional
@@ -10,12 +7,12 @@ from alembic.migration import MigrationContext
 from alembic.runtime.environment import EnvironmentContext
 from alembic.script import ScriptDirectory
 from sqlalchemy import Engine, create_engine
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import sessionmaker
 
 import nextline_rdb
+from nextline_rdb.utils import ensure_sync_url
 
 from . import models
-
 
 ALEMBIC_INI = str(Path(nextline_rdb.__file__).resolve().parent / 'alembic.ini')
 
@@ -31,54 +28,63 @@ def create_tables(engine: Engine) -> None:
     models.Model.metadata.create_all(bind=engine)
 
 
-@dataclass
 class DB:
     '''The interface to the SQLAlchemy database.
 
+    An example usage:
+    >>> with DB() as db:
+    ...     # Nested session contexts
+    ...     with db.session() as session:
+    ...         with session.begin():
+    ...             pass
+    ...     # Direct begin
+    ...     with db.session.begin() as session:
+    ...         pass
+
+    An alternative usage:
     >>> db = DB()
+    >>> db.start()
     >>> with db.session() as session:
     ...     with session.begin():
     ...         pass
+    >>> db.close()
 
     '''
 
-    url: str = 'sqlite://'
-    create_engine_kwargs: dict = field(default_factory=dict)
-    _engine: Optional[Engine] = field(init=False, repr=False, default=None)
+    def __init__(
+        self,
+        url: Optional[str] = None,
+        create_engine_kwargs: Optional[dict] = None,
+    ):
+        url = url or 'sqlite://'
+        self.url = ensure_sync_url(url)
+        self.create_engine_kwargs = create_engine_kwargs or {}
+        self.engine = create_engine(self.url, **self.create_engine_kwargs)
+        self.migration_revision: str | None = None
 
-    @property
-    def engine(self) -> Engine:
-        '''The engine with the latest alembic migration version of the table definitions.
+    def __repr__(self) -> str:
+        return f'<{self.__class__.__name__} {self.url!r}>'
 
-        https://docs.sqlalchemy.org/en/20/orm/quickstart.html#create-an-engine
-        '''
-        if self._engine is None:
-            logger = getLogger(__name__)
-            logger.info(f"SQLAlchemy DB URL: {self.url}")
-            self._engine = create_engine(self.url, **self.create_engine_kwargs)
-            migrate_to_head(self._engine)
-            create_tables(self._engine)  # NOTE: unnecessary as alembic is used
-            with self._engine.connect() as connection:
-                context = MigrationContext.configure(connection)
-                rev = context.get_current_revision()
-            logger.info(f"Alembic migration version: {rev!s}")
-        return self._engine
+    def start(self) -> None:
+        logger = getLogger(__name__)
+        logger.info(f"SQLAlchemy DB URL: {self.url}")
+        migrate_to_head(self.engine)
+        create_tables(self.engine)  # NOTE: unnecessary as alembic is used
+        with self.engine.connect() as connection:
+            context = MigrationContext.configure(connection)
+            self.migration_revision = context.get_current_revision()
+        logger.info(f"Alembic migration version: {self.migration_revision!s}")
+        self.session = sessionmaker(self.engine, expire_on_commit=False)
 
-    @contextlib.contextmanager
-    def session(self) -> Iterator[Session]:
-        '''A database session with session event hooks.
+    def close(self) -> None:
+        pass
 
-        The session is yielded within the outer context. The inner context, which exits
-        with commit or rollback, can be used as follows:
+    def __enter__(self) -> 'DB':
+        self.start()
+        return self
 
-            with db.session() as session:
-                with session.begin():
-                    ...
-
-        https://docs.sqlalchemy.org/en/20/orm/session_basics.html
-        '''
-        with Session(self.engine) as session:
-            yield session
+    def __exit__(self, *_, **__) -> None:
+        self.close()
 
 
 def migrate_to_head(engine: Engine) -> None:
