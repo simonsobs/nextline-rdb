@@ -40,7 +40,6 @@ class Plugin:
     @spec.hookimpl
     def configure(self, settings: Dynaconf) -> None:
         self._db = DB(settings.db['url'])
-        self._db.start()
 
     def _initial_run_no(self) -> Optional[int]:
         with self._db.session() as session:
@@ -76,16 +75,17 @@ class Plugin:
     @asynccontextmanager
     async def lifespan(self, context: Mapping) -> AsyncIterator[None]:
         nextline = context['nextline']
-        run_no = self._initial_run_no()
-        if run_no is not None:
-            nextline._init_options.run_no_start_from = max(
-                run_no, nextline._init_options.run_no_start_from
+        with self._db:
+            run_no = self._initial_run_no()
+            if run_no is not None:
+                nextline._init_options.run_no_start_from = max(
+                    run_no, nextline._init_options.run_no_start_from
+                )
+            nextline._init_options.statement = (
+                self._initial_script() or nextline._init_options.statement
             )
-        nextline._init_options.statement = (
-            self._initial_script() or nextline._init_options.statement
-        )
-        async with write_db(nextline, self._db):
-            yield
+            async with write_db(nextline, self._db):
+                yield
 
     @spec.hookimpl
     def update_strawberry_context(self, context: MutableMapping) -> None:
