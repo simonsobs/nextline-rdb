@@ -3,7 +3,7 @@ from logging import getLogger
 from pathlib import Path
 from typing import Optional
 
-from apluggy import PluginManager, asynccontextmanager
+from apluggy import asynccontextmanager
 from dynaconf import Dynaconf, Validator
 from nextlinegraphql.hook import spec
 from sqlalchemy import func, select
@@ -42,8 +42,7 @@ class Plugin:
         self._db = DB(settings.db['url'])
         self._db.start()
 
-    @spec.hookimpl
-    def initial_run_no(self) -> Optional[int]:
+    def _initial_run_no(self) -> Optional[int]:
         with self._db.session() as session:
             last_run = self._last_run(session)
             if last_run is None:
@@ -51,8 +50,7 @@ class Plugin:
             else:
                 return last_run.run_no + 1
 
-    @spec.hookimpl
-    def initial_script(self) -> Optional[str]:
+    def _initial_script(self) -> Optional[str]:
         with self._db.session() as session:
             last_run = self._last_run(session)
             if last_run is None:
@@ -76,16 +74,16 @@ class Plugin:
 
     @spec.hookimpl
     @asynccontextmanager
-    async def lifespan(
-        self, hook: PluginManager, context: Mapping
-    ) -> AsyncIterator[None]:
+    async def lifespan(self, context: Mapping) -> AsyncIterator[None]:
         nextline = context['nextline']
-        run_no: int = max(
-            hook.hook.initial_run_no(), default=nextline._init_options.run_no_start_from
+        run_no = self._initial_run_no()
+        if run_no is not None:
+            nextline._init_options.run_no_start_from = max(
+                run_no, nextline._init_options.run_no_start_from
+            )
+        nextline._init_options.statement = (
+            self._initial_script() or nextline._init_options.statement
         )
-        script: str = [*hook.hook.initial_script(), nextline._init_options.statement][0]
-        nextline._init_options.run_no_start_from = run_no
-        nextline._init_options.statement = script
         async with write_db(nextline, self._db):
             yield
 
