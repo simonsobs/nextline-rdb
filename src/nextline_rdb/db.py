@@ -64,7 +64,7 @@ class DB:
 
     def start(self) -> None:
         logger = getLogger(__name__)
-        logger.info(f"SQLAlchemy DB URL: {self.url}")
+        logger.info(f'SQLAlchemy DB URL: {self.url}')
 
         if self.use_migration:
             self._migrate()
@@ -74,7 +74,7 @@ class DB:
         with self.engine.connect() as connection:
             context = MigrationContext.configure(connection)
             self.migration_revision = context.get_current_revision()
-        logger.info(f"Alembic migration version: {self.migration_revision!s}")
+        logger.info(f'Alembic migration version: {self.migration_revision!s}')
 
         self.session = sessionmaker(self.engine, expire_on_commit=False)
 
@@ -102,7 +102,7 @@ def migrate_to_head(engine: Engine, model_base_class: Type[DeclarativeBase]) -> 
 
     # config.set_main_option('sqlalchemy.url', str(engine.url))
     # from alembic import command
-    # command.upgrade(config, "head")
+    # command.upgrade(config, 'head')
 
     # NOTE: The commented out lines of command.upgrade() above would work fine
     # for a persistent DB. Here, the following code is instead used so that the
