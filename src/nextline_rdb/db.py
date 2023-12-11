@@ -1,13 +1,13 @@
 from logging import getLogger
 from pathlib import Path
-from typing import Optional
+from typing import Optional, Type
 
 from alembic.config import Config
 from alembic.migration import MigrationContext
 from alembic.runtime.environment import EnvironmentContext
 from alembic.script import ScriptDirectory
 from sqlalchemy import Engine, create_engine
-from sqlalchemy.orm import sessionmaker
+from sqlalchemy.orm import DeclarativeBase, sessionmaker
 
 import nextline_rdb
 from nextline_rdb.utils import ensure_sync_url
@@ -18,14 +18,6 @@ ALEMBIC_INI = str(Path(nextline_rdb.__file__).resolve().parent / 'alembic.ini')
 
 
 assert Path(ALEMBIC_INI).is_file()
-
-
-def create_tables(engine: Engine) -> None:
-    '''Define tables in the database based on the ORM models .
-
-    https://docs.sqlalchemy.org/en/20/orm/quickstart.html#emit-create-table-ddl
-    '''
-    models.Model.metadata.create_all(bind=engine)
 
 
 class DB:
@@ -55,10 +47,12 @@ class DB:
         self,
         url: Optional[str] = None,
         create_engine_kwargs: Optional[dict] = None,
+        model_base_class: Type[DeclarativeBase] = models.Model,
     ):
         url = url or 'sqlite://'
         self.url = ensure_sync_url(url)
         self.create_engine_kwargs = create_engine_kwargs or {}
+        self.model_base_class = model_base_class
         self.engine = create_engine(self.url, **self.create_engine_kwargs)
         self.migration_revision: str | None = None
 
@@ -68,8 +62,13 @@ class DB:
     def start(self) -> None:
         logger = getLogger(__name__)
         logger.info(f"SQLAlchemy DB URL: {self.url}")
-        migrate_to_head(self.engine)
-        create_tables(self.engine)  # NOTE: unnecessary as alembic is used
+        migrate_to_head(self.engine, model_base_class=self.model_base_class)
+
+        # Define tables in the database based on the ORM models.
+        # https://docs.sqlalchemy.org/en/20/orm/quickstart.html#emit-create-table-ddl
+        # NOTE: unnecessary as alembic is used
+        self.model_base_class.metadata.create_all(bind=self.engine)
+
         with self.engine.connect() as connection:
             context = MigrationContext.configure(connection)
             self.migration_revision = context.get_current_revision()
@@ -87,7 +86,7 @@ class DB:
         self.close()
 
 
-def migrate_to_head(engine: Engine) -> None:
+def migrate_to_head(engine: Engine, model_base_class: Type[DeclarativeBase]) -> None:
     '''Run alembic to upgrade the database to the latest version.'''
     config = Config(ALEMBIC_INI)
 
@@ -109,7 +108,7 @@ def migrate_to_head(engine: Engine) -> None:
     with engine.connect() as connection:
         context.configure(
             connection=connection,
-            target_metadata=models.Model.metadata,
+            target_metadata=model_base_class.metadata,
             render_as_batch=True,
         )
         with context.begin_transaction():
