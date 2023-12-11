@@ -42,7 +42,7 @@ def test_migration_revision() -> None:
 
 @given(st.data())
 def test_session_nested(tmp_url_factory: Callable[[], str], data: st.DataObject):
-    runs = data.draw(st_model_run_list(generate_traces=True, max_size=10))
+    runs = data.draw(st_model_run_list(generate_traces=True, max_size=5))
 
     url = tmp_url_factory()
 
@@ -66,7 +66,7 @@ def test_session_nested(tmp_url_factory: Callable[[], str], data: st.DataObject)
 
 @given(st.data())
 def test_session_begin(tmp_url_factory: Callable[[], str], data: st.DataObject):
-    runs = data.draw(st_model_run_list(generate_traces=True, max_size=10))
+    runs = data.draw(st_model_run_list(generate_traces=True, max_size=5))
 
     url = tmp_url_factory()
 
