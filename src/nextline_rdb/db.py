@@ -93,11 +93,13 @@ class DB:
         )
 
     def _get_current_revision(self) -> str | None:
+        '''The Alembic migration revision of the current database.'''
         with self.engine.connect() as connection:
             context = MigrationContext.configure(connection)
             return context.get_current_revision()
 
     def _define_tables(self) -> None:
+        '''Create the tables in the database without running Alembic.'''
         # https://docs.sqlalchemy.org/en/20/orm/quickstart.html#emit-create-table-ddl
         self.model_base_class.metadata.create_all(bind=self.engine)
 
