@@ -49,12 +49,14 @@ class DB:
         create_engine_kwargs: Optional[dict] = None,  # e.g., {'echo': True}
         model_base_class: Type[DeclarativeBase] = models.Model,
         use_migration: bool = True,
+        migration_revision_target: str = 'head',
     ):
         url = url or 'sqlite://'
         self.url = ensure_sync_url(url)
         self.create_engine_kwargs = create_engine_kwargs or {}
         self.model_base_class = model_base_class
         self.use_migration = use_migration
+        self.migration_revision_target = migration_revision_target
 
         self.engine = create_engine(self.url, **self.create_engine_kwargs)
         self.migration_revision: str | None = None
@@ -79,7 +81,11 @@ class DB:
         self.session = sessionmaker(self.engine, expire_on_commit=False)
 
     def _migrate(self) -> None:
-        migrate_to_head(self.engine, model_base_class=self.model_base_class)
+        migrate(
+            engine=self.engine,
+            model_base_class=self.model_base_class,
+            target=self.migration_revision_target,
+        )
 
     def _define_tables(self) -> None:
         # https://docs.sqlalchemy.org/en/20/orm/quickstart.html#emit-create-table-ddl
@@ -96,7 +102,9 @@ class DB:
         self.close()
 
 
-def migrate_to_head(engine: Engine, model_base_class: Type[DeclarativeBase]) -> None:
+def migrate(
+    engine: Engine, model_base_class: Type[DeclarativeBase], target: str = 'head'
+) -> None:
     '''Run alembic to upgrade the database to the latest version.'''
     config = Config(ALEMBIC_INI)
 
@@ -112,7 +120,7 @@ def migrate_to_head(engine: Engine, model_base_class: Type[DeclarativeBase]) -> 
 
     def upgrade(rev: str, context):  # type: ignore[no-untyped-def]
         del context
-        return script._upgrade_revs('head', rev)
+        return script._upgrade_revs(target, rev)
 
     context = EnvironmentContext(config, script, fn=upgrade)
     with engine.connect() as connection:
