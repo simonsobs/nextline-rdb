@@ -46,7 +46,7 @@ class DB:
     def __init__(
         self,
         url: Optional[str] = None,
-        create_engine_kwargs: Optional[dict] = None,
+        create_engine_kwargs: Optional[dict] = None,  # e.g., {'echo': True}
         model_base_class: Type[DeclarativeBase] = models.Model,
     ):
         url = url or 'sqlite://'
