@@ -67,11 +67,9 @@ class DB:
         logger.info(f"SQLAlchemy DB URL: {self.url}")
 
         if self.use_migration:
-            migrate_to_head(self.engine, model_base_class=self.model_base_class)
+            self._migrate()
         else:
-            # Define tables in the database based on the ORM models.
-            # https://docs.sqlalchemy.org/en/20/orm/quickstart.html#emit-create-table-ddl
-            self.model_base_class.metadata.create_all(bind=self.engine)
+            self._define_tables()
 
         with self.engine.connect() as connection:
             context = MigrationContext.configure(connection)
@@ -79,6 +77,13 @@ class DB:
         logger.info(f"Alembic migration version: {self.migration_revision!s}")
 
         self.session = sessionmaker(self.engine, expire_on_commit=False)
+
+    def _migrate(self) -> None:
+        migrate_to_head(self.engine, model_base_class=self.model_base_class)
+
+    def _define_tables(self) -> None:
+        # https://docs.sqlalchemy.org/en/20/orm/quickstart.html#emit-create-table-ddl
+        self.model_base_class.metadata.create_all(bind=self.engine)
 
     def close(self) -> None:
         pass
