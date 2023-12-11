@@ -7,7 +7,7 @@ from alembic.config import Config
 from alembic.migration import MigrationContext
 from alembic.runtime.environment import EnvironmentContext
 from alembic.script import ScriptDirectory
-from sqlalchemy import Engine, create_engine
+from sqlalchemy import Engine, MetaData, create_engine
 from sqlalchemy.orm import DeclarativeBase, sessionmaker
 
 import nextline_rdb
@@ -57,6 +57,7 @@ class DB:
         self.url = ensure_sync_url(url)
         self.create_engine_kwargs = create_engine_kwargs or {}
         self.model_base_class = model_base_class
+        self.metadata = self.model_base_class.metadata
         self.use_migration = use_migration
         self.migration_revision_target = migration_revision_target
         self.alembic_ini_path = alembic_ini_path
@@ -87,7 +88,7 @@ class DB:
         config = Config(self.alembic_ini_path)
         migrate(
             engine=self.engine,
-            model_base_class=self.model_base_class,
+            metadata=self.metadata,
             config=config,
             target=self.migration_revision_target,
         )
@@ -101,7 +102,7 @@ class DB:
     def _define_tables(self) -> None:
         '''Create the tables in the database without running Alembic.'''
         # https://docs.sqlalchemy.org/en/20/orm/quickstart.html#emit-create-table-ddl
-        self.model_base_class.metadata.create_all(bind=self.engine)
+        self.metadata.create_all(bind=self.engine)
 
     def close(self) -> None:
         pass
@@ -116,7 +117,7 @@ class DB:
 
 def migrate(
     engine: Engine,
-    model_base_class: Type[DeclarativeBase],
+    metadata: MetaData,
     config: Config,
     target: str = 'head',
 ) -> None:
@@ -140,7 +141,7 @@ def migrate(
     with engine.connect() as connection:
         context.configure(
             connection=connection,
-            target_metadata=model_base_class.metadata,
+            target_metadata=metadata,
             render_as_batch=True,
         )
         with context.begin_transaction():

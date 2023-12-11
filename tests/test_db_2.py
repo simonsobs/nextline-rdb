@@ -35,6 +35,16 @@ def test_ensure_sync_url(tmp_url_factory: Callable[[], str]):
         assert db.url == url
 
 
+def test_fields():
+    db = DB()
+    assert db.url
+    assert db.metadata
+    assert db.engine
+
+    with db:
+        assert db.session
+
+
 @given(st.data())
 def test_migration_revision(data: st.DataObject) -> None:
     use_migration = data.draw(st.booleans())
