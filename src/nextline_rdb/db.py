@@ -73,9 +73,7 @@ class DB:
         else:
             self._define_tables()
 
-        with self.engine.connect() as connection:
-            context = MigrationContext.configure(connection)
-            self.migration_revision = context.get_current_revision()
+        self.migration_revision = self._get_current_revision()
         logger.info(f'Alembic migration version: {self.migration_revision!s}')
 
         self.session = sessionmaker(self.engine, expire_on_commit=False)
@@ -86,6 +84,11 @@ class DB:
             model_base_class=self.model_base_class,
             target=self.migration_revision_target,
         )
+
+    def _get_current_revision(self) -> str | None:
+        with self.engine.connect() as connection:
+            context = MigrationContext.configure(connection)
+            return context.get_current_revision()
 
     def _define_tables(self) -> None:
         # https://docs.sqlalchemy.org/en/20/orm/quickstart.html#emit-create-table-ddl
