@@ -1,4 +1,5 @@
 from logging import getLogger
+from os import PathLike
 from pathlib import Path
 from typing import Optional, Type
 
@@ -50,6 +51,7 @@ class DB:
         model_base_class: Type[DeclarativeBase] = models.Model,
         use_migration: bool = True,
         migration_revision_target: str = 'head',
+        alembic_ini_path: str | PathLike = ALEMBIC_INI,
     ):
         url = url or 'sqlite://'
         self.url = ensure_sync_url(url)
@@ -57,6 +59,7 @@ class DB:
         self.model_base_class = model_base_class
         self.use_migration = use_migration
         self.migration_revision_target = migration_revision_target
+        self.alembic_ini_path = alembic_ini_path
 
         self.engine = create_engine(self.url, **self.create_engine_kwargs)
         self.migration_revision: str | None = None
@@ -79,9 +82,13 @@ class DB:
         self.session = sessionmaker(self.engine, expire_on_commit=False)
 
     def _migrate(self) -> None:
+        '''Run Alembic to upgrade the database to the target revision.'''
+        assert Path(self.alembic_ini_path).is_file()
+        config = Config(self.alembic_ini_path)
         migrate(
             engine=self.engine,
             model_base_class=self.model_base_class,
+            config=config,
             target=self.migration_revision_target,
         )
 
@@ -106,10 +113,12 @@ class DB:
 
 
 def migrate(
-    engine: Engine, model_base_class: Type[DeclarativeBase], target: str = 'head'
+    engine: Engine,
+    model_base_class: Type[DeclarativeBase],
+    config: Config,
+    target: str = 'head',
 ) -> None:
     '''Run alembic to upgrade the database to the latest version.'''
-    config = Config(ALEMBIC_INI)
 
     # config.set_main_option('sqlalchemy.url', str(engine.url))
     # from alembic import command
