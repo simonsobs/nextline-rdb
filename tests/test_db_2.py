@@ -43,10 +43,15 @@ def test_migration_revision() -> None:
 @given(st.data())
 def test_session_nested(tmp_url_factory: Callable[[], str], data: st.DataObject):
     runs = data.draw(st_model_run_list(generate_traces=True, max_size=5))
+    use_migration = data.draw(st.booleans())
 
     url = tmp_url_factory()
 
-    with DB(url) as db:
+    with DB(url, use_migration=use_migration) as db:
+        if use_migration:
+            assert db.migration_revision
+        else:
+            assert db.migration_revision is None
         with db.session() as session:
             with session.begin():
                 session.add_all(runs)

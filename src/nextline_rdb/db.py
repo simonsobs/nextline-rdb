@@ -48,11 +48,14 @@ class DB:
         url: Optional[str] = None,
         create_engine_kwargs: Optional[dict] = None,  # e.g., {'echo': True}
         model_base_class: Type[DeclarativeBase] = models.Model,
+        use_migration: bool = True,
     ):
         url = url or 'sqlite://'
         self.url = ensure_sync_url(url)
         self.create_engine_kwargs = create_engine_kwargs or {}
         self.model_base_class = model_base_class
+        self.use_migration = use_migration
+
         self.engine = create_engine(self.url, **self.create_engine_kwargs)
         self.migration_revision: str | None = None
 
@@ -62,17 +65,19 @@ class DB:
     def start(self) -> None:
         logger = getLogger(__name__)
         logger.info(f"SQLAlchemy DB URL: {self.url}")
-        migrate_to_head(self.engine, model_base_class=self.model_base_class)
 
-        # Define tables in the database based on the ORM models.
-        # https://docs.sqlalchemy.org/en/20/orm/quickstart.html#emit-create-table-ddl
-        # NOTE: unnecessary as alembic is used
-        self.model_base_class.metadata.create_all(bind=self.engine)
+        if self.use_migration:
+            migrate_to_head(self.engine, model_base_class=self.model_base_class)
+        else:
+            # Define tables in the database based on the ORM models.
+            # https://docs.sqlalchemy.org/en/20/orm/quickstart.html#emit-create-table-ddl
+            self.model_base_class.metadata.create_all(bind=self.engine)
 
         with self.engine.connect() as connection:
             context = MigrationContext.configure(connection)
             self.migration_revision = context.get_current_revision()
         logger.info(f"Alembic migration version: {self.migration_revision!s}")
+
         self.session = sessionmaker(self.engine, expire_on_commit=False)
 
     def close(self) -> None:
