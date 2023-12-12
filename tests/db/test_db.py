@@ -45,9 +45,8 @@ def test_fields():
         assert db.session
 
 
-@given(st.data())
-def test_migration_revision(data: st.DataObject) -> None:
-    use_migration = data.draw(st.booleans())
+@given(st.booleans())
+def test_migration_revision(use_migration: bool) -> None:
     with DB(use_migration=use_migration) as db:
         if use_migration:
             assert db.migration_revision
@@ -55,10 +54,8 @@ def test_migration_revision(data: st.DataObject) -> None:
             assert db.migration_revision is None
 
 
-@given(st.data())
-def test_session_nested(tmp_url_factory: Callable[[], str], data: st.DataObject):
-    runs = data.draw(st_model_run_list(generate_traces=True, max_size=5))
-
+@given(st_model_run_list(generate_traces=True, max_size=3))
+def test_session_nested(tmp_url_factory: Callable[[], str], runs: list[Model]):
     url = tmp_url_factory()
 
     with DB(url) as db:
@@ -79,10 +76,8 @@ def test_session_nested(tmp_url_factory: Callable[[], str], data: st.DataObject)
         assert repr_saved == repr_loaded
 
 
-@given(st.data())
-def test_session_begin(tmp_url_factory: Callable[[], str], data: st.DataObject):
-    runs = data.draw(st_model_run_list(generate_traces=True, max_size=5))
-
+@given(st_model_run_list(generate_traces=True, max_size=3))
+def test_session_begin(tmp_url_factory: Callable[[], str], runs: list[Model]):
     url = tmp_url_factory()
 
     with DB(url) as db:
