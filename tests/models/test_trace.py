@@ -8,7 +8,7 @@ from sqlalchemy.orm import selectinload
 from nextline_rdb.models import Trace
 from nextline_rdb.models.strategies import st_model_trace
 
-from ..db import AsyncDB
+from ..adb import AsyncDB
 
 
 @given(st.data())

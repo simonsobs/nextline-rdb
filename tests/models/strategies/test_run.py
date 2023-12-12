@@ -13,7 +13,7 @@ from nextline_rdb.utils.strategies import (
     st_ranges,
 )
 
-from ...db import AsyncDB
+from ...adb import AsyncDB
 
 
 @given(st.data())

@@ -7,7 +7,7 @@ from sqlalchemy import select
 from nextline_rdb.models import Run
 from nextline_rdb.models.strategies import st_model_run
 
-from ..db import AsyncDB
+from ..adb import AsyncDB
 
 
 @given(st.data())

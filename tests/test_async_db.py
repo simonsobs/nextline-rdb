@@ -2,7 +2,7 @@ import contextlib
 
 import pytest
 
-from .db import AsyncDB
+from .adb import AsyncDB
 
 
 @pytest.fixture

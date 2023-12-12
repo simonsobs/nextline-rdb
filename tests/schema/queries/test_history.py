@@ -13,7 +13,7 @@ from nextline_rdb.models.strategies import st_model_run_list
 from nextline_rdb.schema import Query
 from nextline_rdb.utils import ensure_sync_url
 
-from ...db import AsyncDB
+from ...adb import AsyncDB
 from ..graphql import QUERY_HISTORY
 
 

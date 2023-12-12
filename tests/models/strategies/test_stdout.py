@@ -12,7 +12,7 @@ from nextline_rdb.models.strategies import (
 )
 from nextline_rdb.utils.strategies import st_none_or
 
-from ...db import AsyncDB
+from ...adb import AsyncDB
 
 
 @given(st.data())
