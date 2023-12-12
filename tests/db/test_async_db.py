@@ -3,8 +3,11 @@ from collections.abc import Callable
 import pytest
 from hypothesis import given
 from hypothesis import strategies as st
+from sqlalchemy import select
 
 from nextline_rdb.db.adb import AsyncDB
+from nextline_rdb.models import Model
+from nextline_rdb.models.strategies import st_model_run_list
 from nextline_rdb.utils import ensure_sync_url
 
 
@@ -35,23 +38,55 @@ async def test_migration_revision(use_migration: bool) -> None:
             assert db.migration_revision is None
 
 
-async def test_session(db: AsyncDB):
-    async with db:
+@given(st_model_run_list(generate_traces=True, max_size=3))
+async def test_session_nested(tmp_url_factory: Callable[[], str], runs: list[Model]):
+    url = tmp_url_factory()
+
+    async with AsyncDB(url=url) as db:
         async with db.session() as session:
             async with session.begin():
-                pass
+                session.add_all(runs)
+                saved = sorted(session.new, key=lambda x: (x.__class__.__name__, x.id))
+                model_classes = {type(x) for x in saved}
+        repr_saved = [repr(m) for m in saved]
+
+        async with db.session() as session:
+            loaded = sorted(
+                [
+                    m
+                    for cls in model_classes
+                    for m in (await session.scalars(select(cls))).all()
+                ],
+                key=lambda x: (x.__class__.__name__, x.id),
+            )
+            repr_loaded = [repr(m) for m in loaded]
+
+        assert repr_saved == repr_loaded
 
 
-async def test_session_maker(db: AsyncDB):
-    async with db:
+@given(st_model_run_list(generate_traces=True, max_size=3))
+async def test_session_begin(tmp_url_factory: Callable[[], str], runs: list[Model]):
+    url = tmp_url_factory()
+
+    async with AsyncDB(url=url) as db:
         async with db.session.begin() as session:
-            assert session
-            pass
+            session.add_all(runs)
+            saved = sorted(session.new, key=lambda x: (x.__class__.__name__, x.id))
+            model_classes = {type(x) for x in saved}
+        repr_saved = [repr(m) for m in saved]
 
+        async with db.session() as session:
+            loaded = sorted(
+                [
+                    m
+                    for cls in model_classes
+                    for m in (await session.scalars(select(cls))).all()
+                ],
+                key=lambda x: (x.__class__.__name__, x.id),
+            )
+            repr_loaded = [repr(m) for m in loaded]
 
-@pytest.fixture
-def db():
-    return AsyncDB()
+        assert repr_saved == repr_loaded
 
 
 @pytest.fixture(scope='session')
