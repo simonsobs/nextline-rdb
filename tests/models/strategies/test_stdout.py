@@ -3,23 +3,22 @@ from hypothesis import strategies as st
 from sqlalchemy import select
 from sqlalchemy.orm import selectinload
 
+from nextline_rdb.db.adb import AsyncDB
 from nextline_rdb.models import Stdout
 from nextline_rdb.models.strategies import (
+    st_model_run,
     st_model_stdout,
     st_model_stdout_list,
-    st_model_run,
     st_model_trace_list,
 )
 from nextline_rdb.utils.strategies import st_none_or
-
-from ...db import AsyncDB
 
 
 @given(st.data())
 async def test_st_model_stdout(data: st.DataObject) -> None:
     stdout = data.draw(st_model_stdout())
 
-    async with AsyncDB() as db:
+    async with AsyncDB(use_migration=False) as db:
         async with db.session.begin() as session:
             session.add(stdout)
         async with db.session() as session:
@@ -52,7 +51,7 @@ async def test_st_model_stdout_lists(data: st.DataObject) -> None:
         assert len(runs) == 1
         assert run is None or run is runs.pop()
 
-    async with AsyncDB() as db:
+    async with AsyncDB(use_migration=False) as db:
         async with db.session.begin() as session:
             session.add_all(stdouts)
 

@@ -2,6 +2,7 @@ from hypothesis import given
 from hypothesis import strategies as st
 from sqlalchemy import select
 
+from nextline_rdb.db.adb import AsyncDB
 from nextline_rdb.models import Trace
 from nextline_rdb.models.strategies import (
     st_model_run,
@@ -12,8 +13,6 @@ from nextline_rdb.models.strategies import (
 from nextline_rdb.utils import safe_compare as sc
 from nextline_rdb.utils.strategies import st_none_or
 from nextline_rdb.utils.strategies.misc import st_graphql_ints
-
-from ...db import AsyncDB
 
 
 @given(st.data())
@@ -44,7 +43,7 @@ async def test_st_model_trace(data: st.DataObject) -> None:
 
     assert not generate_prompts or trace.prompts
 
-    async with AsyncDB() as db:
+    async with AsyncDB(use_migration=False) as db:
         async with db.session.begin() as session:
             session.add(trace)
         async with db.session() as session:
@@ -67,7 +66,7 @@ async def test_st_model_trace_lists(data: st.DataObject) -> None:
         assert len(runs) == 1
         assert run is None or run is runs.pop()
 
-    async with AsyncDB() as db:
+    async with AsyncDB(use_migration=False) as db:
         async with db.session.begin() as session:
             session.add_all(traces)
 

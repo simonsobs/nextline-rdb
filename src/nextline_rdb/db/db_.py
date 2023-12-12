@@ -10,15 +10,10 @@ from alembic.script import ScriptDirectory
 from sqlalchemy import Engine, MetaData, create_engine
 from sqlalchemy.orm import DeclarativeBase, sessionmaker
 
-import nextline_rdb
+from nextline_rdb import models
 from nextline_rdb.utils import ensure_sync_url
 
-from . import models
-
-ALEMBIC_INI = str(Path(nextline_rdb.__file__).resolve().parent / 'alembic.ini')
-
-
-assert Path(ALEMBIC_INI).is_file()
+from .const import ALEMBIC_INI
 
 
 class DB:

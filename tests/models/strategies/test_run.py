@@ -3,6 +3,7 @@ from hypothesis import strategies as st
 from sqlalchemy import select
 from sqlalchemy.orm import selectinload
 
+from nextline_rdb.db.adb import AsyncDB
 from nextline_rdb.models import Prompt, Run, Stdout, Trace
 from nextline_rdb.models.strategies import st_model_run, st_model_run_list
 from nextline_rdb.utils import safe_compare as sc
@@ -12,8 +13,6 @@ from nextline_rdb.utils.strategies import (
     st_none_or,
     st_ranges,
 )
-
-from ...db import AsyncDB
 
 
 @given(st.data())
@@ -67,7 +66,7 @@ async def test_st_model_run(data: st.DataObject) -> None:
         assert not prompts
         assert not stdouts
 
-    async with AsyncDB() as db:
+    async with AsyncDB(use_migration=False) as db:
         async with db.session.begin() as session:
             session.add(run)
         async with db.session() as session:
@@ -102,7 +101,7 @@ async def test_st_model_run_lists(data: st.DataObject) -> None:
     started_ats = [run.started_at for run in runs if run.started_at]
     assert started_ats == sorted(started_ats)
 
-    async with AsyncDB() as db:
+    async with AsyncDB(use_migration=False) as db:
         async with db.session.begin() as session:
             session.add_all(runs)
 
