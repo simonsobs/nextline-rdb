@@ -5,14 +5,13 @@ from sqlalchemy.orm import selectinload
 
 from nextline_rdb.models import Stdout
 from nextline_rdb.models.strategies import (
+    st_model_run,
     st_model_stdout,
     st_model_stdout_list,
-    st_model_run,
     st_model_trace_list,
 )
 from nextline_rdb.utils.strategies import st_none_or
-
-from ...adb import AsyncDB
+from src.nextline_rdb.db.adb import AsyncDB
 
 
 @given(st.data())

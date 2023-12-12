@@ -2,7 +2,7 @@ import contextlib
 
 import pytest
 
-from .adb import AsyncDB
+from nextline_rdb.db.adb import AsyncDB
 
 
 @pytest.fixture

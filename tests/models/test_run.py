@@ -4,10 +4,9 @@ from hypothesis import given
 from hypothesis import strategies as st
 from sqlalchemy import select
 
+from nextline_rdb.db.adb import AsyncDB
 from nextline_rdb.models import Run
 from nextline_rdb.models.strategies import st_model_run
-
-from ..adb import AsyncDB
 
 
 @given(st.data())

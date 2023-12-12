@@ -12,8 +12,7 @@ from nextline_rdb.utils.strategies import (
     st_none_or,
     st_ranges,
 )
-
-from ...adb import AsyncDB
+from src.nextline_rdb.db.adb import AsyncDB
 
 
 @given(st.data())

@@ -5,10 +5,9 @@ from hypothesis import strategies as st
 from sqlalchemy import select
 from sqlalchemy.orm import selectinload
 
+from nextline_rdb.db.adb import AsyncDB
 from nextline_rdb.models import Stdout
 from nextline_rdb.models.strategies import st_model_stdout
-
-from ..adb import AsyncDB
 
 
 @given(st.data())

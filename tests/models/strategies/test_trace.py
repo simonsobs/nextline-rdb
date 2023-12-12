@@ -12,8 +12,7 @@ from nextline_rdb.models.strategies import (
 from nextline_rdb.utils import safe_compare as sc
 from nextline_rdb.utils.strategies import st_none_or
 from nextline_rdb.utils.strategies.misc import st_graphql_ints
-
-from ...adb import AsyncDB
+from src.nextline_rdb.db.adb import AsyncDB
 
 
 @given(st.data())

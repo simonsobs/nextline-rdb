@@ -3,6 +3,7 @@ from hypothesis import strategies as st
 from sqlalchemy import select
 from sqlalchemy.orm import selectinload
 
+from nextline_rdb.db.adb import AsyncDB
 from nextline_rdb.models import Prompt
 from nextline_rdb.models.strategies import (
     st_model_prompt,
@@ -11,8 +12,6 @@ from nextline_rdb.models.strategies import (
     st_model_trace_list,
 )
 from nextline_rdb.utils.strategies import st_none_or
-
-from ...adb import AsyncDB
 
 
 @given(st.data())

@@ -9,11 +9,11 @@ from nextlinegraphql.plugins.ctrl.test import run_statement
 from nextlinegraphql.plugins.graphql.test import gql_request
 
 from nextline_rdb.db import DB
+from nextline_rdb.db.adb import AsyncDB
 from nextline_rdb.models.strategies import st_model_run_list
 from nextline_rdb.schema import Query
 from nextline_rdb.utils import ensure_sync_url
 
-from ...adb import AsyncDB
 from ..graphql import QUERY_HISTORY
 
 
