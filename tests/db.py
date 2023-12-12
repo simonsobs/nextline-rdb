@@ -1,42 +1,10 @@
 from typing import Optional, Type
 
-from sqlalchemy import create_engine
 from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
-from sqlalchemy.orm import DeclarativeBase, sessionmaker
+from sqlalchemy.orm import DeclarativeBase
 
 from nextline_rdb import models
-from nextline_rdb.utils import ensure_async_url, ensure_sync_url
-
-
-class DB:
-    '''The interface to the SQLAlchemy database.
-
-    >>> db = DB()
-    >>> with db.session() as session:
-    ...     with session.begin():
-    ...         pass
-
-    >>> with db.session.begin() as session:
-    ...     pass
-
-    '''
-
-    def __init__(
-        self,
-        url: Optional[str] = None,
-        model_base_class: Type[DeclarativeBase] = models.Model,
-        echo: bool = False,
-    ):
-        url = url or 'sqlite://'
-        self.url = ensure_sync_url(url)
-        self.model_base_class = model_base_class
-        self.metadata = self.model_base_class.metadata
-        self.engine = create_engine(self.url, echo=echo)
-        self.metadata.create_all(bind=self.engine)
-        self.session = sessionmaker(self.engine, expire_on_commit=False)
-
-    def __repr__(self) -> str:
-        return f'<{self.__class__.__name__} {self.url!r}>'
+from nextline_rdb.utils import ensure_async_url
 
 
 class AsyncDB:

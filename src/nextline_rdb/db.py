@@ -1,13 +1,14 @@
 from logging import getLogger
+from os import PathLike
 from pathlib import Path
-from typing import Optional
+from typing import Optional, Type
 
 from alembic.config import Config
 from alembic.migration import MigrationContext
 from alembic.runtime.environment import EnvironmentContext
 from alembic.script import ScriptDirectory
-from sqlalchemy import Engine, create_engine
-from sqlalchemy.orm import sessionmaker
+from sqlalchemy import Engine, MetaData, create_engine
+from sqlalchemy.orm import DeclarativeBase, sessionmaker
 
 import nextline_rdb
 from nextline_rdb.utils import ensure_sync_url
@@ -18,14 +19,6 @@ ALEMBIC_INI = str(Path(nextline_rdb.__file__).resolve().parent / 'alembic.ini')
 
 
 assert Path(ALEMBIC_INI).is_file()
-
-
-def create_tables(engine: Engine) -> None:
-    '''Define tables in the database based on the ORM models .
-
-    https://docs.sqlalchemy.org/en/20/orm/quickstart.html#emit-create-table-ddl
-    '''
-    models.Model.metadata.create_all(bind=engine)
 
 
 class DB:
@@ -54,11 +47,21 @@ class DB:
     def __init__(
         self,
         url: Optional[str] = None,
-        create_engine_kwargs: Optional[dict] = None,
+        create_engine_kwargs: Optional[dict] = None,  # e.g., {'echo': True}
+        model_base_class: Type[DeclarativeBase] = models.Model,
+        use_migration: bool = True,
+        migration_revision_target: str = 'head',
+        alembic_ini_path: str | PathLike = ALEMBIC_INI,
     ):
         url = url or 'sqlite://'
         self.url = ensure_sync_url(url)
         self.create_engine_kwargs = create_engine_kwargs or {}
+        self.model_base_class = model_base_class
+        self.metadata = self.model_base_class.metadata
+        self.use_migration = use_migration
+        self.migration_revision_target = migration_revision_target
+        self.alembic_ini_path = alembic_ini_path
+
         self.engine = create_engine(self.url, **self.create_engine_kwargs)
         self.migration_revision: str | None = None
 
@@ -67,14 +70,39 @@ class DB:
 
     def start(self) -> None:
         logger = getLogger(__name__)
-        logger.info(f"SQLAlchemy DB URL: {self.url}")
-        migrate_to_head(self.engine)
-        create_tables(self.engine)  # NOTE: unnecessary as alembic is used
+        logger.info(f'SQLAlchemy DB URL: {self.url}')
+
+        if self.use_migration:
+            self._migrate()
+        else:
+            self._define_tables()
+
+        self.migration_revision = self._get_current_revision()
+        logger.info(f'Alembic migration version: {self.migration_revision!s}')
+
+        self.session = sessionmaker(self.engine, expire_on_commit=False)
+
+    def _migrate(self) -> None:
+        '''Run Alembic to upgrade the database to the target revision.'''
+        assert Path(self.alembic_ini_path).is_file()
+        config = Config(self.alembic_ini_path)
+        migrate(
+            engine=self.engine,
+            metadata=self.metadata,
+            config=config,
+            target=self.migration_revision_target,
+        )
+
+    def _get_current_revision(self) -> str | None:
+        '''The Alembic migration revision of the current database.'''
         with self.engine.connect() as connection:
             context = MigrationContext.configure(connection)
-            self.migration_revision = context.get_current_revision()
-        logger.info(f"Alembic migration version: {self.migration_revision!s}")
-        self.session = sessionmaker(self.engine, expire_on_commit=False)
+            return context.get_current_revision()
+
+    def _define_tables(self) -> None:
+        '''Create the tables in the database without running Alembic.'''
+        # https://docs.sqlalchemy.org/en/20/orm/quickstart.html#emit-create-table-ddl
+        self.metadata.create_all(bind=self.engine)
 
     def close(self) -> None:
         pass
@@ -87,13 +115,17 @@ class DB:
         self.close()
 
 
-def migrate_to_head(engine: Engine) -> None:
+def migrate(
+    engine: Engine,
+    metadata: MetaData,
+    config: Config,
+    target: str = 'head',
+) -> None:
     '''Run alembic to upgrade the database to the latest version.'''
-    config = Config(ALEMBIC_INI)
 
     # config.set_main_option('sqlalchemy.url', str(engine.url))
     # from alembic import command
-    # command.upgrade(config, "head")
+    # command.upgrade(config, 'head')
 
     # NOTE: The commented out lines of command.upgrade() above would work fine
     # for a persistent DB. Here, the following code is instead used so that the
@@ -103,13 +135,13 @@ def migrate_to_head(engine: Engine) -> None:
 
     def upgrade(rev: str, context):  # type: ignore[no-untyped-def]
         del context
-        return script._upgrade_revs('head', rev)
+        return script._upgrade_revs(target, rev)
 
     context = EnvironmentContext(config, script, fn=upgrade)
     with engine.connect() as connection:
         context.configure(
             connection=connection,
-            target_metadata=models.Model.metadata,
+            target_metadata=metadata,
             render_as_batch=True,
         )
         with context.begin_transaction():
