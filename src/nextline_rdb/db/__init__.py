@@ -13,7 +13,7 @@ from sqlalchemy.orm import DeclarativeBase, sessionmaker
 import nextline_rdb
 from nextline_rdb.utils import ensure_sync_url
 
-from . import models
+from .. import models
 
 ALEMBIC_INI = str(Path(nextline_rdb.__file__).resolve().parent / 'alembic.ini')
 
