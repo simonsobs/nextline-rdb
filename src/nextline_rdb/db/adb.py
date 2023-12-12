@@ -55,9 +55,12 @@ class AsyncDB:
         return f'<{self.__class__.__name__} {self.url!r}>'
 
     async def start(self) -> None:
+        await self._define_tables()
+        self.session = async_sessionmaker(self.engine, expire_on_commit=False)
+
+    async def _define_tables(self) -> None:
         async with self.engine.begin() as conn:
             await conn.run_sync(self.metadata.create_all)
-        self.session = async_sessionmaker(self.engine, expire_on_commit=False)
 
     async def aclose(self) -> None:
         await self.engine.dispose()
