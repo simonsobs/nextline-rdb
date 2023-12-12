@@ -12,7 +12,7 @@ from nextline_rdb.models.strategies import st_model_prompt
 
 @given(st.data())
 async def test_repr(data: st.DataObject):
-    async with AsyncDB() as db:
+    async with AsyncDB(use_migration=False) as db:
         async with db.session.begin() as session:
             model = data.draw(st_model_prompt())
             session.add(model)

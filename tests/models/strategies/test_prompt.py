@@ -18,7 +18,7 @@ from nextline_rdb.utils.strategies import st_none_or
 async def test_st_model_prompt(data: st.DataObject) -> None:
     prompt = data.draw(st_model_prompt())
 
-    async with AsyncDB() as db:
+    async with AsyncDB(use_migration=False) as db:
         async with db.session.begin() as session:
             session.add(prompt)
         async with db.session() as session:
@@ -51,7 +51,7 @@ async def test_st_model_prompt_lists(data: st.DataObject) -> None:
         assert len(runs) == 1
         assert run is None or run is runs.pop()
 
-    async with AsyncDB() as db:
+    async with AsyncDB(use_migration=False) as db:
         async with db.session.begin() as session:
             session.add_all(prompts)
 

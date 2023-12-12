@@ -54,7 +54,7 @@ async def test_st_model_run_lists(
         with db_.session() as session:
             pass
 
-    async with AsyncDB(url) as db:
+    async with AsyncDB(url, use_migration=False) as db:
         async with db.session.begin() as session:
             session.add_all(runs)
 
