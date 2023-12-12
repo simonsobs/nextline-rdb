@@ -3,6 +3,7 @@ from hypothesis import strategies as st
 from sqlalchemy import select
 from sqlalchemy.orm import selectinload
 
+from nextline_rdb.db.adb import AsyncDB
 from nextline_rdb.models import Prompt, Run, Stdout, Trace
 from nextline_rdb.models.strategies import st_model_run, st_model_run_list
 from nextline_rdb.utils import safe_compare as sc
@@ -12,7 +13,6 @@ from nextline_rdb.utils.strategies import (
     st_none_or,
     st_ranges,
 )
-from src.nextline_rdb.db.adb import AsyncDB
 
 
 @given(st.data())

@@ -2,6 +2,7 @@ from hypothesis import given
 from hypothesis import strategies as st
 from sqlalchemy import select
 
+from nextline_rdb.db.adb import AsyncDB
 from nextline_rdb.models import Trace
 from nextline_rdb.models.strategies import (
     st_model_run,
@@ -12,7 +13,6 @@ from nextline_rdb.models.strategies import (
 from nextline_rdb.utils import safe_compare as sc
 from nextline_rdb.utils.strategies import st_none_or
 from nextline_rdb.utils.strategies.misc import st_graphql_ints
-from src.nextline_rdb.db.adb import AsyncDB
 
 
 @given(st.data())
