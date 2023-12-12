@@ -71,6 +71,8 @@ addopts = "--doctest-modules"
 doctest_optionflags = ["ELLIPSIS"]
 norecursedirs = "src/nextline_rdb/alembic build"
 filterwarnings = ["ignore::hypothesis.errors.NonInteractiveExampleWarning"]
+log_cli = false
+log_cli_level = "INFO"
 
 [tool.black]
 skip-string-normalization = true
