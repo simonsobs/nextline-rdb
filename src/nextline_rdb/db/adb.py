@@ -40,14 +40,16 @@ class AsyncDB:
     def __init__(
         self,
         url: Optional[str] = None,
+        create_async_engine_kwargs: Optional[dict] = None,  # e.g., {'echo': True}
         model_base_class: Type[DeclarativeBase] = models.Model,
-        echo: bool = False,
     ):
         url = url or 'sqlite+aiosqlite://'
         self.url = ensure_async_url(url)
+        self.create_async_engine_kwargs = create_async_engine_kwargs or {}
         self.model_base_class = model_base_class
         self.metadata = self.model_base_class.metadata
-        self.engine = create_async_engine(self.url, echo=echo)
+
+        self.engine = create_async_engine(self.url, **self.create_async_engine_kwargs)
 
     def __repr__(self) -> str:
         return f'<{self.__class__.__name__} {self.url!r}>'
