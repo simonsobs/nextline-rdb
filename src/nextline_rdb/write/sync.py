@@ -9,8 +9,8 @@ from typing import TYPE_CHECKING, Deque
 
 from sqlalchemy import select
 
-from . import models as db_models
-from .db import DB
+from nextline_rdb import models as db_models
+from nextline_rdb.db import DB
 
 if TYPE_CHECKING:
     from nextline import Nextline
