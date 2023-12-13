@@ -1,5 +1,5 @@
 import asyncio
-from collections.abc import Iterator
+from collections.abc import Callable, Iterator
 from pathlib import Path
 from typing import Optional, cast
 
@@ -81,10 +81,24 @@ async def run_nextline(db: DB, statement: str) -> None:
 
 
 @pytest.fixture
-def db() -> Iterator[DB]:
-    url = 'sqlite:///:memory:?check_same_thread=false'
+def db(url: str) -> Iterator[DB]:
     with DB(url=url) as db:
         yield db
+
+
+@pytest.fixture
+def url(tmp_url_factory: Callable[[], str]) -> str:
+    return tmp_url_factory()
+
+
+@pytest.fixture(scope='session')
+def tmp_url_factory(tmp_path_factory: pytest.TempPathFactory) -> Callable[[], str]:
+    def factory() -> str:
+        dir = tmp_path_factory.mktemp('db')
+        url = f'sqlite:///{dir}/db.sqlite'
+        return url
+
+    return factory
 
 
 async def run_statement(nextline: Nextline, statement: Optional[str] = None) -> None:
