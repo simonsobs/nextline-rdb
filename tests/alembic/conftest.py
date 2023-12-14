@@ -16,7 +16,7 @@ def alembic_config() -> Config:
 @pytest.fixture
 def alembic_config_in_memory(alembic_config: Config) -> Config:
     config = alembic_config
-    url = 'sqlite://'
+    url = 'sqlite+aiosqlite://'
     config.set_main_option('sqlalchemy.url', url)
     return config
 
@@ -27,6 +27,6 @@ def alembic_config_temp_sqlite(
 ) -> Config:
     config = alembic_config
     dir = tmp_path_factory.mktemp('db')
-    url = f'sqlite:///{dir}/db.sqlite'
+    url = f'sqlite+aiosqlite:///{dir}/db.sqlite'
     config.set_main_option('sqlalchemy.url', url)
     return config
