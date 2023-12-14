@@ -24,8 +24,8 @@ class History:
 @strawberry.type
 class Query:
     @strawberry.field
-    def history(self, info: Info) -> History:
+    async def history(self, info: Info) -> History:
         db = info.context["db"]
-        with db.session() as session:
+        async with db.session() as session:
             info.context["session"] = session
             return History()

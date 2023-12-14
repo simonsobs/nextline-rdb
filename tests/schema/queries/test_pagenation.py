@@ -6,7 +6,7 @@ import pytest
 from async_asgi_testclient import TestClient
 from nextlinegraphql.plugins.graphql.test import gql_request, gql_request_response
 
-from nextline_rdb import DB
+from nextline_rdb import AsyncDB
 from nextline_rdb.models import Run
 
 from ..graphql import QUERY_HISTORY_RUNS
@@ -323,7 +323,7 @@ async def assert_results(client: TestClient, variables, expected):
     edges = all_runs["edges"]
 
     # print(page_info)
-    print(edges)
+    # print(edges)
 
     assert expected_page_info == page_info
 
@@ -381,25 +381,9 @@ async def test_error_forward_and_backward(sample, client, variables):
 
 
 @pytest.fixture
-def sample(db: DB):
-    with db.session() as session:
-        with session.begin():
-            for run_no in range(11, 111):
-                model = Run(
-                    run_no=run_no,
-                    state="running",
-                    started_at=datetime.datetime.utcnow(),
-                    ended_at=datetime.datetime.utcnow(),
-                    script="pass",
-                )
-                session.add(model)
-
-
-@pytest.fixture
-def sample_one(db: DB):
-    with db.session() as session:
-        with session.begin():
-            run_no = 10
+async def sample(db: AsyncDB):
+    async with db.session.begin() as session:
+        for run_no in range(11, 111):
             model = Run(
                 run_no=run_no,
                 state="running",
@@ -411,12 +395,26 @@ def sample_one(db: DB):
 
 
 @pytest.fixture
-def sample_empty(db: DB):
+async def sample_one(db: AsyncDB):
+    async with db.session.begin() as session:
+        run_no = 10
+        model = Run(
+            run_no=run_no,
+            state="running",
+            started_at=datetime.datetime.utcnow(),
+            ended_at=datetime.datetime.utcnow(),
+            script="pass",
+        )
+        session.add(model)
+
+
+@pytest.fixture
+def sample_empty(db: AsyncDB):
     del db
 
 
 @pytest.fixture
-def app(db: DB):
+def app(db: AsyncDB):
     # NOTE: Overriding the app fixture from conftest.py because it adds an
     # entry in the DB. The factory.create_app() needs to be refactored so this
     # override is not needed.
@@ -445,7 +443,7 @@ def app(db: DB):
 
 
 @pytest.fixture
-def db():
+async def db():
     url = 'sqlite:///:memory:?check_same_thread=false'
-    with DB(url=url) as db:
+    async with AsyncDB(url=url) as db:
         yield db

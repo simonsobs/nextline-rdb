@@ -1,13 +1,14 @@
 import pytest
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from nextline_rdb.pagination import load_models
 
 from .models import Entity
 
 
-def test_all(session):
+async def test_all(session: AsyncSession):
     Model = Entity
-    models = load_models(session, Model, "id")
+    models = await load_models(session, Model, "id")
     expected = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
     assert expected == [m.id for m in models]
 
@@ -23,9 +24,9 @@ params = [
 
 
 @pytest.mark.parametrize("kwargs, expected", params)
-def test_forward(session, kwargs, expected):
+async def test_forward(session: AsyncSession, kwargs, expected):
     Model = Entity
-    models = load_models(session, Model, "id", **kwargs)
+    models = await load_models(session, Model, "id", **kwargs)
     assert expected == [m.id for m in models]
 
 
@@ -43,9 +44,9 @@ params = [
 
 
 @pytest.mark.parametrize("kwargs, expected", params)
-def test_forward_with_after(session, kwargs, expected):
+async def test_forward_with_after(session: AsyncSession, kwargs, expected):
     Model = Entity
-    models = load_models(session, Model, "id", **kwargs)
+    models = await load_models(session, Model, "id", **kwargs)
     assert expected == [m.id for m in models]
 
 
@@ -60,9 +61,9 @@ params = [
 
 
 @pytest.mark.parametrize("kwargs, expected", params)
-def test_backward(session, kwargs, expected):
+async def test_backward(session: AsyncSession, kwargs, expected):
     Model = Entity
-    models = load_models(session, Model, "id", **kwargs)
+    models = await load_models(session, Model, "id", **kwargs)
     assert expected == [m.id for m in models]
 
 
@@ -80,7 +81,7 @@ params = [
 
 
 @pytest.mark.parametrize("kwargs, expected", params)
-def test_backward_with_before(session, kwargs, expected):
+async def test_backward_with_before(session: AsyncSession, kwargs, expected):
     Model = Entity
-    models = load_models(session, Model, "id", **kwargs)
+    models = await load_models(session, Model, "id", **kwargs)
     assert expected == [m.id for m in models]
