@@ -1,4 +1,5 @@
 import pytest
+from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
 from nextline_rdb.pagination import SortField, load_models
 
@@ -21,10 +22,10 @@ params = [
 
 
 @pytest.mark.parametrize("kwargs, expected", params)
-def test_one(session, kwargs, expected):
+async def test_one(session: AsyncSession, kwargs, expected):
     Model = Entity
     id_field = "id"
-    models = load_models(session, Model, id_field, **kwargs)
+    models = await load_models(session, Model, id_field, **kwargs)
     assert expected == [m.id for m in models]
 
 
@@ -45,16 +46,16 @@ params = [
 
 
 @pytest.mark.parametrize("kwargs, expected", params)
-def test_str(session, kwargs, expected):
+async def test_str(session: AsyncSession, kwargs, expected):
     Model = Entity
     id_field = "txt"
-    models = load_models(session, Model, id_field, **kwargs)
+    models = await load_models(session, Model, id_field, **kwargs)
     assert expected == [getattr(m, id_field) for m in models]
 
 
 @pytest.fixture
-def sample(db):
-    with db.begin() as session:
+async def sample(db: async_sessionmaker):
+    async with db.begin() as session:
         num = [3, 3, 3, 2, 2, 2, 1, 1, 1, 1]
         txt = ["", "A", "B", "C", "D", "E", "F", "G", "H", "I"]
         for i in range(10):

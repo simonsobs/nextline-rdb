@@ -25,7 +25,7 @@ def decode_id(cursor: str) -> int:
 _T = TypeVar("_T")
 
 
-def load_connection(
+async def load_connection(
     info: Info,
     Model: Type[db_models.Model],
     id_field: str,
@@ -43,7 +43,7 @@ def load_connection(
         create_node_from_model=create_node_from_model,
     )
 
-    return query_connection(
+    return await query_connection(
         info,
         query_edges,
         before,
@@ -53,7 +53,7 @@ def load_connection(
     )
 
 
-def load_edges(
+async def load_edges(
     info: Info,
     Model: Type[db_models.Model],
     id_field: str,
@@ -66,7 +66,7 @@ def load_edges(
 ) -> list[Edge[_T]]:
     session = info.context["session"]
 
-    models = load_models(
+    models = await load_models(
         session,
         Model,
         id_field,

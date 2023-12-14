@@ -12,7 +12,7 @@ from nextline_rdb import models as db_models
 from .pagination import Connection, load_connection
 
 
-def query_connection_run(
+async def query_connection_run(
     info: Info,
     before: Optional[str] = None,
     after: Optional[str] = None,
@@ -21,10 +21,10 @@ def query_connection_run(
 ) -> Connection[RunHistory]:
     Model = db_models.Run
     NodeType = RunHistory
-    return query_connection(info, before, after, first, last, Model, NodeType)
+    return await query_connection(info, before, after, first, last, Model, NodeType)
 
 
-def query_connection_trace(
+async def query_connection_trace(
     info: Info,
     before: Optional[str] = None,
     after: Optional[str] = None,
@@ -33,10 +33,10 @@ def query_connection_trace(
 ) -> Connection[TraceHistory]:
     Model = db_models.Trace
     NodeType = TraceHistory
-    return query_connection(info, before, after, first, last, Model, NodeType)
+    return await query_connection(info, before, after, first, last, Model, NodeType)
 
 
-def query_connection_prompt(
+async def query_connection_prompt(
     info: Info,
     before: Optional[str] = None,
     after: Optional[str] = None,
@@ -45,10 +45,10 @@ def query_connection_prompt(
 ) -> Connection[PromptHistory]:
     Model = db_models.Prompt
     NodeType = PromptHistory
-    return query_connection(info, before, after, first, last, Model, NodeType)
+    return await query_connection(info, before, after, first, last, Model, NodeType)
 
 
-def query_connection_stdout(
+async def query_connection_stdout(
     info: Info,
     before: Optional[str] = None,
     after: Optional[str] = None,
@@ -57,13 +57,13 @@ def query_connection_stdout(
 ) -> Connection[StdoutHistory]:
     Model = db_models.Stdout
     NodeType = StdoutHistory
-    return query_connection(info, before, after, first, last, Model, NodeType)
+    return await query_connection(info, before, after, first, last, Model, NodeType)
 
 
 _T = TypeVar("_T")
 
 
-def query_connection(
+async def query_connection(
     info: Info,
     before: Optional[str],
     after: Optional[str],
@@ -77,7 +77,7 @@ def query_connection(
 
     create_node_from_model = NodeType.from_model  # type: ignore
 
-    return load_connection(
+    return await load_connection(
         info,
         Model,
         id_field,

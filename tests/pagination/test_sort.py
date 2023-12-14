@@ -1,4 +1,5 @@
 import pytest
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from nextline_rdb.pagination import SortField, load_models
 
@@ -65,8 +66,8 @@ params = [
 
 
 @pytest.mark.parametrize("kwargs, expected", params)
-def test_sort(session, kwargs, expected):
+async def test_sort(session: AsyncSession, kwargs, expected):
     Model = Entity
     id_field = "id"
-    models = load_models(session, Model, id_field, **kwargs)
+    models = await load_models(session, Model, id_field, **kwargs)
     assert expected == [m.id for m in models]

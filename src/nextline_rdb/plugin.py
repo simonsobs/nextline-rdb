@@ -8,12 +8,12 @@ from dynaconf import Dynaconf, Validator
 from nextline import Nextline
 from nextlinegraphql.hook import spec
 from sqlalchemy import func, select
-from sqlalchemy.orm import Session
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from . import models
-from .db import DB
+from .db import AsyncDB
 from .schema import Mutation, Query, Subscription
-from .write import write_db
+from .write import async_write_db
 
 HERE = Path(__file__).resolve().parent
 DEFAULT_CONFIG_PATH = HERE / 'default.toml'
@@ -50,14 +50,14 @@ class Plugin:
     @asynccontextmanager
     async def lifespan(self, context: Mapping) -> AsyncIterator[None]:
         nextline = context['nextline']
-        self._db = DB(self._url)
-        with self._db:
+        self._db = AsyncDB(self._url)
+        async with self._db:
             await self._initialize_nextline(nextline)
-            async with write_db(nextline, self._db):
+            async with async_write_db(nextline, self._db):
                 yield
 
     async def _initialize_nextline(self, nextline: Nextline) -> None:
-        run_no, script = self._last_run_no_and_script()
+        run_no, script = await self._last_run_no_and_script()
         if run_no is not None:
             run_no += 1
             if run_no >= nextline._init_options.run_no_start_from:
@@ -65,17 +65,17 @@ class Plugin:
         if script is not None:
             nextline._init_options.statement = script
 
-    def _last_run_no_and_script(self) -> tuple[Optional[int], Optional[str]]:
-        with self._db.session() as session:
-            last_run = self._last_run(session)
+    async def _last_run_no_and_script(self) -> tuple[Optional[int], Optional[str]]:
+        async with self._db.session() as session:
+            last_run = await self._last_run(session)
             if last_run is None:
                 return None, None
             else:
                 return last_run.run_no, last_run.script
 
-    def _last_run(self, session: Session) -> Optional[models.Run]:
+    async def _last_run(self, session: AsyncSession) -> Optional[models.Run]:
         stmt = select(models.Run, func.max(models.Run.run_no))
-        if model := session.execute(stmt).scalar_one_or_none():
+        if model := (await session.execute(stmt)).scalar_one_or_none():
             return model
         else:
             logger = getLogger(__name__)

@@ -1,8 +1,10 @@
+import asyncio
 import logging
 import logging.config
 
 from alembic import context
-from sqlalchemy import create_engine
+from sqlalchemy import Connection
+from sqlalchemy.ext.asyncio import create_async_engine
 
 from nextline_rdb import models
 
@@ -52,6 +54,27 @@ def run_migrations_offline() -> None:
         context.run_migrations()
 
 
+def do_run_migrations(connection: Connection) -> None:
+    context.configure(
+        connection=connection,
+        target_metadata=target_metadata,
+        render_as_batch=True,
+    )
+
+    with context.begin_transaction():
+        context.run_migrations()
+
+
+async def run_async_migrations() -> None:
+    assert url is not None
+    connectable = create_async_engine(url)
+
+    async with connectable.connect() as connection:
+        await connection.run_sync(do_run_migrations)
+
+    await connectable.dispose()
+
+
 def run_migrations_online() -> None:
     """Run migrations in 'online' mode.
 
@@ -59,18 +82,7 @@ def run_migrations_online() -> None:
     and associate a connection with the context.
 
     """
-    assert url is not None
-    connectable = create_engine(url)
-
-    with connectable.connect() as connection:
-        context.configure(
-            connection=connection,
-            target_metadata=target_metadata,
-            render_as_batch=True,
-        )
-
-        with context.begin_transaction():
-            context.run_migrations()
+    asyncio.run(run_async_migrations())
 
 
 if context.is_offline_mode():

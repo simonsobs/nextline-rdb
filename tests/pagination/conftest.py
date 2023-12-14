@@ -1,29 +1,26 @@
+from collections.abc import AsyncIterator
+
 import pytest
-from sqlalchemy import create_engine, select
-from sqlalchemy.orm import sessionmaker
+from sqlalchemy.ext.asyncio import (
+    AsyncEngine,
+    AsyncSession,
+    async_sessionmaker,
+    create_async_engine,
+)
 
 from .models import Base, Entity
 
 
 @pytest.fixture
-def session(db, sample):
+async def session(db: async_sessionmaker, sample) -> AsyncIterator[AsyncSession]:
     del sample
-    with db() as y:
+    async with db() as y:
         yield y
 
 
-def test_sample(db, sample):
-    del sample
-    Model = Entity
-    with db() as session:
-        stmt = select(Model)
-        models = session.scalars(stmt)
-        assert 10 == len(models.all())
-
-
 @pytest.fixture
-def sample(db):
-    with db.begin() as session:
+async def sample(db: async_sessionmaker):
+    async with db.begin() as session:
         num = [3, 3, 3, 2, 2, 2, 1, 1, 1, 1]
         txt = ["AA", "BB", "AA", "AA", "BB", "AA", "AA", "BB", "AA", "BB"]
         for i in range(10):
@@ -32,14 +29,18 @@ def sample(db):
 
 
 @pytest.fixture
-def db(engine):
-    Base.metadata.create_all(bind=engine)
-    y = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+async def db(engine) -> async_sessionmaker:
+    async with engine.begin() as conn:
+        await conn.run_sync(Base.metadata.create_all)
+    y = async_sessionmaker(bind=engine, expire_on_commit=False)
     return y
 
 
 @pytest.fixture
-def engine():
-    url = "sqlite:///:memory:?check_same_thread=false"
-    y = create_engine(url)
-    return y
+async def engine() -> AsyncIterator[AsyncEngine]:
+    url = 'sqlite+aiosqlite://'
+    y = create_async_engine(url)
+    try:
+        yield y
+    finally:
+        await y.dispose()

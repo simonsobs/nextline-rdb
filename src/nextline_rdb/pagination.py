@@ -1,11 +1,11 @@
 from typing import NamedTuple, Optional, Type, TypeVar, cast
 
 from sqlalchemy import func, select
-from sqlalchemy.orm import aliased
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import aliased, DeclarativeBase
 from sqlalchemy.sql.expression import literal
 from sqlalchemy.sql.selectable import Select
 
-from . import models as db_models
 
 # import sqlparse
 
@@ -24,9 +24,9 @@ Sort = list[SortField]
 _Id = TypeVar("_Id")
 
 
-def load_models(
-    session,
-    Model: Type[db_models.Model],
+async def load_models(
+    session: AsyncSession,
+    Model: Type[DeclarativeBase],
     id_field: str,
     *,
     sort: Optional[Sort] = None,
@@ -45,12 +45,12 @@ def load_models(
         last=last,
     )
 
-    models = session.scalars(stmt)
+    models = await session.scalars(stmt)
     return models
 
 
 def compose_statement(
-    Model: Type[db_models.Model],
+    Model: Type[DeclarativeBase],
     id_field: str,
     *,
     sort: Optional[Sort] = None,

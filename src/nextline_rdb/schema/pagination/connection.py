@@ -4,7 +4,8 @@ Strawberry doc: https://strawberry.rocks/docs/guides/pagination
 Relay doc: https://relay.dev/graphql/connections.htm
 """
 
-from typing import Callable, Generic, Optional, TypeVar
+from collections.abc import Callable, Coroutine
+from typing import Any, Generic, Optional, TypeVar
 
 import strawberry
 from strawberry.types import Info
@@ -32,9 +33,9 @@ class Connection(Generic[_T]):
     edges: list[Edge[_T]]
 
 
-def query_connection(
+async def query_connection(
     info: Info,
-    query_edges: Callable[..., list[Edge[_T]]],
+    query_edges: Callable[..., Coroutine[Any, Any, list[Edge[_T]]]],
     before: Optional[str] = None,
     after: Optional[str] = None,
     first: Optional[int] = None,
@@ -49,19 +50,19 @@ def query_connection(
     if forward:
         if first is not None:
             first += 1  # add one for has_next_page
-        edges = query_edges(info=info, after=after, first=first)
+        edges = await query_edges(info=info, after=after, first=first)
         has_previous_page = not not after
         if has_next_page := len(edges) == first:
             edges = edges[:-1]
     elif backward:
         if last is not None:
             last += 1  # add one for has_previous_page
-        edges = query_edges(info=info, before=before, last=last)
+        edges = await query_edges(info=info, before=before, last=last)
         if has_previous_page := len(edges) == last:
             edges = edges[1:]
         has_next_page = not not before
     else:
-        edges = query_edges(info)
+        edges = await query_edges(info)
         has_previous_page = False
         has_next_page = False
 
