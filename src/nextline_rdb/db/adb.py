@@ -96,12 +96,12 @@ class AsyncDB:
         )
 
     async def _get_current_revision(self) -> str | None:
-        def _fn(connection: Connection) -> str | None:
-            context = MigrationContext.configure(connection)
+        def _fn(conn: Connection) -> str | None:
+            context = MigrationContext.configure(conn)
             return context.get_current_revision()
 
-        async with self.engine.connect() as connection:
-            return await connection.run_sync(_fn)
+        async with self.engine.connect() as conn:
+            return await conn.run_sync(_fn)
 
     async def _define_tables(self) -> None:
         async with self.engine.begin() as conn:
