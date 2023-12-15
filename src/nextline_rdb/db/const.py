@@ -1,9 +1,9 @@
 from pathlib import Path
 
-
 import nextline_rdb
 
-ALEMBIC_INI = str(Path(nextline_rdb.__file__).resolve().parent / 'alembic.ini')
+_PACKAGE_TOP = Path(nextline_rdb.__file__).resolve().parent
+ALEMBIC_INI = str(_PACKAGE_TOP / 'alembic' / 'alembic.ini')
 
 
 assert Path(ALEMBIC_INI).is_file()
