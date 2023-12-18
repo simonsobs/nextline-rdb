@@ -4,7 +4,7 @@ from sqlalchemy import select
 from sqlalchemy.orm import selectinload
 
 from nextline_rdb.db.adb import AsyncDB
-from nextline_rdb.models import Run
+from nextline_rdb.models import Model, Run
 from nextline_rdb.models.strategies import st_model_run
 from nextline_rdb.utils import safe_compare as sc
 from nextline_rdb.utils.strategies import (
@@ -66,7 +66,7 @@ async def test_st_model_run(data: st.DataObject) -> None:
         assert not prompts
         assert not stdouts
 
-    async with AsyncDB(use_migration=False) as db:
+    async with AsyncDB(use_migration=False, model_base_class=Model) as db:
         async with db.session.begin() as session:
             session.add(run)
         async with db.session() as session:

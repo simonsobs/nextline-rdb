@@ -4,7 +4,7 @@ from sqlalchemy import select
 from sqlalchemy.orm import selectinload
 
 from nextline_rdb.db.adb import AsyncDB
-from nextline_rdb.models import Prompt
+from nextline_rdb.models import Model, Prompt
 from nextline_rdb.models.strategies import (
     st_model_prompt,
     st_model_prompt_list,
@@ -18,7 +18,7 @@ from nextline_rdb.utils.strategies import st_none_or
 async def test_st_model_prompt(data: st.DataObject) -> None:
     prompt = data.draw(st_model_prompt())
 
-    async with AsyncDB(use_migration=False) as db:
+    async with AsyncDB(use_migration=False, model_base_class=Model) as db:
         async with db.session.begin() as session:
             session.add(prompt)
         async with db.session() as session:
@@ -51,7 +51,7 @@ async def test_st_model_prompt_lists(data: st.DataObject) -> None:
         assert len(runs) == 1
         assert run is None or run is runs.pop()
 
-    async with AsyncDB(use_migration=False) as db:
+    async with AsyncDB(use_migration=False, model_base_class=Model) as db:
         async with db.session.begin() as session:
             session.add_all(prompts)
 

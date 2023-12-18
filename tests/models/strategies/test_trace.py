@@ -3,7 +3,7 @@ from hypothesis import strategies as st
 from sqlalchemy import select
 
 from nextline_rdb.db.adb import AsyncDB
-from nextline_rdb.models import Trace
+from nextline_rdb.models import Model, Trace
 from nextline_rdb.models.strategies import (
     st_model_run,
     st_model_trace,
@@ -66,7 +66,7 @@ async def test_st_model_trace_lists(data: st.DataObject) -> None:
         assert len(runs) == 1
         assert run is None or run is runs.pop()
 
-    async with AsyncDB(use_migration=False) as db:
+    async with AsyncDB(use_migration=False, model_base_class=Model) as db:
         async with db.session.begin() as session:
             session.add_all(traces)
 

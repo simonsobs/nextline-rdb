@@ -3,7 +3,7 @@ from hypothesis import strategies as st
 from sqlalchemy import select
 
 from nextline_rdb.db.adb import AsyncDB
-from nextline_rdb.models import Prompt, Run, Stdout, Trace
+from nextline_rdb.models import Model, Prompt, Run, Stdout, Trace
 from nextline_rdb.models.strategies import st_model_run_list
 from nextline_rdb.utils.strategies import st_ranges
 
@@ -50,7 +50,7 @@ async def test_db(runs: list[Run]) -> None:
     prompts = [prompt for run in runs for prompt in run.prompts]
     stdouts = [stdout for run in runs for stdout in run.stdouts]
 
-    async with AsyncDB(use_migration=False) as db:
+    async with AsyncDB(use_migration=False, model_base_class=Model) as db:
         async with db.session.begin() as session:
             session.add_all(runs)
 
