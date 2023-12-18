@@ -9,7 +9,7 @@ from nextline_rdb.utils.strategies import st_ranges
 
 
 @given(st.data())
-async def test_st_model_run_lists(data: st.DataObject) -> None:
+async def test_options(data: st.DataObject) -> None:
     generate_traces = data.draw(st.booleans())
     min_size, max_size = data.draw(
         st_ranges(
@@ -42,6 +42,13 @@ async def test_st_model_run_lists(data: st.DataObject) -> None:
 
     started_ats = [run.started_at for run in runs if run.started_at]
     assert started_ats == sorted(started_ats)
+
+
+@given(runs=st_model_run_list(generate_traces=True, min_size=0, max_size=3))
+async def test_db(runs: list[Run]) -> None:
+    traces = [trace for run in runs for trace in run.traces]
+    prompts = [prompt for run in runs for prompt in run.prompts]
+    stdouts = [stdout for run in runs for stdout in run.stdouts]
 
     async with AsyncDB(use_migration=False) as db:
         async with db.session.begin() as session:
