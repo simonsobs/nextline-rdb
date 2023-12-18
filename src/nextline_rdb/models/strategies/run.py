@@ -22,9 +22,9 @@ def st_model_run(
     max_ended_at: Optional[dt.datetime] = None,
     generate_traces: bool = True,
 ) -> Run:
-    from .trace import st_model_trace_list
     from .prompt import st_model_prompt_list
     from .stdout import st_model_stdout_list
+    from .trace import st_model_trace_list
 
     def st_run_no() -> st.SearchStrategy[int]:
         if run_no is not None:
