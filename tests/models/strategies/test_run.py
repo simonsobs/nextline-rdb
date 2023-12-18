@@ -79,14 +79,19 @@ async def test_db(run: Run) -> None:
         async with db.session() as session:
             select_run = select(Run)
             run_ = await session.scalar(
-                select_run.options(selectinload(Run.traces), selectinload(Run.prompts))
+                select_run.options(
+                    selectinload(Run.traces),
+                    selectinload(Run.prompts),
+                    selectinload(Run.stdouts),
+                )
             )
             assert run_
             session.expunge_all()
 
     assert repr(run) == repr(run_)
-    traces = sorted(traces, key=lambda trace: trace.id)
-    assert repr(traces) == repr(sorted(run_.traces, key=lambda trace: trace.id))
-    prompts = sorted(prompts, key=lambda prompt: prompt.id)
-    assert repr(prompts) == repr(sorted(run_.prompts, key=lambda prompt: prompt.id))
-    stdouts = sorted(stdouts, key=lambda stdout: stdout.id)
+    traces = sorted(traces, key=lambda m: m.id)
+    assert repr(traces) == repr(sorted(run_.traces, key=lambda m: m.id))
+    prompts = sorted(prompts, key=lambda m: m.id)
+    assert repr(prompts) == repr(sorted(run_.prompts, key=lambda m: m.id))
+    stdouts = sorted(stdouts, key=lambda m: m.id)
+    assert repr(stdouts) == repr(sorted(run_.stdouts, key=lambda m: m.id))
