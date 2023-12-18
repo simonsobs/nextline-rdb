@@ -26,9 +26,7 @@ convention = {
 metadata = MetaData(naming_convention=convention)
 
 
-class Model(DeclarativeBase):
-    metadata = metadata
-
+class ReprMixin:
     def __repr__(self) -> str:
         '''Return a string that can be used to reconstruct the object.'''
         props = class_mapper(self.__class__).iterate_properties
@@ -62,3 +60,7 @@ def repr_val(val: Any) -> str:
             return 'float("nan")'
         case _:
             return repr(val)
+
+
+class Model(ReprMixin, DeclarativeBase):
+    metadata = metadata
