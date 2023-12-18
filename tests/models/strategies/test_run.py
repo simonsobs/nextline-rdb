@@ -87,15 +87,35 @@ async def test_st_model_run(data: st.DataObject) -> None:
 
 @given(st.data())
 async def test_st_model_run_lists(data: st.DataObject) -> None:
-    max_size = data.draw(st.integers(min_value=0, max_value=4))
-    runs = data.draw(st_model_run_list(generate_traces=True, max_size=max_size))
-    assert len(runs) <= max_size
+    generate_traces = data.draw(st.booleans())
+    min_size, max_size = data.draw(
+        st_ranges(
+            st_=st.integers,
+            min_start=0,
+            max_end=4,
+            allow_start_none=False,
+            allow_end_none=False,
+        )
+    )
+    assert isinstance(min_size, int)
+    assert isinstance(max_size, int)
+    runs = data.draw(
+        st_model_run_list(
+            generate_traces=generate_traces, min_size=min_size, max_size=max_size
+        )
+    )
+    assert min_size <= len(runs) <= max_size
     run_nos = [run.run_no for run in runs]
     assert run_nos == sorted(run_nos)
 
     traces = [trace for run in runs for trace in run.traces]
     prompts = [prompt for run in runs for prompt in run.prompts]
     stdouts = [stdout for run in runs for stdout in run.stdouts]
+
+    if generate_traces is False:
+        assert not traces
+        assert not prompts
+        assert not stdouts
 
     started_ats = [run.started_at for run in runs if run.started_at]
     assert started_ats == sorted(started_ats)
