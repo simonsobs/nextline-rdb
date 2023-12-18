@@ -17,7 +17,7 @@ from nextline_rdb.utils.strategies import (
 
 @given(st.data())
 @settings(max_examples=200)
-async def test_st_model_run(data: st.DataObject) -> None:
+async def test_options(data: st.DataObject) -> None:
     run_no = data.draw(st_none_or(st_graphql_ints(min_value=1)))
     if run_no is None:
         min_run_no, max_run_no = data.draw(st_ranges(st_=st_graphql_ints, min_start=1))
@@ -65,6 +65,13 @@ async def test_st_model_run(data: st.DataObject) -> None:
         assert not traces
         assert not prompts
         assert not stdouts
+
+
+@given(run=st_model_run())
+async def test_db(run: Run) -> None:
+    traces = run.traces
+    prompts = run.prompts
+    stdouts = run.stdouts
 
     async with AsyncDB(use_migration=False, model_base_class=Model) as db:
         async with db.session.begin() as session:
