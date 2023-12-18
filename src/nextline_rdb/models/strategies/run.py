@@ -82,8 +82,9 @@ def st_model_run_list(
         ).map(cast(Callable[[Iterable[int]], list[int]], sorted))
     )
     runs = list[Run]()
-    min_started_at = draw(st_datetimes())
+    min_started_at = None
     for run_no in run_nos:
+        min_started_at = min_started_at or draw(st_datetimes())
         run = draw(
             st_model_run(
                 run_no=run_no,
