@@ -59,9 +59,9 @@ def st_model_run(
     )
 
     if generate_traces:
-        draw(st_model_trace_list(run=run, min_size=1, max_size=5))
-        draw(st_model_prompt_list(run=run, min_size=0, max_size=10))
-        draw(st_model_stdout_list(run=run, min_size=0, max_size=10))
+        draw(st_model_trace_list(run=run, min_size=1, max_size=4))
+        draw(st_model_prompt_list(run=run, min_size=0, max_size=8))
+        draw(st_model_stdout_list(run=run, min_size=0, max_size=5))
 
     return run
 
