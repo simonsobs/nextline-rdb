@@ -1,8 +1,14 @@
 import asyncio
+import os
 
 import pytest
 from async_asgi_testclient import TestClient
+from hypothesis import settings
 from nextlinegraphql import create_app
+
+if os.getenv('GITHUB_ACTIONS') == 'true':
+    settings.register_profile('ci', deadline=None)
+    settings.load_profile('ci')
 
 
 @pytest.fixture
