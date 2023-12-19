@@ -12,14 +12,13 @@ async def test_one(client: TestClient):
     await asyncio.sleep(0.05)
 
     data = await gql_request(client, QUERY_HISTORY)
-    # print(data["history"])
-    runs = data["history"]["runs"]
-    edges = runs["edges"]
-    # assert 2 == len(runs)
-    run = edges[1]["node"]
-    assert 2 == run["runNo"]
-    assert "finished" == run["state"]
-    assert run["startedAt"]
-    assert run["endedAt"]
-    assert run["script"]
-    assert not run["exception"]
+    runs = data['history']['runs']
+    edges = runs['edges']
+    assert 2 == len(edges)
+    run = edges[1]['node']
+    assert 2 == run['runNo']
+    assert 'finished' == run['state']
+    assert run['startedAt']
+    assert run['endedAt']
+    assert run['script']
+    assert not run['exception']
