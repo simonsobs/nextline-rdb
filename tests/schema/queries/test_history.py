@@ -1,24 +1,28 @@
-import asyncio
+import strawberry
+from hypothesis import given
 
-from async_asgi_testclient import TestClient
-from nextlinegraphql.plugins.ctrl.test import run_statement
-from nextlinegraphql.plugins.graphql.test import gql_request
+from nextline_rdb.db.adb import AsyncDB
+from nextline_rdb.models import Run
+from nextline_rdb.models.strategies import st_model_run_list
+from nextline_rdb.schema import Query
 
 from ..graphql import QUERY_HISTORY
 
 
-async def test_one(client: TestClient):
-    await run_statement(client)
-    await asyncio.sleep(0.05)
+@given(runs=st_model_run_list(generate_traces=True, min_size=0, max_size=3))
+async def test_history(runs: list[Run]) -> None:
+    schema = strawberry.Schema(query=Query)
 
-    data = await gql_request(client, QUERY_HISTORY)
-    runs = data['history']['runs']
-    edges = runs['edges']
-    assert 2 == len(edges)
-    run = edges[1]['node']
-    assert 2 == run['runNo']
-    assert 'finished' == run['state']
-    assert run['startedAt']
-    assert run['endedAt']
-    assert run['script']
-    assert not run['exception']
+    async with AsyncDB() as db:
+        async with db.session.begin() as session:
+            session.add_all(runs)
+
+        resp = await schema.execute(QUERY_HISTORY, context_value={'db': db})
+
+    assert resp.data
+    history = resp.data['history']
+    runs_ = history['runs']['edges']
+
+    assert len(runs) == len(runs_)
+
+    # TODO: Now only the number of runs is checked. Check the contents as well.
