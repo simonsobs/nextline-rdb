@@ -1,5 +1,7 @@
 __all__ = [
+    'NAMING_CONVENTION',
     'Model',
+    'ReprMixin',
     'repr_val',
     'Hello',
     'Run',
@@ -9,7 +11,7 @@ __all__ = [
 ]
 
 
-from .base import Model, repr_val
+from .base import NAMING_CONVENTION, Model, ReprMixin, repr_val
 from .hello import Hello
 from .prompt import Prompt
 from .run import Run

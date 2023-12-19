@@ -22,9 +22,9 @@ def st_model_run(
     max_ended_at: Optional[dt.datetime] = None,
     generate_traces: bool = True,
 ) -> Run:
-    from .trace import st_model_trace_list
     from .prompt import st_model_prompt_list
     from .stdout import st_model_stdout_list
+    from .trace import st_model_trace_list
 
     def st_run_no() -> st.SearchStrategy[int]:
         if run_no is not None:
@@ -59,9 +59,9 @@ def st_model_run(
     )
 
     if generate_traces:
-        draw(st_model_trace_list(run=run, min_size=1, max_size=5))
-        draw(st_model_prompt_list(run=run, min_size=0, max_size=10))
-        draw(st_model_stdout_list(run=run, min_size=0, max_size=10))
+        draw(st_model_trace_list(run=run, min_size=1, max_size=4))
+        draw(st_model_prompt_list(run=run, min_size=0, max_size=8))
+        draw(st_model_stdout_list(run=run, min_size=0, max_size=5))
 
     return run
 
@@ -82,8 +82,9 @@ def st_model_run_list(
         ).map(cast(Callable[[Iterable[int]], list[int]], sorted))
     )
     runs = list[Run]()
-    min_started_at = draw(st_datetimes())
+    min_started_at = None
     for run_no in run_nos:
+        min_started_at = min_started_at or draw(st_datetimes())
         run = draw(
             st_model_run(
                 run_no=run_no,

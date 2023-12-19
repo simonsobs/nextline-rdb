@@ -3,28 +3,11 @@ from collections.abc import Callable
 import pytest
 from hypothesis import given
 from hypothesis import strategies as st
-from sqlalchemy import inspect
 
 from nextline_rdb.db import DB
-from nextline_rdb.models import Model
-from nextline_rdb.models.strategies import st_model_run_list
 from nextline_rdb.utils import ensure_async_url
 
-
-def object_state(obj: Model) -> str:
-    insp = inspect(obj)
-    if insp.transient:
-        return 'transient'
-    elif insp.pending:
-        return 'pending'
-    elif insp.persistent:
-        return 'persistent'
-    elif insp.deleted:
-        return 'deleted'
-    elif insp.detached:
-        return 'detached'
-    else:
-        raise ValueError(f'Unknown state for {obj}')
+from .models import Bar, Foo, Model
 
 
 def test_ensure_sync_url(tmp_url_factory: Callable[[], str]):
@@ -54,42 +37,24 @@ def test_migration_revision(use_migration: bool) -> None:
             assert db.migration_revision is None
 
 
-@given(st_model_run_list(generate_traces=True, max_size=3))
-def test_session_nested(tmp_url_factory: Callable[[], str], runs: list[Model]):
+@given(st.lists(st.integers(min_value=0, max_value=4), min_size=0, max_size=4))
+def test_session(tmp_url_factory: Callable[[], str], sizes: list[int]):
     url = tmp_url_factory()
 
-    with DB(url) as db:
+    objs = [Foo(bars=[Bar() for _ in range(size)]) for size in sizes]
+
+    with DB(url=url, model_base_class=Model, use_migration=False) as db:
         with db.session() as session:
             with session.begin():
-                session.add_all(runs)
+                session.add_all(objs)
                 saved = sorted(session.new, key=lambda x: (x.__class__.__name__, x.id))
                 model_classes = {type(x) for x in saved}
         repr_saved = [repr(m) for m in saved]
+        assert len(saved) == sum(sizes) + len(sizes)
 
         with db.session() as session:
             loaded = sorted(
-                (m for cls in model_classes for m in session.query(cls)),
-                key=lambda x: (x.__class__.__name__, x.id),
-            )
-            repr_loaded = [repr(m) for m in loaded]
-
-        assert repr_saved == repr_loaded
-
-
-@given(st_model_run_list(generate_traces=True, max_size=3))
-def test_session_begin(tmp_url_factory: Callable[[], str], runs: list[Model]):
-    url = tmp_url_factory()
-
-    with DB(url) as db:
-        with db.session.begin() as session:
-            session.add_all(runs)
-            saved = sorted(session.new, key=lambda x: (x.__class__.__name__, x.id))
-            model_classes = {type(x) for x in saved}
-        repr_saved = [repr(m) for m in saved]
-
-        with db.session() as session:
-            loaded = sorted(
-                (m for cls in model_classes for m in session.query(cls)),
+                [m for cls in model_classes for m in session.query(cls)],
                 key=lambda x: (x.__class__.__name__, x.id),
             )
             repr_loaded = [repr(m) for m in loaded]
