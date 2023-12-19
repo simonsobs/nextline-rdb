@@ -6,9 +6,9 @@ from hypothesis import strategies as st
 from sqlalchemy import select
 
 from nextline_rdb.db.adb import AsyncDB
-from nextline_rdb.models import Model
-from nextline_rdb.models.strategies import st_model_run_list
 from nextline_rdb.utils import ensure_sync_url
+
+from .models import Bar, Foo, Model
 
 
 async def test_ensure_sync_url(tmp_url_factory: Callable[[], str]):
@@ -38,42 +38,20 @@ async def test_migration_revision(use_migration: bool) -> None:
             assert db.migration_revision is None
 
 
-@given(st_model_run_list(generate_traces=True, max_size=3))
-async def test_session_nested(tmp_url_factory: Callable[[], str], runs: list[Model]):
+@given(st.lists(st.integers(min_value=0, max_value=4), min_size=0, max_size=4))
+async def test_session(tmp_url_factory: Callable[[], str], sizes: list[int]):
     url = tmp_url_factory()
 
-    async with AsyncDB(url=url) as db:
+    objs = [Foo(bars=[Bar() for _ in range(size)]) for size in sizes]
+
+    async with AsyncDB(url=url, model_base_class=Model, use_migration=False) as db:
         async with db.session() as session:
             async with session.begin():
-                session.add_all(runs)
+                session.add_all(objs)
                 saved = sorted(session.new, key=lambda x: (x.__class__.__name__, x.id))
                 model_classes = {type(x) for x in saved}
         repr_saved = [repr(m) for m in saved]
-
-        async with db.session() as session:
-            loaded = sorted(
-                [
-                    m
-                    for cls in model_classes
-                    for m in (await session.scalars(select(cls))).all()
-                ],
-                key=lambda x: (x.__class__.__name__, x.id),
-            )
-            repr_loaded = [repr(m) for m in loaded]
-
-        assert repr_saved == repr_loaded
-
-
-@given(st_model_run_list(generate_traces=True, max_size=3))
-async def test_session_begin(tmp_url_factory: Callable[[], str], runs: list[Model]):
-    url = tmp_url_factory()
-
-    async with AsyncDB(url=url) as db:
-        async with db.session.begin() as session:
-            session.add_all(runs)
-            saved = sorted(session.new, key=lambda x: (x.__class__.__name__, x.id))
-            model_classes = {type(x) for x in saved}
-        repr_saved = [repr(m) for m in saved]
+        assert len(saved) == sum(sizes) + len(sizes)
 
         async with db.session() as session:
             loaded = sorted(
