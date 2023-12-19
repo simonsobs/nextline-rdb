@@ -1,6 +1,6 @@
 import base64
 import datetime
-from typing import Any, Optional, TypedDict
+from typing import Optional, TypedDict
 
 import pytest
 from async_asgi_testclient import TestClient
@@ -8,6 +8,7 @@ from nextlinegraphql.plugins.graphql.test import gql_request, gql_request_respon
 
 from nextline_rdb import AsyncDB
 from nextline_rdb.models import Run
+from nextline_rdb.utils import EGraphQL
 
 from ..graphql import QUERY_HISTORY_RUNS
 
@@ -419,23 +420,13 @@ def app(db: AsyncDB):
     # entry in the DB. The factory.create_app() needs to be refactored so this
     # override is not needed.
     import strawberry
-    from nextlinegraphql.custom.strawberry import GraphQL
     from starlette.applications import Starlette
 
     from nextline_rdb.schema import Query
 
     schema = strawberry.Schema(query=Query)
 
-    class EGraphQL(GraphQL):
-        """Extend the strawberry GraphQL app
-
-        https://strawberry.rocks/docs/integrations/asgi
-        """
-
-        async def get_context(self, request, response=None) -> Optional[Any]:
-            return {"request": request, "response": response, "db": db}
-
-    app_ = EGraphQL(schema)
+    app_ = EGraphQL(schema).set_db(db)
 
     ret = Starlette(debug=True)
     ret.mount("/", app_)
