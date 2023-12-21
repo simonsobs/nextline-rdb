@@ -66,6 +66,9 @@ async def test_options(data: st.DataObject) -> None:
         assert not prompts
         assert not stdouts
 
+    if run.script:
+        compile(run.script, '<string>', 'exec')
+
 
 @given(run=st_model_run())
 async def test_db(run: Run) -> None:
