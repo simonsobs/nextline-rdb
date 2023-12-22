@@ -37,15 +37,16 @@ async def load_connection(
     first: Optional[int] = None,
     last: Optional[int] = None,
 ) -> Connection[_T]:
+    db = cast(AsyncDB, info.context['db'])
     query_edges = partial(
         load_edges,
+        db=db,
         Model=Model,
         id_field=id_field,
         create_node_from_model=create_node_from_model,
     )
 
     return await query_connection(
-        info,
         query_edges,
         before,
         after,
@@ -55,7 +56,7 @@ async def load_connection(
 
 
 async def load_edges(
-    info: Info,
+    db: AsyncDB,
     Model: Type[db_models.Model],
     id_field: str,
     create_node_from_model: Callable[..., _T],
@@ -65,7 +66,6 @@ async def load_edges(
     first: Optional[int] = None,
     last: Optional[int] = None,
 ) -> list[Edge[_T]]:
-    db = cast(AsyncDB, info.context['db'])
     async with db.session() as session:
         models = await load_models(
             session,

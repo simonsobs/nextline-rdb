@@ -8,7 +8,6 @@ from collections.abc import Callable, Coroutine
 from typing import Any, Generic, Optional, TypeVar
 
 import strawberry
-from strawberry.types import Info
 
 _T = TypeVar("_T")
 
@@ -34,7 +33,6 @@ class Connection(Generic[_T]):
 
 
 async def query_connection(
-    info: Info,
     query_edges: Callable[..., Coroutine[Any, Any, list[Edge[_T]]]],
     before: Optional[str] = None,
     after: Optional[str] = None,
@@ -50,19 +48,19 @@ async def query_connection(
     if forward:
         if first is not None:
             first += 1  # add one for has_next_page
-        edges = await query_edges(info=info, after=after, first=first)
+        edges = await query_edges(after=after, first=first)
         has_previous_page = not not after
         if has_next_page := len(edges) == first:
             edges = edges[:-1]
     elif backward:
         if last is not None:
             last += 1  # add one for has_previous_page
-        edges = await query_edges(info=info, before=before, last=last)
+        edges = await query_edges(before=before, last=last)
         if has_previous_page := len(edges) == last:
             edges = edges[1:]
         has_next_page = not not before
     else:
-        edges = await query_edges(info)
+        edges = await query_edges()
         has_previous_page = False
         has_next_page = False
 
