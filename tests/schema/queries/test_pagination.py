@@ -1,5 +1,6 @@
 import base64
 import datetime
+from collections.abc import AsyncIterator
 from typing import Any, Literal, Optional, TypedDict
 
 import pytest
@@ -452,6 +453,6 @@ def sample_empty(db: AsyncDB) -> None:
 
 
 @pytest.fixture
-async def db() -> AsyncDB:
+async def db() -> AsyncIterator[AsyncDB]:
     async with AsyncDB() as db:
         yield db
