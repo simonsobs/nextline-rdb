@@ -25,7 +25,4 @@ class History:
 class Query:
     @strawberry.field
     async def history(self, info: Info) -> History:
-        db = info.context["db"]
-        async with db.session() as session:
-            info.context["session"] = session
-            return History()
+        return History()

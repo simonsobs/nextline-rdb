@@ -2,8 +2,9 @@ from __future__ import annotations
 
 import base64
 from functools import partial
-from typing import TYPE_CHECKING, Callable, Optional, Type, TypeVar
+from typing import TYPE_CHECKING, Callable, Optional, Type, TypeVar, cast
 
+from nextline_rdb.db import AsyncDB
 from nextline_rdb.pagination import load_models
 
 from .connection import Connection, Edge, query_connection
@@ -64,17 +65,17 @@ async def load_edges(
     first: Optional[int] = None,
     last: Optional[int] = None,
 ) -> list[Edge[_T]]:
-    session = info.context["session"]
-
-    models = await load_models(
-        session,
-        Model,
-        id_field,
-        before=before if before is None else decode_id(before),
-        after=after if after is None else decode_id(after),
-        first=first,
-        last=last,
-    )
+    db = cast(AsyncDB, info.context['db'])
+    async with db.session() as session:
+        models = await load_models(
+            session,
+            Model,
+            id_field,
+            before=before if before is None else decode_id(before),
+            after=after if after is None else decode_id(after),
+            first=first,
+            last=last,
+        )
 
     nodes = [create_node_from_model(m) for m in models]
 
