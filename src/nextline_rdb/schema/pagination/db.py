@@ -1,18 +1,15 @@
-from __future__ import annotations
-
 import base64
+from collections.abc import Callable
 from functools import partial
-from typing import TYPE_CHECKING, Callable, Optional, Type, TypeVar, cast
+from typing import Optional, Type, TypeVar
 
+from nextline_rdb import models as db_models
 from nextline_rdb.db import AsyncDB
 from nextline_rdb.pagination import load_models
 
 from .connection import Connection, Edge, query_connection
 
-if TYPE_CHECKING:
-    from strawberry.types import Info
-
-    from nextline_rdb import models as db_models
+_T = TypeVar("_T")
 
 
 def encode_id(id: int) -> str:
@@ -23,11 +20,8 @@ def decode_id(cursor: str) -> int:
     return int(base64.b64decode(cursor).decode())
 
 
-_T = TypeVar("_T")
-
-
 async def load_connection(
-    info: Info,
+    db: AsyncDB,
     Model: Type[db_models.Model],
     id_field: str,
     create_node_from_model: Callable[..., _T],
@@ -37,7 +31,6 @@ async def load_connection(
     first: Optional[int] = None,
     last: Optional[int] = None,
 ) -> Connection[_T]:
-    db = cast(AsyncDB, info.context['db'])
     query_edges = partial(
         load_edges,
         db=db,

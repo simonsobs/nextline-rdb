@@ -75,10 +75,11 @@ async def query_connection(
     id_field = inspect(Model).primary_key[0].name
     # TODO: handle multiple primary keys
 
+    db = info.context['db']
     create_node_from_model = NodeType.from_model  # type: ignore
 
     return await load_connection(
-        info,
+        db,
         Model,
         id_field,
         create_node_from_model,
