@@ -7,6 +7,7 @@ __all__ = [
     'st_none_or',
     'st_ranges',
     'st_sqlite_ints',
+    'st_python_scripts',
 ]
 
 
@@ -20,3 +21,4 @@ from .misc import (
     st_ranges,
     st_sqlite_ints,
 )
+from .script import st_python_scripts
