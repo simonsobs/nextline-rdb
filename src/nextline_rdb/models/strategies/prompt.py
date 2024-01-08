@@ -3,9 +3,9 @@ from typing import Callable, Optional, cast
 
 from hypothesis import strategies as st
 
-from nextline_rdb.models import Prompt, Run, Trace
 from nextline_rdb.utils.strategies import st_graphql_ints, st_none_or
 
+from .. import Prompt, Run, Trace
 from .trace import st_model_trace
 from .utils import st_started_at_ended_at
 
