@@ -5,14 +5,14 @@ from hypothesis import strategies as st
 from sqlalchemy import select
 from sqlalchemy.orm import selectinload
 
+from nextline_rdb.alembic.models.rev_5a08750d6760 import Model, Prompt
+from nextline_rdb.alembic.models.rev_5a08750d6760.strategies import st_model_prompt
 from nextline_rdb.db.adb import AsyncDB
-from nextline_rdb.models import Prompt
-from nextline_rdb.models.strategies import st_model_prompt
 
 
 @given(st.data())
 async def test_repr(data: st.DataObject):
-    async with AsyncDB(use_migration=False) as db:
+    async with AsyncDB(use_migration=False, model_base_class=Model) as db:
         async with db.session.begin() as session:
             model = data.draw(st_model_prompt())
             session.add(model)

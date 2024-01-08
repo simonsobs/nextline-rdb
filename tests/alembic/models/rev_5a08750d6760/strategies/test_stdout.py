@@ -3,9 +3,9 @@ from hypothesis import strategies as st
 from sqlalchemy import select
 from sqlalchemy.orm import selectinload
 
+from nextline_rdb.alembic.models.rev_5a08750d6760 import Model, Stdout
+from nextline_rdb.alembic.models.rev_5a08750d6760.strategies import st_model_stdout
 from nextline_rdb.db.adb import AsyncDB
-from nextline_rdb.models import Model, Stdout
-from nextline_rdb.models.strategies import st_model_stdout
 
 
 @given(st.data())

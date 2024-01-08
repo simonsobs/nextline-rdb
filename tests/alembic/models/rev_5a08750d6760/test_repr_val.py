@@ -5,7 +5,7 @@ from string import ascii_lowercase, ascii_uppercase
 from hypothesis import given
 from hypothesis import strategies as st
 
-from nextline_rdb.models import repr_val
+from nextline_rdb.alembic.models.rev_5a08750d6760 import repr_val
 from nextline_rdb.utils.utc import is_timezone_aware
 
 
