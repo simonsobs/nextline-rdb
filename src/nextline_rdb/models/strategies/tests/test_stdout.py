@@ -4,8 +4,9 @@ from sqlalchemy import select
 from sqlalchemy.orm import selectinload
 
 from nextline_rdb.db.adb import AsyncDB
-from nextline_rdb.models import Model, Stdout
-from nextline_rdb.models.strategies import st_model_stdout
+
+from ... import Model, Stdout
+from .. import st_model_stdout
 
 
 @given(st.data())

@@ -6,20 +6,25 @@ from sqlalchemy import select
 from sqlalchemy.orm import selectinload
 
 from nextline_rdb.db.adb import AsyncDB
-from nextline_rdb.models import Trace
-from nextline_rdb.models.strategies import st_model_trace
+
+from .. import Model, Stdout
+from ..strategies import st_model_stdout
 
 
 @given(st.data())
 async def test_repr(data: st.DataObject):
-    async with AsyncDB(use_migration=False) as db:
+    async with AsyncDB(use_migration=False, model_base_class=Model) as db:
         async with db.session.begin() as session:
-            model = data.draw(st_model_trace())
+            model = data.draw(st_model_stdout())
             session.add(model)
 
         async with db.session() as session:
-            rows = await session.scalars(select(Trace).options(selectinload(Trace.run)))
+            rows = await session.scalars(
+                select(Stdout).options(
+                    selectinload(Stdout.run), selectinload(Stdout.trace)
+                )
+            )
             for row in rows:
                 repr_ = repr(row)
-                assert Trace, datetime  # type: ignore[truthy-function]
+                assert Stdout, datetime  # type: ignore[truthy-function]
                 assert repr_ == repr(eval(repr_))

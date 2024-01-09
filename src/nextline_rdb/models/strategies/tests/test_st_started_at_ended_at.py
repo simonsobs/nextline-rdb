@@ -1,9 +1,10 @@
 from hypothesis import given
 from hypothesis import strategies as st
 
-from nextline_rdb.models.strategies import st_started_at_ended_at
 from nextline_rdb.utils import safe_compare as sc
 from nextline_rdb.utils.strategies import st_datetimes, st_ranges
+
+from .. import st_started_at_ended_at
 
 
 @given(st.data())

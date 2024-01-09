@@ -4,8 +4,9 @@ from sqlalchemy import select
 from sqlalchemy.orm import selectinload
 
 from nextline_rdb.db.adb import AsyncDB
-from nextline_rdb.models import Model, Prompt
-from nextline_rdb.models.strategies import st_model_prompt
+
+from ... import Model, Prompt
+from .. import st_model_prompt
 
 
 @given(st.data())
