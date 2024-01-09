@@ -3,8 +3,6 @@ from hypothesis import strategies as st
 from sqlalchemy import select
 from sqlalchemy.orm import selectinload
 
-from nextline_rdb.alembic.models.rev_5a08750d6760 import Model, Run
-from nextline_rdb.alembic.models.rev_5a08750d6760.strategies import st_model_run
 from nextline_rdb.db.adb import AsyncDB
 from nextline_rdb.utils import safe_compare as sc
 from nextline_rdb.utils.strategies import (
@@ -13,6 +11,9 @@ from nextline_rdb.utils.strategies import (
     st_none_or,
     st_ranges,
 )
+
+from ... import Model, Run
+from .. import st_model_run
 
 
 @given(st.data())
