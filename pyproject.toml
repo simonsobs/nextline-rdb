@@ -72,7 +72,7 @@ timeout = 60
 addopts = "--doctest-modules --durations=10"
 # doctest_optionflags = ["ELLIPSIS", "NORMALIZE_WHITESPACE",]
 doctest_optionflags = ["ELLIPSIS"]
-norecursedirs = "src/nextline_rdb/alembic build"
+norecursedirs = "build"
 filterwarnings = ["ignore::hypothesis.errors.NonInteractiveExampleWarning"]
 log_cli = false
 log_cli_level = "INFO"
