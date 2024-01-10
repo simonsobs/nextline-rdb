@@ -3,7 +3,7 @@ from typing import TYPE_CHECKING, Any, Optional
 from nextlinegraphql.custom.strawberry import GraphQL
 
 if TYPE_CHECKING:
-    from nextline_rdb import AsyncDB
+    from nextline_rdb import DB
 
 
 class EGraphQL(GraphQL):
@@ -18,12 +18,12 @@ class EGraphQL(GraphQL):
 
     >>> import strawberry
 
-    >>> from nextline_rdb import AsyncDB
+    >>> from nextline_rdb import DB
     >>> from nextline_rdb.schema import Query
     >>> from nextline_rdb.utils import EGraphQL
 
     >>> async def main():
-    ...    async with AsyncDB() as db:
+    ...    async with DB() as db:
     ...        schema = strawberry.Schema(query=Query)
     ...        app = EGraphQL(schema).set_db(db)
 
@@ -31,7 +31,7 @@ class EGraphQL(GraphQL):
     >>> asyncio.run(main())
     '''
 
-    def set_db(self, db: 'AsyncDB') -> 'EGraphQL':
+    def set_db(self, db: 'DB') -> 'EGraphQL':
         self._db = db
         return self
 

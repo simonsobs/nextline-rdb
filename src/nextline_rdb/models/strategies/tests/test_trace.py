@@ -2,7 +2,7 @@ from hypothesis import given
 from hypothesis import strategies as st
 from sqlalchemy import select
 
-from nextline_rdb.db.adb import AsyncDB
+from nextline_rdb.db import DB
 from nextline_rdb.utils import safe_compare as sc
 from nextline_rdb.utils.strategies import st_none_or
 from nextline_rdb.utils.strategies.misc import st_graphql_ints
@@ -39,7 +39,7 @@ async def test_st_model_trace(data: st.DataObject) -> None:
 
     assert not generate_prompts or trace.prompts
 
-    async with AsyncDB(use_migration=False, model_base_class=Model) as db:
+    async with DB(use_migration=False, model_base_class=Model) as db:
         async with db.session.begin() as session:
             session.add(trace)
         async with db.session() as session:

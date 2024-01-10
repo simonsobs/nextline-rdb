@@ -9,7 +9,7 @@ from nextlinegraphql import create_app
 from nextlinegraphql.plugins.ctrl.graphql import MUTATE_RUN_AND_CONTINUE
 from nextlinegraphql.plugins.graphql.test import gql_request
 
-from nextline_rdb.db import AsyncDB
+from nextline_rdb.db import DB
 from nextline_rdb.models.strategies import st_model_run_list
 from nextline_rdb.utils.strategies import st_python_scripts
 
@@ -41,7 +41,7 @@ async def test_plugin(
             last_run.script = st_python_scripts().example()
 
     url = set_new_url()
-    async with AsyncDB(url) as db:
+    async with DB(url) as db:
         async with db.session.begin() as session:
             session.add_all(runs)
 

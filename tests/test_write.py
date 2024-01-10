@@ -9,11 +9,12 @@ from nextline.types import PromptInfo
 from nextline.utils import merge_aiters
 from sqlalchemy import select
 
-from nextline_rdb import AsyncDB, write_db
+from nextline_rdb import DB
 from nextline_rdb import models as db_models
+from nextline_rdb import write_db
 
 
-async def test_one(adb: AsyncDB, run_nextline, statement):
+async def test_one(adb: DB, run_nextline, statement):
     del run_nextline
 
     async with adb.session() as session:
@@ -72,7 +73,7 @@ def statement(monkey_patch_syspath: None) -> str:
 
 
 @pytest.fixture
-async def run_nextline(adb: AsyncDB, statement: str) -> None:
+async def run_nextline(adb: DB, statement: str) -> None:
     nextline = Nextline(statement, trace_threads=True, trace_modules=True)
     async with write_db(nextline, adb=adb):
         async with nextline:
@@ -80,8 +81,8 @@ async def run_nextline(adb: AsyncDB, statement: str) -> None:
 
 
 @pytest.fixture
-async def adb(url: str) -> AsyncIterator[AsyncDB]:
-    async with AsyncDB(url=url) as adb:
+async def adb(url: str) -> AsyncIterator[DB]:
+    async with DB(url=url) as adb:
         yield adb
 
 

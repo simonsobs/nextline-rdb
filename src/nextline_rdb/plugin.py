@@ -11,7 +11,7 @@ from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from . import models
-from .db import AsyncDB
+from .db import DB
 from .schema import Mutation, Query, Subscription
 from .write import write_db
 
@@ -41,7 +41,7 @@ class Plugin:
     @spec.hookimpl
     def configure(self, settings: Dynaconf) -> None:
         url = settings.db['url']
-        self._db = AsyncDB(url)
+        self._db = DB(url)
 
     @spec.hookimpl
     def schema(self) -> tuple[type, type | None, type | None]:
@@ -60,14 +60,14 @@ class Plugin:
 
 
 @asynccontextmanager
-async def lifespan(nextline: Nextline, db: AsyncDB) -> AsyncIterator[None]:
+async def lifespan(nextline: Nextline, db: DB) -> AsyncIterator[None]:
     async with db:
         await _initialize_nextline(nextline, db)
         async with write_db(nextline, db):
             yield
 
 
-async def _initialize_nextline(nextline: Nextline, db: AsyncDB) -> None:
+async def _initialize_nextline(nextline: Nextline, db: DB) -> None:
     run_no, script = await _last_run_no_and_script(db)
     if run_no is not None:
         run_no += 1
@@ -77,7 +77,7 @@ async def _initialize_nextline(nextline: Nextline, db: AsyncDB) -> None:
         nextline._init_options.statement = script
 
 
-async def _last_run_no_and_script(db: AsyncDB) -> tuple[Optional[int], Optional[str]]:
+async def _last_run_no_and_script(db: DB) -> tuple[Optional[int], Optional[str]]:
     async with db.session() as session:
         last_run = await _last_run(session)
         if last_run is None:

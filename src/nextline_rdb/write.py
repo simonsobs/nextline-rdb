@@ -9,13 +9,13 @@ from nextline import Nextline
 from nextline.types import StdoutInfo
 from sqlalchemy import select
 
-from nextline_rdb import AsyncDB
+from nextline_rdb import DB
 from nextline_rdb import models as db_models
 
 
 @asynccontextmanager
 async def write_db(
-    nextline: Nextline, adb: AsyncDB, timeout_on_exit: float = 3
+    nextline: Nextline, adb: DB, timeout_on_exit: float = 3
 ) -> AsyncIterator[None]:
     task = asyncio.gather(
         subscribe_run_info(nextline, adb),
@@ -34,7 +34,7 @@ async def write_db(
             raise
 
 
-async def subscribe_run_info(nextline: Nextline, adb: AsyncDB) -> None:
+async def subscribe_run_info(nextline: Nextline, adb: DB) -> None:
     async for run_info in nextline.subscribe_run_info():
         run_no = run_info.run_no
         async with adb.session.begin() as session:
@@ -61,7 +61,7 @@ async def subscribe_run_info(nextline: Nextline, adb: AsyncDB) -> None:
                 model.exception = run_info.exception
 
 
-async def subscribe_trace_info(nextline: Nextline, adb: AsyncDB) -> None:
+async def subscribe_trace_info(nextline: Nextline, adb: DB) -> None:
     async for trace_info in nextline.subscribe_trace_info():
         async with adb.session.begin() as session:
             model: db_models.Trace | None
@@ -92,7 +92,7 @@ async def subscribe_trace_info(nextline: Nextline, adb: AsyncDB) -> None:
                 model.ended_at = trace_info.ended_at
 
 
-async def subscribe_prompt_info(nextline: Nextline, adb: AsyncDB) -> None:
+async def subscribe_prompt_info(nextline: Nextline, adb: DB) -> None:
     async for prompt_info in nextline.subscribe_prompt_info():
         if prompt_info.trace_call_end:  # TODO: remove when unnecessary
             continue
@@ -137,7 +137,7 @@ async def subscribe_prompt_info(nextline: Nextline, adb: AsyncDB) -> None:
                 model.ended_at = prompt_info.ended_at
 
 
-async def subscribe_stdout(nextline: Nextline, adb: AsyncDB) -> None:
+async def subscribe_stdout(nextline: Nextline, adb: DB) -> None:
     run_info = None
     stdout_info_list: Deque[StdoutInfo] = deque()
     lock = asyncio.Condition()
