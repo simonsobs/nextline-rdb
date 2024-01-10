@@ -11,10 +11,15 @@ from sqlalchemy import Connection, MetaData
 from sqlalchemy.ext.asyncio import AsyncEngine, async_sessionmaker, create_async_engine
 from sqlalchemy.orm import DeclarativeBase
 
+import nextline_rdb
 from nextline_rdb import models
 from nextline_rdb.utils import ensure_async_url
 
-from .const import ALEMBIC_INI
+_PACKAGE_TOP = Path(nextline_rdb.__file__).resolve().parent
+ALEMBIC_INI = str(_PACKAGE_TOP / 'alembic' / 'alembic.ini')
+
+
+assert Path(ALEMBIC_INI).is_file()
 
 
 class DB:
