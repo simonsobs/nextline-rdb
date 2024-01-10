@@ -13,7 +13,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from . import models
 from .db import AsyncDB
 from .schema import Mutation, Query, Subscription
-from .write import async_write_db
+from .write import write_db
 
 HERE = Path(__file__).resolve().parent
 DEFAULT_CONFIG_PATH = HERE / 'default.toml'
@@ -63,7 +63,7 @@ class Plugin:
 async def lifespan(nextline: Nextline, db: AsyncDB) -> AsyncIterator[None]:
     async with db:
         await _initialize_nextline(nextline, db)
-        async with async_write_db(nextline, db):
+        async with write_db(nextline, db):
             yield
 
 

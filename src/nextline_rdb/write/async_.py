@@ -14,7 +14,7 @@ from nextline_rdb import models as db_models
 
 
 @asynccontextmanager
-async def async_write_db(
+async def write_db(
     nextline: Nextline, adb: AsyncDB, timeout_on_exit: float = 3
 ) -> AsyncIterator[None]:
     task = asyncio.gather(

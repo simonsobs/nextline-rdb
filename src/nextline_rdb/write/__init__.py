@@ -1,4 +1,3 @@
-__all__ = ['async_write_db', 'write_db']
+__all__ = ['write_db']
 
-from .async_ import async_write_db
-from .sync import write_db
+from .async_ import write_db
