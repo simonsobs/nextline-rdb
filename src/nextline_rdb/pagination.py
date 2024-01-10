@@ -2,10 +2,9 @@ from typing import NamedTuple, Optional, Type, TypeVar, cast
 
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.orm import aliased, DeclarativeBase
+from sqlalchemy.orm import DeclarativeBase, aliased
 from sqlalchemy.sql.expression import literal
 from sqlalchemy.sql.selectable import Select
-
 
 # import sqlparse
 
