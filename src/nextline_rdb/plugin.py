@@ -40,8 +40,7 @@ class Plugin:
 
     @spec.hookimpl
     def configure(self, settings: Dynaconf) -> None:
-        url = settings.db['url']
-        self._db = DB(url)
+        self.url = settings.db['url']
 
     @spec.hookimpl
     def schema(self) -> tuple[type, type | None, type | None]:
@@ -51,23 +50,18 @@ class Plugin:
     @asynccontextmanager
     async def lifespan(self, context: Mapping) -> AsyncIterator[None]:
         nextline = context['nextline']
-        async with lifespan(nextline, self._db):
-            yield
+        async with DB(self.url) as db:
+            self._db = db
+            await initialize_nextline(nextline, db)
+            async with write_db(nextline, db):
+                yield
 
     @spec.hookimpl
     def update_strawberry_context(self, context: MutableMapping) -> None:
         context['db'] = self._db
 
 
-@asynccontextmanager
-async def lifespan(nextline: Nextline, db: DB) -> AsyncIterator[None]:
-    async with db:
-        await _initialize_nextline(nextline, db)
-        async with write_db(nextline, db):
-            yield
-
-
-async def _initialize_nextline(nextline: Nextline, db: DB) -> None:
+async def initialize_nextline(nextline: Nextline, db: DB) -> None:
     run_no, script = await _last_run_no_and_script(db)
     if run_no is not None:
         run_no += 1
