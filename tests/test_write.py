@@ -67,7 +67,7 @@ def monkey_patch_syspath(monkeypatch: pytest.MonkeyPatch) -> None:
 def statement(monkey_patch_syspath: None) -> str:
     del monkey_patch_syspath
     here = Path(__file__).resolve().parent
-    path = here.parent / 'example_script'
+    path = here / 'example_script'
     return (path / 'script.py').read_text()
 
 
