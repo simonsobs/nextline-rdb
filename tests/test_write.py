@@ -1,24 +1,24 @@
 import asyncio
-from collections.abc import Iterator
+from collections.abc import AsyncIterator, Callable
 from pathlib import Path
-from typing import Optional, cast
+from typing import Optional
 
 import pytest
 from nextline import Nextline
 from nextline.types import PromptInfo
 from nextline.utils import merge_aiters
-from sqlalchemy.orm import Session
+from sqlalchemy import select
 
 from nextline_rdb import DB
 from nextline_rdb import models as db_models
 from nextline_rdb import write_db
 
 
-def test_one(db: DB, run_nextline, statement):
+async def test_one(adb: DB, run_nextline, statement):
     del run_nextline
-    with db.session() as session:
-        session = cast(Session, session)
-        runs = session.query(db_models.Run).all()  # type: ignore
+
+    async with adb.session() as session:
+        runs = (await session.scalars(select(db_models.Run))).all()
         assert 2 == len(runs)
         run = runs[1]
         assert 2 == run.run_no
@@ -27,7 +27,7 @@ def test_one(db: DB, run_nextline, statement):
         assert statement == run.script
         assert not run.exception
 
-        traces = session.query(db_models.Trace).all()  # type: ignore
+        traces = (await session.scalars(select(db_models.Trace))).all()
         assert 5 == len(traces)
         run_no = 2
         trace_no = 0
@@ -38,7 +38,7 @@ def test_one(db: DB, run_nextline, statement):
             assert trace.started_at
             assert trace.ended_at
 
-        prompts = session.query(db_models.Prompt).all()  # type: ignore
+        prompts = (await session.scalars(select(db_models.Prompt))).all()
         assert 58 == len(prompts)
         for prompt in prompts:
             assert run_no == prompt.run_no
@@ -48,7 +48,7 @@ def test_one(db: DB, run_nextline, statement):
             assert prompt.file_name
             assert prompt.event
 
-        stdouts = session.query(db_models.Stdout).all()  # type: ignore
+        stdouts = (await session.scalars(select(db_models.Stdout))).all()
         assert 1 == len(stdouts)
         # for stdout in stdouts:
         #     assert run_no == stdout.run_no
@@ -68,23 +68,37 @@ def monkey_patch_syspath(monkeypatch: pytest.MonkeyPatch) -> None:
 def statement(monkey_patch_syspath: None) -> str:
     del monkey_patch_syspath
     here = Path(__file__).resolve().parent
-    path = here.parent / 'example_script'
+    path = here / 'example_script'
     return (path / 'script.py').read_text()
 
 
 @pytest.fixture
-async def run_nextline(db: DB, statement: str) -> None:
+async def run_nextline(adb: DB, statement: str) -> None:
     nextline = Nextline(statement, trace_threads=True, trace_modules=True)
-    async with write_db(nextline, db):
+    async with write_db(nextline, adb=adb):
         async with nextline:
             await run_statement(nextline, statement)
 
 
 @pytest.fixture
-def db() -> Iterator[DB]:
-    url = 'sqlite:///:memory:?check_same_thread=false'
-    with DB(url=url) as db:
-        yield db
+async def adb(url: str) -> AsyncIterator[DB]:
+    async with DB(url=url) as adb:
+        yield adb
+
+
+@pytest.fixture
+def url(tmp_url_factory: Callable[[], str]) -> str:
+    return tmp_url_factory()
+
+
+@pytest.fixture(scope='session')
+def tmp_url_factory(tmp_path_factory: pytest.TempPathFactory) -> Callable[[], str]:
+    def factory() -> str:
+        dir = tmp_path_factory.mktemp('db')
+        url = f'sqlite:///{dir}/db.sqlite'
+        return url
+
+    return factory
 
 
 async def run_statement(nextline: Nextline, statement: Optional[str] = None) -> None:

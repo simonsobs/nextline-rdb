@@ -11,18 +11,23 @@ from sqlalchemy import Connection, MetaData
 from sqlalchemy.ext.asyncio import AsyncEngine, async_sessionmaker, create_async_engine
 from sqlalchemy.orm import DeclarativeBase
 
+import nextline_rdb
 from nextline_rdb import models
 from nextline_rdb.utils import ensure_async_url
 
-from .const import ALEMBIC_INI
+_PACKAGE_TOP = Path(nextline_rdb.__file__).resolve().parent
+ALEMBIC_INI = str(_PACKAGE_TOP / 'alembic' / 'alembic.ini')
 
 
-class AsyncDB:
+assert Path(ALEMBIC_INI).is_file()
+
+
+class DB:
     '''The interface to the async SQLAlchemy database.
 
     >>> async def main():
     ...     # An example usage
-    ...     async with AsyncDB() as db:
+    ...     async with DB() as db:
     ...         # nested session contexts
     ...         async with db.session() as session:
     ...             async with session.begin():
@@ -34,7 +39,7 @@ class AsyncDB:
     ...             pass
     ...
     ...     # An alternative usage
-    ...     db = AsyncDB()
+    ...     db = DB()
     ...     await db.start()
     ...     async with contextlib.aclosing(db):
     ...         async with db.session() as session:
@@ -110,7 +115,7 @@ class AsyncDB:
     async def aclose(self) -> None:
         await self.engine.dispose()
 
-    async def __aenter__(self) -> 'AsyncDB':
+    async def __aenter__(self) -> 'DB':
         await self.start()
         return self
 

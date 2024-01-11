@@ -6,7 +6,7 @@ from typing import Any, Literal, Optional, TypedDict
 import pytest
 import strawberry
 
-from nextline_rdb import AsyncDB
+from nextline_rdb import DB
 from nextline_rdb.models import Run
 from nextline_rdb.schema import Query
 
@@ -31,7 +31,7 @@ class PageInfo(TypedDict):
     endCursor: Optional[str]
 
 
-async def test_all(sample: None, db: AsyncDB) -> None:
+async def test_all(sample: None, db: DB) -> None:
     del sample
     variables = Variables()
     expected = (False, False, Cursor(1), Cursor(100))
@@ -80,7 +80,7 @@ params = [
 @pytest.mark.parametrize('variables, expected', params)
 async def test_forward(
     sample: None,
-    db: AsyncDB,
+    db: DB,
     variables: Variables,
     expected: tuple[bool, bool, str | None, str | None],
 ):
@@ -155,7 +155,7 @@ params = [
 @pytest.mark.parametrize('variables, expected', params)
 async def test_forward_with_after(
     sample: None,
-    db: AsyncDB,
+    db: DB,
     variables: Variables,
     expected: tuple[bool, bool, str | None, str | None],
 ):
@@ -205,7 +205,7 @@ params = [
 @pytest.mark.parametrize('variables, expected', params)
 async def test_backward(
     sample: None,
-    db: AsyncDB,
+    db: DB,
     variables: Variables,
     expected: tuple[bool, bool, str | None, str | None],
 ):
@@ -265,7 +265,7 @@ params = [
 @pytest.mark.parametrize('variables, expected', params)
 async def test_backward_with_before(
     sample: None,
-    db: AsyncDB,
+    db: DB,
     variables: Variables,
     expected: tuple[bool, bool, str | None, str | None],
 ):
@@ -315,7 +315,7 @@ params = [
 @pytest.mark.parametrize('variables, expected', params)
 async def test_one(
     sample_one: None,
-    db: AsyncDB,
+    db: DB,
     variables: Variables,
     expected: tuple[bool, bool, str | None, str | None],
 ):
@@ -327,7 +327,7 @@ async def test_one(
 @pytest.mark.parametrize('number', [None, 0, 1, 5])
 async def test_empty(
     sample_empty: None,
-    db: AsyncDB,
+    db: DB,
     first_or_last: Literal['first', 'last'],
     number: int | None,
 ) -> None:
@@ -340,7 +340,7 @@ async def test_empty(
 
 
 async def assert_results(
-    db: AsyncDB,
+    db: DB,
     variables: Variables,
     expected: tuple[bool, bool, str | None, str | None],
 ) -> None:
@@ -407,7 +407,7 @@ params = [
 
 @pytest.mark.parametrize('variables', params)
 async def test_error_forward_and_backward(
-    sample: None, db: AsyncDB, variables: dict[str, Any]
+    sample: None, db: DB, variables: dict[str, Any]
 ) -> None:
     del sample
 
@@ -420,7 +420,7 @@ async def test_error_forward_and_backward(
 
 
 @pytest.fixture
-async def sample(db: AsyncDB) -> None:
+async def sample(db: DB) -> None:
     async with db.session.begin() as session:
         for run_no in range(11, 111):
             model = Run(
@@ -434,7 +434,7 @@ async def sample(db: AsyncDB) -> None:
 
 
 @pytest.fixture
-async def sample_one(db: AsyncDB) -> None:
+async def sample_one(db: DB) -> None:
     async with db.session.begin() as session:
         run_no = 10
         model = Run(
@@ -448,11 +448,11 @@ async def sample_one(db: AsyncDB) -> None:
 
 
 @pytest.fixture
-def sample_empty(db: AsyncDB) -> None:
+def sample_empty(db: DB) -> None:
     del db
 
 
 @pytest.fixture
-async def db() -> AsyncIterator[AsyncDB]:
-    async with AsyncDB() as db:
+async def db() -> AsyncIterator[DB]:
+    async with DB() as db:
         yield db

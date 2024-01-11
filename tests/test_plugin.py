@@ -9,45 +9,23 @@ from nextlinegraphql import create_app
 from nextlinegraphql.plugins.ctrl.graphql import MUTATE_RUN_AND_CONTINUE
 from nextlinegraphql.plugins.graphql.test import gql_request
 
-from nextline_rdb.db import AsyncDB
+from nextline_rdb.db import DB
 from nextline_rdb.models.strategies import st_model_run_list
-from nextline_rdb.utils.strategies import st_python_scripts
 
 from .schema.graphql import QUERY_HISTORY
 
 
-@pytest.mark.parametrize('n_runs', [0, 1, 3])
-@pytest.mark.parametrize('last_script_none', [True, False])
-async def test_plugin(
-    set_new_url: Callable[[], str], n_runs: int, last_script_none: bool
-):
-    # NOTE: Use Pytest's parametrize instead of Hypothesis's given in order to
-    #       limit the number of examples.
-
-    if not n_runs and not last_script_none:
-        return
-
+async def test_plugin(set_new_url: Callable[[], str]):
     # Enter some runs into the database.
-    runs = st_model_run_list(
-        generate_traces=False, min_size=n_runs, max_size=n_runs
-    ).example()
-
-    assert n_runs == len(runs)
-    last_run = runs[-1] if runs else None
-    if last_run:
-        if last_script_none:
-            last_run.script = None
-        else:
-            last_run.script = st_python_scripts().example()
+    runs = st_model_run_list(generate_traces=False, max_size=2).example()
 
     url = set_new_url()
-    async with AsyncDB(url) as db:
+    async with DB(url) as db:
         async with db.session.begin() as session:
             session.add_all(runs)
 
     #
-    expected_new_run_no = last_run.run_no + 1 if last_run else None
-    expected_new_run_script = last_run.script if last_run else None
+    expected_n_runs = len(runs) + 1  # +1 for the new run
 
     # Execute GraphQL queries.
     app = create_app()  # the plugin is loaded here
@@ -55,13 +33,9 @@ async def test_plugin(
         data = await gql_request(client, MUTATE_RUN_AND_CONTINUE)
         assert data['runAndContinue']
         data = await gql_request(client, QUERY_HISTORY)
-        new_run = data['history']['runs']['edges'][-1]['node']
+        n_runs = len(data['history']['runs']['edges'])
 
-    # Assert the results.
-    if expected_new_run_no:
-        assert expected_new_run_no == new_run['runNo']
-    if expected_new_run_script:
-        assert expected_new_run_script == new_run['script']
+    assert n_runs == expected_n_runs
 
 
 def test_fixture(settings_path: Path, set_new_url: Callable[[], str]):

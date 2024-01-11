@@ -2,7 +2,7 @@ from hypothesis import given
 from hypothesis import strategies as st
 from sqlalchemy import select
 
-from nextline_rdb.db.adb import AsyncDB
+from nextline_rdb.db import DB
 from nextline_rdb.utils.strategies import st_none_or
 
 from ... import Model, Trace
@@ -22,7 +22,7 @@ async def test_st_model_trace_lists(data: st.DataObject) -> None:
         assert len(runs) == 1
         assert run is None or run is runs.pop()
 
-    async with AsyncDB(use_migration=False, model_base_class=Model) as db:
+    async with DB(use_migration=False, model_base_class=Model) as db:
         async with db.session.begin() as session:
             session.add_all(traces)
 

@@ -4,7 +4,7 @@ from functools import partial
 from typing import Optional, Type, TypeVar
 
 from nextline_rdb import models as db_models
-from nextline_rdb.db import AsyncDB
+from nextline_rdb.db import DB
 from nextline_rdb.pagination import load_models
 
 from .connection import Connection, Edge, query_connection
@@ -21,7 +21,7 @@ def decode_id(cursor: str) -> int:
 
 
 async def load_connection(
-    db: AsyncDB,
+    db: DB,
     Model: Type[db_models.Model],
     id_field: str,
     create_node_from_model: Callable[..., _T],
@@ -49,7 +49,7 @@ async def load_connection(
 
 
 async def load_edges(
-    db: AsyncDB,
+    db: DB,
     Model: Type[db_models.Model],
     id_field: str,
     create_node_from_model: Callable[..., _T],

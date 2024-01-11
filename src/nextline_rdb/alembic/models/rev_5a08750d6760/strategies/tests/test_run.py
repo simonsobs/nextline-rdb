@@ -3,7 +3,7 @@ from hypothesis import strategies as st
 from sqlalchemy import select
 from sqlalchemy.orm import selectinload
 
-from nextline_rdb.db.adb import AsyncDB
+from nextline_rdb.db import DB
 from nextline_rdb.utils import safe_compare as sc
 from nextline_rdb.utils.strategies import (
     st_datetimes,
@@ -77,7 +77,7 @@ async def test_db(run: Run) -> None:
     prompts = run.prompts
     stdouts = run.stdouts
 
-    async with AsyncDB(use_migration=False, model_base_class=Model) as db:
+    async with DB(use_migration=False, model_base_class=Model) as db:
         async with db.session.begin() as session:
             session.add(run)
         async with db.session() as session:
