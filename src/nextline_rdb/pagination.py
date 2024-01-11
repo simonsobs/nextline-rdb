@@ -10,7 +10,7 @@ from sqlalchemy.sql.selectable import Select
 
 
 # def format_sql(sql):
-#     return sqlparse.format(str(sql), reindent=True, keyword_case="upper")
+#     return sqlparse.format(str(sql), reindent=True, keyword_case='upper')
 
 
 class SortField(NamedTuple):
@@ -20,7 +20,7 @@ class SortField(NamedTuple):
 
 Sort = list[SortField]
 
-_Id = TypeVar("_Id")
+_Id = TypeVar('_Id')
 
 
 async def load_models(
@@ -58,13 +58,13 @@ def compose_statement(
     first: Optional[int] = None,
     last: Optional[int] = None,
 ) -> Select:
-    """Return a SELECT statement object to be given to session.scalars"""
+    '''Return a SELECT statement object to be given to session.scalars'''
 
     forward = (after is not None) or (first is not None)
     backward = (before is not None) or (last is not None)
 
     if forward and backward:
-        raise ValueError("Only either after/first or before/last is allowed")
+        raise ValueError('Only either after/first or before/last is allowed')
 
     sort = sort or []
 
@@ -90,10 +90,10 @@ def compose_statement(
             Model,
             func.row_number()
             .over(order_by=sorting_fields(Model, reverse=backward))
-            .label("row_number"),
+            .label('row_number'),
         ).cte()
 
-        subq = select(cte.c.row_number.label("cursor"))
+        subq = select(cte.c.row_number.label('cursor'))
         subq = subq.where(getattr(cte.c, id_field) == cursor)
         subq = cast(Select[tuple], subq.subquery())
 

@@ -22,7 +22,7 @@ async def session(db: async_sessionmaker, sample) -> AsyncIterator[AsyncSession]
 async def sample(db: async_sessionmaker):
     async with db.begin() as session:
         num = [3, 3, 3, 2, 2, 2, 1, 1, 1, 1]
-        txt = ["AA", "BB", "AA", "AA", "BB", "AA", "AA", "BB", "AA", "BB"]
+        txt = ['AA', 'BB', 'AA', 'AA', 'BB', 'AA', 'AA', 'BB', 'AA', 'BB']
         for i in range(10):
             model = Entity(num=num[i], txt=txt[i])
             session.add(model)
