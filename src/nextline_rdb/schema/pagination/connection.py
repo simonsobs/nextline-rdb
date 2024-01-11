@@ -1,6 +1,6 @@
 """Pagination based on the example code in strawberry doc
 
-Strawberry doc: https://strawberry.rocks/docs/guides/pagination
+Strawberry doc: https://strawberry.rocks/docs/guides/pagination/connections
 Relay doc: https://relay.dev/graphql/connections.htm
 """
 
