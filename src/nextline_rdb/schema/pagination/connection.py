@@ -1,15 +1,15 @@
-"""Pagination based on the example code in strawberry doc
+'''Pagination based on the example code in strawberry doc
 
-Strawberry doc: https://strawberry.rocks/docs/guides/pagination
+Strawberry doc: https://strawberry.rocks/docs/guides/pagination/connections
 Relay doc: https://relay.dev/graphql/connections.htm
-"""
+'''
 
 from collections.abc import Callable, Coroutine
 from typing import Any, Generic, Optional, TypeVar
 
 import strawberry
 
-_T = TypeVar("_T")
+_T = TypeVar('_T')
 
 
 @strawberry.type
@@ -43,7 +43,7 @@ async def query_connection(
     backward = before or (last is not None)
 
     if forward and backward:
-        raise ValueError("Only either after/first or before/last is allowed")
+        raise ValueError('Only either after/first or before/last is allowed')
 
     if forward:
         if first is not None:

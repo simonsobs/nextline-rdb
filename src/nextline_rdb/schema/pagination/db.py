@@ -9,11 +9,11 @@ from nextline_rdb.pagination import load_models
 
 from .connection import Connection, Edge, query_connection
 
-_T = TypeVar("_T")
+_T = TypeVar('_T')
 
 
 def encode_id(id: int) -> str:
-    return base64.b64encode(f"{id}".encode()).decode()
+    return base64.b64encode(f'{id}'.encode()).decode()
 
 
 def decode_id(cursor: str) -> int:
