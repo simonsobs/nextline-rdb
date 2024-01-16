@@ -1,13 +1,14 @@
 import base64
-import datetime
-from collections.abc import AsyncIterator
-from typing import Any, Literal, Optional, TypedDict
+from typing import TypedDict
 
 import pytest
 import strawberry
+from hypothesis import given, note
+from hypothesis import strategies as st
 
-from nextline_rdb import DB
-from nextline_rdb.models import Run
+from nextline_rdb.db import DB
+from nextline_rdb.models.run import Run
+from nextline_rdb.models.strategies import st_model_run_list
 from nextline_rdb.schema import Query
 
 from ..graphql import QUERY_HISTORY_RUNS
@@ -18,367 +19,175 @@ def Cursor(i: int) -> str:
 
 
 class Variables(TypedDict, total=False):
-    before: str
-    after: str
-    first: int
-    last: int
+    before: str | None
+    after: str | None
+    first: int | None
+    last: int | None
 
 
 class PageInfo(TypedDict):
     hasPreviousPage: bool
     hasNextPage: bool
-    startCursor: Optional[str]
-    endCursor: Optional[str]
+    startCursor: str | None
+    endCursor: str | None
 
 
-async def test_all(sample: None, db: DB) -> None:
-    del sample
-    variables = Variables()
-    expected = (False, False, Cursor(1), Cursor(100))
-    await assert_results(db, variables, expected)
+class Node(TypedDict):
+    id: int
+    runNo: int
 
 
-params = [
-    pytest.param(
-        Variables(first=0),
-        (False, True, None, None),
-        id='zero',
-    ),
-    pytest.param(
-        Variables(first=1),
-        (False, True, Cursor(1), Cursor(1)),
-        id='one',
-    ),
-    pytest.param(
-        Variables(first=5),
-        (False, True, Cursor(1), Cursor(5)),
-        id='fewer-than-total',
-    ),
-    pytest.param(
-        Variables(first=99),
-        (False, True, Cursor(1), Cursor(99)),
-        id='fewer-than-total-by-one',
-    ),
-    pytest.param(
-        Variables(first=100),
-        (False, False, Cursor(1), Cursor(100)),
-        id='exactly-total',
-    ),
-    pytest.param(
-        Variables(first=101),
-        (False, False, Cursor(1), Cursor(100)),
-        id='more-than-total-by-one',
-    ),
-    pytest.param(
-        Variables(first=150),
-        (False, False, Cursor(1), Cursor(100)),
-        id='more-than-total',
-    ),
-]
+class Edge(TypedDict):
+    cursor: str
+    node: Node
 
 
-@pytest.mark.parametrize('variables, expected', params)
-async def test_forward(
-    sample: None,
-    db: DB,
-    variables: Variables,
-    expected: tuple[bool, bool, str | None, str | None],
-):
-    del sample
-    await assert_results(db, variables, expected)
-
-
-params = [
-    pytest.param(
-        Variables(after=Cursor(1)),
-        (True, False, Cursor(2), Cursor(100)),
-        id='one',
-    ),
-    pytest.param(
-        Variables(after=Cursor(50)),
-        (True, False, Cursor(51), Cursor(100)),
-        id='middle',
-    ),
-    pytest.param(
-        Variables(after=Cursor(99)),
-        (True, False, Cursor(100), Cursor(100)),
-        id='one-before-last',
-    ),
-    pytest.param(
-        Variables(after=Cursor(100)),
-        (True, False, None, None),
-        id='last',
-    ),
-    pytest.param(
-        Variables(after=Cursor(80), first=1),
-        (True, True, Cursor(81), Cursor(81)),
-        id='first-one',
-    ),
-    pytest.param(
-        Variables(after=Cursor(80), first=19),
-        (True, True, Cursor(81), Cursor(99)),
-        id='first-fewer-than-count-by-one',
-    ),
-    pytest.param(
-        Variables(after=Cursor(80), first=20),
-        (True, False, Cursor(81), Cursor(100)),
-        id='first-exactly-count',
-    ),
-    pytest.param(
-        Variables(after=Cursor(80), first=21),
-        (True, False, Cursor(81), Cursor(100)),
-        id='first-more-than-count-by-one',
-    ),
-    pytest.param(
-        Variables(after=Cursor(80), first=30),
-        (True, False, Cursor(81), Cursor(100)),
-        id='first-more-than-count',
-    ),
-    pytest.param(
-        Variables(after=Cursor(100), first=0),
-        (True, False, None, None),
-        id='zero-after-last',
-    ),
-    pytest.param(
-        Variables(after=Cursor(100), first=1),
-        (True, False, None, None),
-        id='one-after-last',
-    ),
-    pytest.param(
-        Variables(after=Cursor(100), first=20),
-        (True, False, None, None),
-        id='some-after-last',
-    ),
-]
-
-
-@pytest.mark.parametrize('variables, expected', params)
-async def test_forward_with_after(
-    sample: None,
-    db: DB,
-    variables: Variables,
-    expected: tuple[bool, bool, str | None, str | None],
-):
-    del sample
-    await assert_results(db, variables, expected)
-
-
-params = [
-    pytest.param(
-        Variables(last=0),
-        (True, False, None, None),
-        id='zero',
-    ),
-    pytest.param(
-        Variables(last=1),
-        (True, False, Cursor(100), Cursor(100)),
-        id='one',
-    ),
-    pytest.param(
-        Variables(last=5),
-        (True, False, Cursor(96), Cursor(100)),
-        id='some',
-    ),
-    pytest.param(
-        Variables(last=99),
-        (True, False, Cursor(2), Cursor(100)),
-        id='fewer-than-total-by-one',
-    ),
-    pytest.param(
-        Variables(last=100),
-        (False, False, Cursor(1), Cursor(100)),
-        id='exactly-total',
-    ),
-    pytest.param(
-        Variables(last=101),
-        (False, False, Cursor(1), Cursor(100)),
-        id='more-than-total-by-one',
-    ),
-    pytest.param(
-        Variables(last=150),
-        (False, False, Cursor(1), Cursor(100)),
-        id='more-than-total',
-    ),
-]
-
-
-@pytest.mark.parametrize('variables, expected', params)
-async def test_backward(
-    sample: None,
-    db: DB,
-    variables: Variables,
-    expected: tuple[bool, bool, str | None, str | None],
-):
-    del sample
-    await assert_results(db, variables, expected)
-
-
-params = [
-    pytest.param(
-        Variables(before=Cursor(100)),
-        (False, True, Cursor(1), Cursor(99)),
-        id='end',
-    ),
-    pytest.param(
-        Variables(before=Cursor(50)),
-        (False, True, Cursor(1), Cursor(49)),
-        id='middle',
-    ),
-    pytest.param(
-        Variables(before=Cursor(2)),
-        (False, True, Cursor(1), Cursor(1)),
-        id='one-after-start',
-    ),
-    pytest.param(
-        Variables(before=Cursor(1)),
-        (False, True, None, None),
-        id='start',
-    ),
-    pytest.param(
-        Variables(before=Cursor(20), last=1),
-        (True, True, Cursor(19), Cursor(19)),
-        id='last-one',
-    ),
-    pytest.param(
-        Variables(before=Cursor(20), last=18),
-        (True, True, Cursor(2), Cursor(19)),
-        id='last-fewer-than-count-by-one',
-    ),
-    pytest.param(
-        Variables(before=Cursor(20), last=19),
-        (False, True, Cursor(1), Cursor(19)),
-        id='last-exactly-count',
-    ),
-    pytest.param(
-        Variables(before=Cursor(20), last=20),
-        (False, True, Cursor(1), Cursor(19)),
-        id='last-more-than-count-by-one',
-    ),
-    pytest.param(
-        Variables(before=Cursor(20), last=30),
-        (False, True, Cursor(1), Cursor(19)),
-        id='last-more-than-count',
-    ),
-]
-
-
-@pytest.mark.parametrize('variables, expected', params)
-async def test_backward_with_before(
-    sample: None,
-    db: DB,
-    variables: Variables,
-    expected: tuple[bool, bool, str | None, str | None],
-):
-    del sample
-    await assert_results(db, variables, expected)
-
-
-params = [
-    pytest.param(
-        Variables(),
-        (False, False, Cursor(1), Cursor(1)),
-        id='default',
-    ),
-    pytest.param(
-        Variables(after=Cursor(1)),
-        (True, False, None, None),
-        id='forward-after-one',
-    ),
-    pytest.param(
-        Variables(first=1),
-        (False, False, Cursor(1), Cursor(1)),
-        id='forward-first-one',
-    ),
-    pytest.param(
-        Variables(after=Cursor(1), first=1),
-        (True, False, None, None),
-        id='forward-after-one-first-one',
-    ),
-    pytest.param(
-        Variables(before=Cursor(1)),
-        (False, True, None, None),
-        id='backward-before-one',
-    ),
-    pytest.param(
-        Variables(last=1),
-        (False, False, Cursor(1), Cursor(1)),
-        id='backward-last-one',
-    ),
-    pytest.param(
-        Variables(before=Cursor(1), last=1),
-        (False, True, None, None),
-        id='backward-before-one-last-one',
-    ),
-]
-
-
-@pytest.mark.parametrize('variables, expected', params)
-async def test_one(
-    sample_one: None,
-    db: DB,
-    variables: Variables,
-    expected: tuple[bool, bool, str | None, str | None],
-):
-    del sample_one
-    await assert_results(db, variables, expected)
-
-
-@pytest.mark.parametrize('first_or_last', ['first', 'last'])
-@pytest.mark.parametrize('number', [None, 0, 1, 5])
-async def test_empty(
-    sample_empty: None,
-    db: DB,
-    first_or_last: Literal['first', 'last'],
-    number: int | None,
-) -> None:
-    del sample_empty
-    variables = Variables()
-    if number is not None:
-        variables[first_or_last] = number
-    expected = (False, False, None, None)
-    await assert_results(db, variables, expected)
-
-
-async def assert_results(
-    db: DB,
-    variables: Variables,
-    expected: tuple[bool, bool, str | None, str | None],
-) -> None:
-    expected_page_info = PageInfo(
-        hasPreviousPage=expected[0],
-        hasNextPage=expected[1],
-        startCursor=expected[2],
-        endCursor=expected[3],
-    )
-
+@given(runs=st_model_run_list(generate_traces=False, min_size=0, max_size=12))
+async def test_all(runs: list[Run]):
     schema = strawberry.Schema(query=Query)
-    resp = await schema.execute(
-        QUERY_HISTORY_RUNS, variable_values=dict(variables), context_value={'db': db}
-    )
-    assert resp.data
 
-    all_runs = resp.data['history']['runs']
-    page_info = all_runs['pageInfo']
-    edges = all_runs['edges']
+    async with DB() as db:
+        async with db.session.begin() as session:
+            session.add_all(runs)
+        note(f'runs: {runs}')
 
-    # print(page_info)
-    # print(edges)
+        nodes_saved = [Node(id=run.id, runNo=run.run_no) for run in runs]
+        note(f'nodes_saved: {nodes_saved}')
 
-    assert expected_page_info == page_info
+        resp = await schema.execute(QUERY_HISTORY_RUNS, context_value={'db': db})
+        assert resp.data
 
-    if start_cursor := expected_page_info['startCursor']:
-        edge = edges[0]
-        assert start_cursor == edge['cursor']
-        assert start_cursor == Cursor(edge['node']['id'])
-    else:
-        assert not edges
+        all_runs = resp.data['history']['runs']
+        page_info: PageInfo = all_runs['pageInfo']
+        edges: list[Edge] = all_runs['edges']
 
-    if end_cursor := expected_page_info['endCursor']:
-        edge = edges[-1]
-        assert end_cursor == edge['cursor']
-        assert end_cursor == Cursor(edge['node']['id'])
-    else:
-        assert not edges
+        if edges:
+            assert page_info['startCursor'] == edges[0]['cursor']
+            assert page_info['endCursor'] == edges[-1]['cursor']
+
+        nodes = [edge['node'] for edge in edges]
+
+        assert nodes == nodes_saved
+
+
+@given(
+    runs=st_model_run_list(generate_traces=False, min_size=0, max_size=12),
+    first=st.integers(min_value=1, max_value=15),
+)
+async def test_forward(runs: list[Run], first: int):
+    schema = strawberry.Schema(query=Query)
+
+    async with DB() as db:
+        async with db.session.begin() as session:
+            session.add_all(runs)
+        note(f'runs: {runs}')
+
+        nodes_saved = [Node(id=run.id, runNo=run.run_no) for run in runs]
+        note(f'nodes_saved: {nodes_saved}')
+
+        after = None
+        has_next_page = True
+        nodes = list[Node]()
+        while has_next_page:
+            variables = Variables(after=after, first=first)
+
+            resp = await schema.execute(
+                QUERY_HISTORY_RUNS,
+                variable_values=dict(variables),
+                context_value={'db': db},
+            )
+            assert resp.data
+
+            all_runs = resp.data['history']['runs']
+            page_info: PageInfo = all_runs['pageInfo']
+            edges: list[Edge] = all_runs['edges']
+
+            has_next_page = page_info['hasNextPage']
+            after = page_info['endCursor']
+
+            if not nodes_saved:
+                assert not edges
+                assert not has_next_page
+                assert after is None
+
+            if edges:
+                assert after == edges[-1]['cursor']
+
+            nodes.extend(edge['node'] for edge in edges)
+
+        assert nodes == nodes_saved
+
+
+@given(
+    runs=st_model_run_list(generate_traces=False, min_size=0, max_size=12),
+    last=st.integers(min_value=1, max_value=15),
+)
+async def test_backward(runs: list[Run], last: int):
+    schema = strawberry.Schema(query=Query)
+
+    async with DB() as db:
+        async with db.session.begin() as session:
+            session.add_all(runs)
+        note(f'runs: {runs}')
+
+        nodes_saved = [Node(id=run.id, runNo=run.run_no) for run in runs]
+        note(f'nodes_saved: {nodes_saved}')
+
+        before = None
+        has_previous_page = True
+        nodes = list[Node]()
+        while has_previous_page:
+            variables = Variables(before=before, last=last)
+
+            resp = await schema.execute(
+                QUERY_HISTORY_RUNS,
+                variable_values=dict(variables),
+                context_value={'db': db},
+            )
+            assert resp.data
+
+            all_runs = resp.data['history']['runs']
+            page_info: PageInfo = all_runs['pageInfo']
+            edges: list[Edge] = all_runs['edges']
+
+            has_previous_page = page_info['hasPreviousPage']
+            before = page_info['startCursor']
+
+            if not nodes_saved:
+                assert not edges
+                assert not has_previous_page
+                assert before is None
+
+            if edges:
+                assert before == edges[0]['cursor']
+
+            nodes.extend(edge['node'] for edge in reversed(edges))
+
+        assert nodes == list(reversed(nodes_saved))
+
+
+@given(runs=st_model_run_list(generate_traces=False, min_size=0, max_size=12))
+async def test_cursor(runs: list[Run]):
+    schema = strawberry.Schema(query=Query)
+
+    async with DB() as db:
+        async with db.session.begin() as session:
+            session.add_all(runs)
+        note(f'runs: {runs}')
+
+        nodes_saved = [Node(id=run.id, runNo=run.run_no) for run in runs]
+        note(f'nodes_saved: {nodes_saved}')
+
+        resp = await schema.execute(QUERY_HISTORY_RUNS, context_value={'db': db})
+        assert resp.data
+
+        all_runs = resp.data['history']['runs']
+        edges: list[Edge] = all_runs['edges']
+
+        nodes = [edge['node'] for edge in edges]
+        cursors = [edge['cursor'] for edge in edges]
+
+        assert cursors == [Cursor(node['id']) for node in nodes]
 
 
 params = [
@@ -406,53 +215,16 @@ params = [
 
 
 @pytest.mark.parametrize('variables', params)
-async def test_error_forward_and_backward(
-    sample: None, db: DB, variables: dict[str, Any]
-) -> None:
-    del sample
-
+async def test_error(variables: Variables) -> None:
     schema = strawberry.Schema(query=Query)
-    resp = await schema.execute(
-        QUERY_HISTORY_RUNS, variable_values=variables, context_value={'db': db}
-    )
-    assert not resp.data
-    assert resp.errors
 
-
-@pytest.fixture
-async def sample(db: DB) -> None:
-    async with db.session.begin() as session:
-        for run_no in range(11, 111):
-            model = Run(
-                run_no=run_no,
-                state='running',
-                started_at=datetime.datetime.utcnow(),
-                ended_at=datetime.datetime.utcnow(),
-                script='pass',
-            )
-            session.add(model)
-
-
-@pytest.fixture
-async def sample_one(db: DB) -> None:
-    async with db.session.begin() as session:
-        run_no = 10
-        model = Run(
-            run_no=run_no,
-            state='running',
-            started_at=datetime.datetime.utcnow(),
-            ended_at=datetime.datetime.utcnow(),
-            script='pass',
-        )
-        session.add(model)
-
-
-@pytest.fixture
-def sample_empty(db: DB) -> None:
-    del db
-
-
-@pytest.fixture
-async def db() -> AsyncIterator[DB]:
     async with DB() as db:
-        yield db
+        resp = await schema.execute(
+            QUERY_HISTORY_RUNS,
+            variable_values=dict(variables),
+            context_value={'db': db},
+        )
+
+        assert not resp.data
+        assert resp.errors
+
