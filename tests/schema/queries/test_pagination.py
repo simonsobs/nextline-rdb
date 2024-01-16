@@ -227,4 +227,3 @@ async def test_error(variables: Variables) -> None:
 
         assert not resp.data
         assert resp.errors
-
