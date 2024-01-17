@@ -1,0 +1,8 @@
+query HistoryRun($id: Int, $runNo: Int) {
+  history {
+    run(id: $id, runNo: $runNo) {
+      id
+      runNo
+    }
+  }
+}
