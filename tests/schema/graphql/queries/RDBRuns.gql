@@ -4,7 +4,7 @@ query HistoryRuns(
   $first: Int
   $last: Int
 ) {
-  history {
+  rdb {
     runs(before: $before, after: $after, first: $first, last: $last) {
       pageInfo {
         startCursor

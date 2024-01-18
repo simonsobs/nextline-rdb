@@ -1,5 +1,5 @@
-query History {
-  history {
+query RDBConnections {
+  rdb {
     runs {
       edges {
         cursor
