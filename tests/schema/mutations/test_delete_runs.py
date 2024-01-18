@@ -9,7 +9,7 @@ from nextline_rdb.models.strategies import st_model_run_list
 from nextline_rdb.schema import Mutation, Query
 from nextline_rdb.utils.strategies import st_graphql_ints
 
-from ..graphql import MUTATE_HISTORY_DELETE_RUNS
+from ..graphql import MUTATE_RDB_DELETE_RUNS
 
 
 @st.composite
@@ -54,7 +54,7 @@ async def test_delete_runs(data: st.DataObject) -> None:
         variables, to_keep, to_delete = data.draw(st_query_variables(runs=runs))
 
         resp = await schema.execute(
-            MUTATE_HISTORY_DELETE_RUNS,
+            MUTATE_RDB_DELETE_RUNS,
             variable_values=variables,
             context_value={'db': db},
         )
@@ -63,7 +63,7 @@ async def test_delete_runs(data: st.DataObject) -> None:
         assert resp.data
 
         expected = {run.id for run in to_delete}
-        assert set(resp.data['history']['deleteRuns']) == expected
+        assert set(resp.data['rdb']['deleteRuns']) == expected
 
         async with db.session() as session:
             stmt = select(Run)

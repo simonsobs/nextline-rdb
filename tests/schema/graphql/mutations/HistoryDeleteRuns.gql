@@ -1,5 +1,0 @@
-mutation HistoryDeleteRuns($ids: [Int!]!) {
-  history {
-    deleteRuns(ids: $ids)
-  }
-}

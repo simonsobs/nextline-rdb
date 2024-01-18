@@ -21,12 +21,12 @@ async def mutate_delete_runs(info: Info, ids: list[int]) -> list[int]:
 
 
 @strawberry.type
-class MutationHistory:
+class MutationRDB:
     delete_runs: list[int] = strawberry.field(resolver=mutate_delete_runs)
 
 
 @strawberry.type
 class Mutation:
     @strawberry.field
-    async def history(self) -> MutationHistory:
-        return MutationHistory()
+    async def rdb(self) -> MutationRDB:
+        return MutationRDB()
