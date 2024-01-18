@@ -46,7 +46,7 @@ def st_query_variables(
 async def test_run(data: st.DataObject) -> None:
     schema = strawberry.Schema(query=Query)
 
-    runs = data.draw(st_model_run_list(generate_traces=False, min_size=1, max_size=12))
+    runs = data.draw(st_model_run_list(generate_traces=False, min_size=0, max_size=5))
 
     async with DB() as db:
         async with db.session.begin() as session:

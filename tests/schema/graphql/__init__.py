@@ -7,6 +7,8 @@ QUERY_HISTORY = (sub / 'History.gql').read_text()
 QUERY_HISTORY_RUN = (sub / 'HistoryRun.gql').read_text()
 QUERY_HISTORY_RUNS = (sub / 'HistoryRuns.gql').read_text()
 
-# sub = pwd / 'mutations'
+sub = pwd / 'mutations'
+MUTATE_RDB_DELETE_RUNS = (sub / 'RDBDeleteRuns.gql').read_text()
+
 
 # sub = pwd / 'subscriptions'

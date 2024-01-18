@@ -1,0 +1,5 @@
+mutation RDBDeleteRuns($ids: [Int!]!) {
+  rdb {
+    deleteRuns(ids: $ids)
+  }
+}
