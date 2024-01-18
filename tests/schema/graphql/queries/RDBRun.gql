@@ -1,5 +1,5 @@
-query HistoryRun($id: Int, $runNo: Int) {
-  history {
+query RDBRun($id: Int, $runNo: Int) {
+  rdb {
     run(id: $id, runNo: $runNo) {
       id
       runNo

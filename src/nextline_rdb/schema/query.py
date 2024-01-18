@@ -26,7 +26,7 @@ async def query_run(
 
 
 @strawberry.type
-class History:
+class QueryRDB:
     runs: Connection[types.RunHistory] = strawberry.field(
         resolver=types.query_connection_run
     )
@@ -45,5 +45,10 @@ class History:
 @strawberry.type
 class Query:
     @strawberry.field
-    async def history(self) -> History:
-        return History()
+    async def history(self) -> QueryRDB:
+        # TODO: Remove this method.
+        return QueryRDB()
+
+    @strawberry.field
+    async def rdb(self) -> QueryRDB:
+        return QueryRDB()

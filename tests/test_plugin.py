@@ -12,7 +12,7 @@ from nextlinegraphql.plugins.graphql.test import gql_request
 from nextline_rdb.db import DB
 from nextline_rdb.models.strategies import st_model_run_list
 
-from .schema.graphql import QUERY_HISTORY
+from .schema.graphql import QUERY_RDB_CONNECTIONS
 
 
 async def test_plugin(set_new_url: Callable[[], str]):
@@ -32,8 +32,8 @@ async def test_plugin(set_new_url: Callable[[], str]):
     async with TestClient(app) as client:
         data = await gql_request(client, MUTATE_RUN_AND_CONTINUE)
         assert data['runAndContinue']
-        data = await gql_request(client, QUERY_HISTORY)
-        n_runs = len(data['history']['runs']['edges'])
+        data = await gql_request(client, QUERY_RDB_CONNECTIONS)
+        n_runs = len(data['rdb']['runs']['edges'])
 
     assert n_runs == expected_n_runs
 

@@ -8,7 +8,7 @@ from nextline_rdb.models.strategies import st_model_run_list
 from nextline_rdb.schema import Query
 from nextline_rdb.utils.strategies import st_graphql_ints, st_none_or
 
-from ..graphql import QUERY_HISTORY_RUN
+from ..graphql import QUERY_RDB_RUN
 
 
 @st.composite
@@ -56,13 +56,13 @@ async def test_run(data: st.DataObject) -> None:
         variables, run = data.draw(st_query_variables(runs=runs))
 
         resp = await schema.execute(
-            QUERY_HISTORY_RUN, variable_values=variables, context_value={'db': db}
+            QUERY_RDB_RUN, variable_values=variables, context_value={'db': db}
         )
         note(f'resp: {resp}')
 
         assert resp.data
 
-        run_ = resp.data['history']['run']
+        run_ = resp.data['rdb']['run']
 
         if run is None:
             assert run_ is None

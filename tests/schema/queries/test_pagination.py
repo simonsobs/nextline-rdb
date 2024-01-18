@@ -11,7 +11,7 @@ from nextline_rdb.models.run import Run
 from nextline_rdb.models.strategies import st_model_run_list
 from nextline_rdb.schema import Query
 
-from ..graphql import QUERY_HISTORY_RUNS
+from ..graphql import QUERY_RDB_RUNS
 
 
 def Cursor(i: int) -> str:
@@ -54,10 +54,10 @@ async def test_all(runs: list[Run]):
         nodes_saved = [Node(id=run.id, runNo=run.run_no) for run in runs]
         note(f'nodes_saved: {nodes_saved}')
 
-        resp = await schema.execute(QUERY_HISTORY_RUNS, context_value={'db': db})
+        resp = await schema.execute(QUERY_RDB_RUNS, context_value={'db': db})
         assert resp.data
 
-        all_runs = resp.data['history']['runs']
+        all_runs = resp.data['rdb']['runs']
         page_info: PageInfo = all_runs['pageInfo']
         edges: list[Edge] = all_runs['edges']
 
@@ -92,13 +92,13 @@ async def test_forward(runs: list[Run], first: int):
             variables = Variables(after=after, first=first)
 
             resp = await schema.execute(
-                QUERY_HISTORY_RUNS,
+                QUERY_RDB_RUNS,
                 variable_values=dict(variables),
                 context_value={'db': db},
             )
             assert resp.data
 
-            all_runs = resp.data['history']['runs']
+            all_runs = resp.data['rdb']['runs']
             page_info: PageInfo = all_runs['pageInfo']
             edges: list[Edge] = all_runs['edges']
 
@@ -140,13 +140,13 @@ async def test_backward(runs: list[Run], last: int):
             variables = Variables(before=before, last=last)
 
             resp = await schema.execute(
-                QUERY_HISTORY_RUNS,
+                QUERY_RDB_RUNS,
                 variable_values=dict(variables),
                 context_value={'db': db},
             )
             assert resp.data
 
-            all_runs = resp.data['history']['runs']
+            all_runs = resp.data['rdb']['runs']
             page_info: PageInfo = all_runs['pageInfo']
             edges: list[Edge] = all_runs['edges']
 
@@ -178,10 +178,10 @@ async def test_cursor(runs: list[Run]):
         nodes_saved = [Node(id=run.id, runNo=run.run_no) for run in runs]
         note(f'nodes_saved: {nodes_saved}')
 
-        resp = await schema.execute(QUERY_HISTORY_RUNS, context_value={'db': db})
+        resp = await schema.execute(QUERY_RDB_RUNS, context_value={'db': db})
         assert resp.data
 
-        all_runs = resp.data['history']['runs']
+        all_runs = resp.data['rdb']['runs']
         edges: list[Edge] = all_runs['edges']
 
         nodes = [edge['node'] for edge in edges]
@@ -220,7 +220,7 @@ async def test_error(variables: Variables) -> None:
 
     async with DB() as db:
         resp = await schema.execute(
-            QUERY_HISTORY_RUNS,
+            QUERY_RDB_RUNS,
             variable_values=dict(variables),
             context_value={'db': db},
         )
