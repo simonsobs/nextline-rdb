@@ -9,7 +9,7 @@ from nextlinegraphql.hook import spec
 from .db import DB
 from .init import initialize_nextline
 from .schema import Mutation, Query, Subscription
-from .write import write_db
+from .write_old import write_db
 
 HERE = Path(__file__).resolve().parent
 DEFAULT_CONFIG_PATH = HERE / 'default.toml'
