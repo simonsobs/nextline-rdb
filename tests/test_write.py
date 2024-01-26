@@ -5,8 +5,8 @@ from typing import Optional
 
 import pytest
 from nextline import Nextline
-from nextline.types import PromptInfo
-from nextline.utils import merge_aiters
+from nextline.events import OnStartPrompt
+from nextline.plugin.spec import Context, hookimpl
 from sqlalchemy import select
 
 from nextline_rdb import DB
@@ -76,6 +76,7 @@ def statement(monkey_patch_syspath: None) -> str:
 async def run_nextline(adb: DB, statement: str) -> None:
     nextline = Nextline(statement, trace_threads=True, trace_modules=True)
     write.register(nextline=nextline, db=adb)
+    nextline.register(Control())
     async with nextline:
         await run_statement(nextline, statement)
 
@@ -105,32 +106,24 @@ async def run_statement(nextline: Nextline, statement: Optional[str] = None) -> 
     await asyncio.sleep(0.01)
     await nextline.reset(statement=statement)
     await asyncio.sleep(0.01)
-    task_control = asyncio.create_task(control(nextline))
     async with nextline.run_session():
         pass
-    await task_control
     await asyncio.sleep(0.01)
 
 
-async def control(nextline: Nextline) -> None:
-    aiters = merge_aiters(nextline.subscribe_state(), nextline.subscribe_prompt_info())
-    async for _, i in aiters:
-        command: Optional[str] = None
-        match i:
-            case 'finished':
-                break
-            case PromptInfo(open=True, event='line', line_no=line_no):
-                assert line_no is not None
-                line = nextline.get_source_line(line_no=line_no, file_name=i.file_name)
-                command = find_command(line) or 'next'
-            case PromptInfo(open=True):
-                command = 'next'
-            case _:
-                continue
-        assert command is not None
-        assert isinstance(i, PromptInfo)
+class Control:
+    @hookimpl
+    async def on_start_prompt(self, context: Context, event: OnStartPrompt) -> None:
+        nextline = context.nextline
+        if event.event == 'line':
+            line = nextline.get_source_line(
+                line_no=event.line_no, file_name=event.file_name
+            )
+            command = find_command(line) or 'next'
+        else:
+            command = 'next'
         await asyncio.sleep(0.01)
-        await nextline.send_pdb_command(command, i.prompt_no, i.trace_no)
+        await nextline.send_pdb_command(command, event.prompt_no, event.trace_no)
 
 
 def find_command(line: str) -> Optional[str]:
