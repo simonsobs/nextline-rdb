@@ -6,10 +6,10 @@ from apluggy import asynccontextmanager
 from dynaconf import Dynaconf, Validator
 from nextlinegraphql.hook import spec
 
+from . import write
 from .db import DB
 from .init import initialize_nextline
 from .schema import Mutation, Query, Subscription
-from .write import write_db
 
 HERE = Path(__file__).resolve().parent
 DEFAULT_CONFIG_PATH = HERE / 'default.toml'
@@ -49,8 +49,8 @@ class Plugin:
         async with DB(self.url) as db:
             self._db = db
             await initialize_nextline(nextline, db)
-            async with write_db(nextline, db):
-                yield
+            write.register(nextline=nextline, db=self._db)
+            yield
 
     @spec.hookimpl
     def update_strawberry_context(self, context: MutableMapping) -> None:
