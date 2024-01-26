@@ -11,7 +11,7 @@ from sqlalchemy import select
 
 from nextline_rdb import DB
 from nextline_rdb import models as db_models
-from nextline_rdb import write_db
+from nextline_rdb import write
 
 
 async def test_one(adb: DB, run_nextline, statement):
@@ -75,9 +75,9 @@ def statement(monkey_patch_syspath: None) -> str:
 @pytest.fixture
 async def run_nextline(adb: DB, statement: str) -> None:
     nextline = Nextline(statement, trace_threads=True, trace_modules=True)
-    async with write_db(nextline, adb=adb):
-        async with nextline:
-            await run_statement(nextline, statement)
+    write.register(nextline=nextline, db=adb)
+    async with nextline:
+        await run_statement(nextline, statement)
 
 
 @pytest.fixture
