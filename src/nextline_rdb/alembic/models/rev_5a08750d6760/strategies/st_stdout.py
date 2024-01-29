@@ -5,7 +5,7 @@ from hypothesis import strategies as st
 from nextline_rdb.utils.strategies import st_datetimes
 
 from .. import Run, Stdout, Trace
-from .trace import st_model_trace
+from .st_trace import st_model_trace
 
 
 @st.composite
