@@ -6,7 +6,7 @@ from hypothesis import strategies as st
 from nextline_rdb.utils.strategies import st_graphql_ints, st_none_or
 
 from .. import Run, Trace
-from .run import st_model_run
+from .st_run import st_model_run
 from .utils import st_started_at_ended_at
 
 
@@ -18,7 +18,7 @@ def st_model_trace(
     thread_task_no: Optional[tuple[int, int | None]] = None,
     generate_prompts: bool = False,
 ) -> Trace:
-    from .prompt import st_model_prompt_list
+    from .st_prompt import st_model_prompt_list
 
     if run is not None:
         # Unable to meet the unique constraint on the prompts table

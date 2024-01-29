@@ -7,9 +7,9 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 from .base import Model
 
 if TYPE_CHECKING:
-    from .prompt import Prompt
-    from .stdout import Stdout
-    from .trace import Trace
+    from .model_prompt import Prompt
+    from .model_stdout import Stdout
+    from .model_trace import Trace
 
 
 class Run(Model):

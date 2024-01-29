@@ -3,7 +3,7 @@ from hypothesis import given, note
 from hypothesis import strategies as st
 
 from nextline_rdb.db import DB
-from nextline_rdb.models.run import Run
+from nextline_rdb.models import Run
 from nextline_rdb.models.strategies import st_model_run_list
 from nextline_rdb.schema import Query
 from nextline_rdb.utils.strategies import st_graphql_ints, st_none_or
