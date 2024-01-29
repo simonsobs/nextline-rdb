@@ -14,6 +14,7 @@ A plugin for [nextline-graphql](https://github.com/simonsobs/nextline-graphql)
 
 - [Nextline RDB](#nextline-rdb)
   - [Installation](#installation)
+  - [Configuration](#configuration)
   - [License](#license)
   - [Contact](#contact)
 
@@ -22,6 +23,12 @@ A plugin for [nextline-graphql](https://github.com/simonsobs/nextline-graphql)
 ```console
 pip install nextline-rdb
 ```
+
+## Configuration
+
+| Environment variable | Default value         | Description                                                                                   |
+| -------------------- | --------------------- | --------------------------------------------------------------------------------------------- |
+| `NEXTLINE_DB__URL`   | `sqlite+aiosqlite://` | The [DB URL](https://docs.sqlalchemy.org/en/20/core/engines.html#database-urls) of SQLAlchemy |
 
 ## License
 
