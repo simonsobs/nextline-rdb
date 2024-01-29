@@ -5,6 +5,6 @@ __all__ = [
     'repr_val',
 ]
 
-from .base import Model
 from .convention import NAMING_CONVENTION
+from .model_base import Model
 from .repr_ import ReprMixin, repr_val
