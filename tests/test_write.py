@@ -24,7 +24,7 @@ async def test_one(adb: DB, run_nextline, statement):
         assert 2 == run.run_no
         assert run.started_at
         assert run.ended_at
-        assert statement == run.script
+        assert statement == run.script_old
         assert not run.exception
 
         traces = (await session.scalars(select(db_models.Trace))).all()

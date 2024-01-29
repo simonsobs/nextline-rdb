@@ -17,8 +17,8 @@ async def test_initialize_nextline(runs: list[Run], default_statement: str) -> N
 
     expected_run_no = last_run.run_no + 1 if last_run else 1
     expected_statement = (
-        last_run.script
-        if last_run and last_run.script is not None
+        last_run.script_old
+        if last_run and last_run.script_old is not None
         else default_statement
     )
 

@@ -25,7 +25,7 @@ async def _last_run_no_and_script(db: DB) -> tuple[Optional[int], Optional[str]]
         if last_run is None:
             return None, None
         else:
-            return last_run.run_no, last_run.script
+            return last_run.run_no, last_run.script_old
 
 
 async def _last_run(session: AsyncSession) -> Optional[models.Run]:

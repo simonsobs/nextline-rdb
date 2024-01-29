@@ -19,7 +19,7 @@ class Run(Model):
     state: Mapped[str | None]
     started_at: Mapped[datetime | None]
     ended_at: Mapped[datetime | None]
-    script: Mapped[str | None] = mapped_column(Text)
+    script_old: Mapped[str | None] = mapped_column(Text)
     exception: Mapped[str | None] = mapped_column(Text)
 
     traces: Mapped[list["Trace"]] = relationship(back_populates="run")

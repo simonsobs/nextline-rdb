@@ -132,7 +132,7 @@ class RunHistory:
             state=model.state,
             started_at=model.started_at,
             ended_at=model.ended_at,
-            script=model.script,
+            script=model.script_old,
             exception=model.exception,
         )
 

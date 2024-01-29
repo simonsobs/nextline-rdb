@@ -67,8 +67,8 @@ async def test_options(data: st.DataObject) -> None:
         assert not prompts
         assert not stdouts
 
-    if run.script:
-        compile(run.script, '<string>', 'exec')
+    if run.script_old:
+        compile(run.script_old, '<string>', 'exec')
 
 
 @given(run=st_model_run())

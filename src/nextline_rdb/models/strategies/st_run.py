@@ -59,7 +59,7 @@ def st_model_run(
         state=state,
         started_at=started_at,
         ended_at=ended_at,
-        script=script,
+        script_old=script,
         exception=exception,
     )
 

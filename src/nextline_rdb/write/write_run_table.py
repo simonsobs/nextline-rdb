@@ -21,7 +21,7 @@ class WriteRunTable:
         else:
             script = None
         async with self._db.session.begin() as session:
-            run = Run(run_no=run_no, state='initialized', script=script)
+            run = Run(run_no=run_no, state='initialized', script_old=script)
             session.add(run)
 
     @hookimpl
