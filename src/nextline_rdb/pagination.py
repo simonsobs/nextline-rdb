@@ -2,7 +2,7 @@ from typing import NamedTuple, Optional, Type, TypeVar, cast
 
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.orm import DeclarativeBase, aliased
+from sqlalchemy.orm import DeclarativeBase, aliased, selectinload
 from sqlalchemy.sql.expression import literal
 from sqlalchemy.sql.selectable import Select
 
@@ -43,6 +43,9 @@ async def load_models(
         first=first,
         last=last,
     )
+
+    # TODO: Make this optional
+    stmt = stmt.options(selectinload('*'))
 
     models = await session.scalars(stmt)
     return models
