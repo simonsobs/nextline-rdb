@@ -13,6 +13,6 @@ class Script(Model):
     __tablename__ = 'script'
     id: Mapped[int] = mapped_column(primary_key=True, index=True)
     current: Mapped[bool] = mapped_column(default=False)
-    script: Mapped[str | None] = mapped_column(Text)
+    script: Mapped[str] = mapped_column(Text)
 
     runs: Mapped[list['Run']] = relationship(back_populates='script')

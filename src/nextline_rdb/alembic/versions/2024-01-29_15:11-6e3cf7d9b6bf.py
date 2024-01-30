@@ -20,7 +20,7 @@ def upgrade():
     op.create_table('script',
     sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('current', sa.Boolean(), nullable=False),
-    sa.Column('script', sa.Text(), nullable=True),
+    sa.Column('script', sa.Text(), nullable=False),
     sa.PrimaryKeyConstraint('id', name=op.f('pk_script'))
     )
     with op.batch_alter_table('script', schema=None) as batch_op:
