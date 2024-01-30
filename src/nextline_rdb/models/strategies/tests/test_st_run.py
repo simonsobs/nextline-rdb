@@ -79,14 +79,14 @@ async def test_db(run: Run) -> None:
             session.add(run)
         async with db.session() as session:
             select_run = select(Run)
-            run_ = await session.scalar(
-                select_run.options(
-                    selectinload(Run.script),
-                    selectinload(Run.traces),
-                    selectinload(Run.prompts),
-                    selectinload(Run.stdouts),
-                )
-            )
+            # select_run = select_run.options(
+            #     selectinload(Run.script),
+            #     selectinload(Run.traces),
+            #     selectinload(Run.prompts),
+            #     selectinload(Run.stdouts),
+            # )
+            select_run = select_run.options(selectinload('*'))
+            run_ = await session.scalar(select_run)
             assert run_
             session.expunge_all()
 
