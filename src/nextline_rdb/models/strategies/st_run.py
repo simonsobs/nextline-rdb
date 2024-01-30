@@ -4,14 +4,10 @@ from typing import Callable, Optional, cast
 
 from hypothesis import strategies as st
 
-from nextline_rdb.utils.strategies import (
-    st_datetimes,
-    st_graphql_ints,
-    st_none_or,
-    st_python_scripts,
-)
+from nextline_rdb.utils.strategies import st_datetimes, st_graphql_ints, st_none_or
 
 from .. import Run
+from .st_script import st_model_script
 from .utils import st_started_at_ended_at
 
 
@@ -50,7 +46,7 @@ def st_model_run(
         )
     )
 
-    script = draw(st_none_or(st_python_scripts()))
+    script = draw(st_none_or(st_model_script()))
 
     exception = draw(st_none_or(st.text()))
 
@@ -59,7 +55,7 @@ def st_model_run(
         state=state,
         started_at=started_at,
         ended_at=ended_at,
-        script_old=script,
+        script=script,
         exception=exception,
     )
 

@@ -67,9 +67,6 @@ async def test_options(data: st.DataObject) -> None:
         assert not prompts
         assert not stdouts
 
-    if run.script_old:
-        compile(run.script_old, '<string>', 'exec')
-
 
 @given(run=st_model_run())
 async def test_db(run: Run) -> None:
@@ -84,6 +81,7 @@ async def test_db(run: Run) -> None:
             select_run = select(Run)
             run_ = await session.scalar(
                 select_run.options(
+                    selectinload(Run.script),
                     selectinload(Run.traces),
                     selectinload(Run.prompts),
                     selectinload(Run.stdouts),
