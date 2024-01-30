@@ -15,4 +15,4 @@ class Script(Model):
     current: Mapped[bool] = mapped_column(default=False)
     script: Mapped[str | None] = mapped_column(Text)
 
-    runs: Mapped['Run'] = relationship(back_populates='script')
+    runs: Mapped[list['Run']] = relationship(back_populates='script')
