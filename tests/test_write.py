@@ -8,6 +8,7 @@ from nextline import Nextline
 from nextline.events import OnStartPrompt
 from nextline.plugin.spec import Context, hookimpl
 from sqlalchemy import select
+from sqlalchemy.orm import selectinload
 
 from nextline_rdb import DB
 from nextline_rdb import models as db_models
@@ -18,13 +19,15 @@ async def test_one(adb: DB, run_nextline, statement):
     del run_nextline
 
     async with adb.session() as session:
-        runs = (await session.scalars(select(db_models.Run))).all()
+        stmt = select(db_models.Run).options(selectinload(db_models.Run.script))
+        runs = (await session.scalars(stmt)).all()
         assert 2 == len(runs)
         run = runs[1]
         assert 2 == run.run_no
         assert run.started_at
         assert run.ended_at
-        assert statement == run.script_old
+        assert run.script
+        assert statement == run.script.script
         assert not run.exception
 
         traces = (await session.scalars(select(db_models.Trace))).all()
