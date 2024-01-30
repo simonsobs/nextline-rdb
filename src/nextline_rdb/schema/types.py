@@ -125,6 +125,7 @@ class RunHistory:
 
     @classmethod
     def from_model(cls: Type["RunHistory"], model: db_models.Run):
+        script = model.script.script if model.script else None
         return cls(
             _model=model,
             id=model.id,
@@ -132,7 +133,7 @@ class RunHistory:
             state=model.state,
             started_at=model.started_at,
             ended_at=model.ended_at,
-            script=model.script_old,
+            script=script,
             exception=model.exception,
         )
 
