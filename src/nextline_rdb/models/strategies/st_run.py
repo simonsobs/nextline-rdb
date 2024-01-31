@@ -4,6 +4,7 @@ from typing import Callable, Optional, cast
 
 from hypothesis import strategies as st
 
+from nextline_rdb.utils import mark_last
 from nextline_rdb.utils.strategies import st_datetimes, st_graphql_ints, st_none_or
 
 from .. import Run, Script
@@ -76,6 +77,8 @@ def st_model_run_list(
     min_size: int = 0,
     max_size: Optional[int] = None,
 ) -> list[Run]:
+    from .st_script import st_model_script
+
     run_nos = draw(
         st.lists(
             st_graphql_ints(min_value=1),
@@ -84,18 +87,38 @@ def st_model_run_list(
             unique=True,
         ).map(cast(Callable[[Iterable[int]], list[int]], sorted))
     )
+
     runs = list[Run]()
+    scripts = list[Script]()
     min_started_at = None
-    for run_no in run_nos:
+    for last, run_no in mark_last(run_nos):
         min_started_at = min_started_at or draw(st_datetimes())
+
+        if scripts:
+            script = draw(
+                st.one_of(
+                    st_none_or(st_model_script(current=False)),
+                    st.sampled_from(scripts),
+                )
+            )
+        else:
+            script = draw(st_none_or(st_model_script(current=False)))
+            if script is not None:
+                scripts.append(script)
+
         run = draw(
             st_model_run(
                 run_no=run_no,
+                script=script,
                 generate_traces=generate_traces,
                 min_started_at=min_started_at,
             )
         )
         assert run.run_no == run_no
+
+        if run.script is not None:
+            run.script.current = last
+
         if run.started_at is not None:
             min_started_at = run.started_at + dt.timedelta(seconds=1)
         # if run.ended_at is not None:

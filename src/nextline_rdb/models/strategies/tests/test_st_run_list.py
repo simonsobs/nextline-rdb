@@ -44,6 +44,9 @@ async def test_options(data: st.DataObject) -> None:
     started_ats = [run.started_at for run in runs if run.started_at]
     assert started_ats == sorted(started_ats)
 
+    current_script = {run.script for run in runs if run.script and run.script.current}
+    assert len(current_script) <= 1
+
 
 @given(runs=st_model_run_list(generate_traces=True, min_size=0, max_size=3))
 async def test_db(runs: list[Run]) -> None:
@@ -56,20 +59,23 @@ async def test_db(runs: list[Run]) -> None:
             session.add_all(runs)
 
         async with db.session() as session:
-            select_run = select(Run)
+            select_run = select(Run).order_by(Run.run_no)
             runs_ = (await session.scalars(select_run)).all()
-            select_trace = select(Trace)
+            select_trace = select(Trace).order_by(Trace.id)
             traces_ = (await session.scalars(select_trace)).all()
-            select_prompt = select(Prompt)
+            select_prompt = select(Prompt).order_by(Prompt.id)
             prompts_ = (await session.scalars(select_prompt)).all()
-            select_stdout = select(Stdout)
+            select_stdout = select(Stdout).order_by(Stdout.id)
             stdouts_ = (await session.scalars(select_stdout)).all()
             session.expunge_all()
 
     assert repr(runs) == repr(runs_)
+
     traces = sorted(traces, key=lambda m: m.id)
-    assert repr(traces) == repr(sorted(traces_, key=lambda m: m.id))
+    assert repr(traces) == repr(traces_)
+
     prompts = sorted(prompts, key=lambda m: m.id)
-    assert repr(prompts) == repr(sorted(prompts_, key=lambda m: m.id))
+    assert repr(prompts) == repr(prompts_)
+
     stdouts = sorted(stdouts, key=lambda m: m.id)
-    assert repr(stdouts) == repr(sorted(stdouts_, key=lambda m: m.id))
+    assert repr(stdouts) == repr(stdouts_)
