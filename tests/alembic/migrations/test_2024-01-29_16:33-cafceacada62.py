@@ -39,7 +39,7 @@ async def test_migration(
     async with DB(url, model_base_class=models_old.Model, use_migration=False) as db:
         assert db.migration_revision == REVISION_OLD
         async with db.session() as session:
-            select_run = select(models_old.Run).order_by(models_old.Run.id)
+            select_run = select(models_old.Run).order_by(models_old.Run.run_no)
             runs_ = (await session.scalars(select_run)).all()
 
     assert repr(runs) == repr(runs_)
