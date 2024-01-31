@@ -2,6 +2,7 @@ from typing import Optional, cast
 
 import strawberry
 from sqlalchemy import select
+from sqlalchemy.orm import selectinload
 from strawberry.types import Info
 
 from nextline_rdb.db import DB
@@ -16,7 +17,7 @@ async def query_run(
 ) -> types.RunHistory | None:
     db = cast(DB, info.context['db'])
     async with db.session() as session:
-        stmt = select(Run)
+        stmt = select(Run).options(selectinload(Run.script))
         if id is not None:
             stmt = stmt.filter(Run.id == id)
         else:

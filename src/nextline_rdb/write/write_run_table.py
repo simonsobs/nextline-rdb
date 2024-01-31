@@ -5,7 +5,7 @@ from nextline.plugin.spec import Context, hookimpl
 from sqlalchemy import select
 
 from nextline_rdb.db import DB
-from nextline_rdb.models import Run
+from nextline_rdb.models import Run, Script
 
 
 class WriteRunTable:
@@ -17,12 +17,33 @@ class WriteRunTable:
         assert (run_arg := context.run_arg)
         run_no = run_arg.run_no
         if isinstance(run_arg.statement, str):
-            script = run_arg.statement
+            statement = run_arg.statement
         else:
-            script = None
+            statement = None
         async with self._db.session.begin() as session:
-            run = Run(run_no=run_no, state='initialized', script=script)
-            session.add(run)
+            stmt = select(Script).filter_by(current=True)
+            if statement is None:
+                scripts = (await session.execute(stmt)).scalars().all()
+                for script in scripts:
+                    script.current = False
+                run = Run(run_no=run_no, state='initialized')
+                session.add(run)
+            else:
+                scripts = (await session.execute(stmt)).scalars().all()
+                if len(scripts) > 1:
+                    for script in scripts:
+                        script.current = False
+                    script = Script(script=statement, current=True)
+                elif len(scripts) == 1:
+                    if scripts[0].script != statement:
+                        scripts[0].current = False
+                        script = Script(script=statement, current=True)
+                    else:
+                        script = scripts[0]
+                else:
+                    script = Script(script=statement, current=True)
+                run = Run(run_no=run_no, state='initialized', script=script)
+                session.add(run)
 
     @hookimpl
     async def on_start_run(self, context: Context) -> None:

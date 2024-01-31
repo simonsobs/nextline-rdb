@@ -16,10 +16,10 @@ async def test_initialize_nextline(runs: list[Run], default_statement: str) -> N
     last_run = runs[-1] if runs else None
 
     expected_run_no = last_run.run_no + 1 if last_run else 1
+
+    current_scripts = [r.script.script for r in runs if r.script and r.script.current]
     expected_statement = (
-        last_run.script
-        if last_run and last_run.script is not None
-        else default_statement
+        default_statement if not current_scripts else current_scripts[-1]
     )
 
     nextline = Nextline(statement=default_statement)

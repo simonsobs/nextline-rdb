@@ -20,6 +20,7 @@ class Run(Model):
     state: Mapped[str | None]
     started_at: Mapped[datetime | None]
     ended_at: Mapped[datetime | None]
+    script_old: Mapped[str | None] = mapped_column(Text)
     exception: Mapped[str | None] = mapped_column(Text)
 
     script_id: Mapped[Optional[int]] = mapped_column(

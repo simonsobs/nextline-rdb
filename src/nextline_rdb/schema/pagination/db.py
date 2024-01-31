@@ -5,7 +5,7 @@ from typing import Optional, Type, TypeVar
 
 from nextline_rdb import models as db_models
 from nextline_rdb.db import DB
-from nextline_rdb.pagination import load_models
+from nextline_rdb.pagination import Sort, load_models
 
 from .connection import Connection, Edge, query_connection
 
@@ -26,6 +26,7 @@ async def load_connection(
     id_field: str,
     create_node_from_model: Callable[..., _T],
     *,
+    sort: Optional[Sort] = None,
     before: Optional[str] = None,
     after: Optional[str] = None,
     first: Optional[int] = None,
@@ -37,6 +38,7 @@ async def load_connection(
         Model=Model,
         id_field=id_field,
         create_node_from_model=create_node_from_model,
+        sort=sort,
     )
 
     return await query_connection(
@@ -54,6 +56,7 @@ async def load_edges(
     id_field: str,
     create_node_from_model: Callable[..., _T],
     *,
+    sort: Optional[Sort] = None,
     before: Optional[str] = None,
     after: Optional[str] = None,
     first: Optional[int] = None,
@@ -64,6 +67,7 @@ async def load_edges(
             session,
             Model,
             id_field,
+            sort=sort,
             before=before if before is None else decode_id(before),
             after=after if after is None else decode_id(after),
             first=first,
