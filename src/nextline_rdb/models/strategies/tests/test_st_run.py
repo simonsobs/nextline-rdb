@@ -13,7 +13,7 @@ from nextline_rdb.utils.strategies import (
 )
 
 from ... import Model, Run
-from .. import st_model_run
+from .. import st_model_run, st_model_script
 
 
 @given(st.data())
@@ -30,6 +30,8 @@ async def test_options(data: st.DataObject) -> None:
         st_ranges(st_=st_datetimes, min_start=min_started_at)
     )
 
+    script = data.draw(st_none_or(st_model_script()))
+
     generate_traces = data.draw(st.booleans())
 
     run = data.draw(
@@ -41,6 +43,7 @@ async def test_options(data: st.DataObject) -> None:
             max_started_at=max_started_at,
             min_ended_at=min_ended_at,
             max_ended_at=max_ended_at,
+            script=script,
             generate_traces=generate_traces,
         )
     )
@@ -56,6 +59,9 @@ async def test_options(data: st.DataObject) -> None:
 
     if not run.started_at:
         assert not run.ended_at
+
+    if script is not None:
+        assert run.script == script
 
     traces = run.traces
     prompts = run.prompts

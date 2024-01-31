@@ -6,8 +6,7 @@ from hypothesis import strategies as st
 
 from nextline_rdb.utils.strategies import st_datetimes, st_graphql_ints, st_none_or
 
-from .. import Run
-from .st_script import st_model_script
+from .. import Run, Script
 from .utils import st_started_at_ended_at
 
 
@@ -21,9 +20,11 @@ def st_model_run(
     max_started_at: Optional[dt.datetime] = None,
     min_ended_at: Optional[dt.datetime] = None,
     max_ended_at: Optional[dt.datetime] = None,
+    script: Optional[Script] = None,
     generate_traces: bool = True,
 ) -> Run:
     from .st_prompt import st_model_prompt_list
+    from .st_script import st_model_script
     from .st_stdout import st_model_stdout_list
     from .st_trace import st_model_trace_list
 
@@ -46,7 +47,8 @@ def st_model_run(
         )
     )
 
-    script = draw(st_none_or(st_model_script()))
+    if script is None:
+        script = draw(st_none_or(st_model_script()))
 
     exception = draw(st_none_or(st.text()))
 
