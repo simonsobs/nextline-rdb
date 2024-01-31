@@ -76,6 +76,7 @@ async def test_options(data: st.DataObject) -> None:
 
 @given(run=st_model_run())
 async def test_db(run: Run) -> None:
+    script = run.script
     traces = run.traces
     prompts = run.prompts
     stdouts = run.stdouts
@@ -97,6 +98,7 @@ async def test_db(run: Run) -> None:
             session.expunge_all()
 
     assert repr(run) == repr(run_)
+    assert repr(script) == repr(run_.script)
     traces = sorted(traces, key=lambda m: m.id)
     assert repr(traces) == repr(sorted(run_.traces, key=lambda m: m.id))
     prompts = sorted(prompts, key=lambda m: m.id)
