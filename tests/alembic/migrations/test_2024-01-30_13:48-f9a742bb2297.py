@@ -5,14 +5,14 @@ from hypothesis import given, note
 from sqlalchemy import select
 
 from nextline_rdb.alembic.models import rev_5a08750d6760 as models_old
-from nextline_rdb.alembic.models import rev_6e3cf7d9b6bf as models_new
+from nextline_rdb.alembic.models import rev_f9a742bb2297 as models_new
 from nextline_rdb.alembic.models.rev_5a08750d6760.strategies import st_model_run_list
 from nextline_rdb.db import DB
 
 from .conftest import AlembicConfigFactory
 
 REVISION_OLD = '5a08750d6760'
-REVISION_NEW = 'cafceacada62'
+REVISION_NEW = 'f9a742bb2297'
 
 
 @given(runs=st_model_run_list(generate_traces=True))
