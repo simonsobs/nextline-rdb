@@ -8,6 +8,7 @@ from sqlalchemy import inspect
 from strawberry.types import Info
 
 from nextline_rdb import models as db_models
+from nextline_rdb.pagination import Sort, SortField
 
 from .pagination import Connection, load_connection
 
@@ -19,9 +20,12 @@ async def query_connection_run(
     first: Optional[int] = None,
     last: Optional[int] = None,
 ) -> Connection[RunHistory]:
+    sort = [SortField('run_no')]
     Model = db_models.Run
     NodeType = RunHistory
-    return await query_connection(info, before, after, first, last, Model, NodeType)
+    return await query_connection(
+        info, sort, before, after, first, last, Model, NodeType
+    )
 
 
 async def query_connection_trace(
@@ -31,9 +35,12 @@ async def query_connection_trace(
     first: Optional[int] = None,
     last: Optional[int] = None,
 ) -> Connection[TraceHistory]:
+    sort = [SortField('run_no'), SortField('trace_no')]
     Model = db_models.Trace
     NodeType = TraceHistory
-    return await query_connection(info, before, after, first, last, Model, NodeType)
+    return await query_connection(
+        info, sort, before, after, first, last, Model, NodeType
+    )
 
 
 async def query_connection_prompt(
@@ -43,9 +50,12 @@ async def query_connection_prompt(
     first: Optional[int] = None,
     last: Optional[int] = None,
 ) -> Connection[PromptHistory]:
+    sort = [SortField('run_no'), SortField('prompt_no')]
     Model = db_models.Prompt
     NodeType = PromptHistory
-    return await query_connection(info, before, after, first, last, Model, NodeType)
+    return await query_connection(
+        info, sort, before, after, first, last, Model, NodeType
+    )
 
 
 async def query_connection_stdout(
@@ -55,9 +65,12 @@ async def query_connection_stdout(
     first: Optional[int] = None,
     last: Optional[int] = None,
 ) -> Connection[StdoutHistory]:
+    sort = [SortField('run_no'), SortField('id')]
     Model = db_models.Stdout
     NodeType = StdoutHistory
-    return await query_connection(info, before, after, first, last, Model, NodeType)
+    return await query_connection(
+        info, sort, before, after, first, last, Model, NodeType
+    )
 
 
 _T = TypeVar("_T")
@@ -65,6 +78,7 @@ _T = TypeVar("_T")
 
 async def query_connection(
     info: Info,
+    sort: Optional[Sort],
     before: Optional[str],
     after: Optional[str],
     first: Optional[int],
@@ -83,6 +97,7 @@ async def query_connection(
         Model,
         id_field,
         create_node_from_model,
+        sort=sort,
         before=before,
         after=after,
         first=first,
