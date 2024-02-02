@@ -1,5 +1,12 @@
-from sqlalchemy import ForeignKey
-from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
+from sqlalchemy import ForeignKey, event
+from sqlalchemy.orm import (
+    DeclarativeBase,
+    Mapped,
+    Session,
+    mapped_column,
+    relationship,
+    sessionmaker,
+)
 
 from nextline_rdb.models import ReprMixin
 
@@ -19,3 +26,16 @@ class Bar(Model):
     id: Mapped[int] = mapped_column(primary_key=True, index=True)
     foo_id: Mapped[int] = mapped_column(ForeignKey('foo.id'))
     foo: Mapped[Foo] = relationship(back_populates='bars')
+
+
+def register_session_events(session: sessionmaker[Session]) -> None:
+    new: set[Model]
+
+    @event.listens_for(session, 'before_flush')
+    def _before_flush(session: Session, flush_context, instances):
+        nonlocal new
+        new = set(session.new)
+
+    @event.listens_for(session, 'after_flush_postexec')
+    def _after_flush_postexec(session: Session, flush_context):
+        pass

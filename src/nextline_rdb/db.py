@@ -1,3 +1,4 @@
+from collections.abc import Callable
 from logging import getLogger
 from os import PathLike
 from pathlib import Path
@@ -9,7 +10,7 @@ from alembic.runtime.environment import EnvironmentContext
 from alembic.script import ScriptDirectory
 from sqlalchemy import Connection, Engine, MetaData, event
 from sqlalchemy.ext.asyncio import AsyncEngine, async_sessionmaker, create_async_engine
-from sqlalchemy.orm import DeclarativeBase
+from sqlalchemy.orm import DeclarativeBase, Session, sessionmaker
 
 import nextline_rdb
 from nextline_rdb import models
@@ -60,6 +61,9 @@ class DB:
         use_migration: bool = True,
         migration_revision_target: str = 'head',
         alembic_ini_path: str | PathLike = ALEMBIC_INI,
+        register_session_events: Optional[
+            Callable[[sessionmaker[Session]], None]
+        ] = None,
     ):
         url = url or 'sqlite+aiosqlite://'
         self.url = ensure_async_url(url)
@@ -76,6 +80,8 @@ class DB:
         self._logger = getLogger(__name__)
         self._logger.info(f'Async SQLAlchemy DB URL: {self.url}')
 
+        self._register_session_events = register_session_events
+
     def __repr__(self) -> str:
         return f'<{self.__class__.__name__} {self.url!r}>'
 
@@ -88,7 +94,18 @@ class DB:
         self.migration_revision = await self._get_current_revision()
         self._logger.info(f'Alembic migration version: {self.migration_revision!s}')
 
-        self.session = async_sessionmaker(self.engine, expire_on_commit=False)
+        # As of SQLAlchemy 2.0, the async session maker cannot be use for
+        # registering event hooks with the event.listen_for() function. Use the
+        # sync session maker instead as described in the SQLAlchemy documentation:
+        # https://docs.sqlalchemy.org/en/20/orm/extensions/asyncio.html#examples-of-event-listeners-with-async-engines-sessions-sessionmakers
+
+        sync_maker = sessionmaker()
+        self.session = async_sessionmaker(
+            self.engine, expire_on_commit=False, sync_session_class=sync_maker
+        )
+
+        if self._register_session_events:
+            self._register_session_events(sync_maker)
 
     async def _migrate(self) -> None:
         assert Path(self.alembic_ini_path).is_file()

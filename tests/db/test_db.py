@@ -10,7 +10,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from nextline_rdb.db import DB
 from nextline_rdb.utils import ensure_sync_url
 
-from .models import Bar, Foo, Model
+from .models import Bar, Foo, Model, register_session_events
 
 
 async def test_ensure_sync_url(tmp_url_factory: Callable[[], str]):
@@ -46,7 +46,12 @@ async def test_session_nested(tmp_url_factory: Callable[[], str], sizes: list[in
 
     objs = [Foo(bars=[Bar() for _ in range(size)]) for size in sizes]
 
-    async with DB(url=url, model_base_class=Model, use_migration=False) as db:
+    async with DB(
+        url=url,
+        model_base_class=Model,
+        use_migration=False,
+        register_session_events=register_session_events,
+    ) as db:
         async with db.session() as session:
             async with session.begin():
                 saved, model_classes = await write_db(session, objs)
@@ -65,7 +70,12 @@ async def test_session_begin(tmp_url_factory: Callable[[], str], sizes: list[int
 
     objs = [Foo(bars=[Bar() for _ in range(size)]) for size in sizes]
 
-    async with DB(url=url, model_base_class=Model, use_migration=False) as db:
+    async with DB(
+        url=url,
+        model_base_class=Model,
+        use_migration=False,
+        register_session_events=register_session_events,
+    ) as db:
         async with db.session.begin() as session:
             saved, model_classes = await write_db(session, objs)
         repr_saved = [repr(m) for m in saved]
