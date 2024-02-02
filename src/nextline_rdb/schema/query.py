@@ -5,6 +5,7 @@ from sqlalchemy import select
 from sqlalchemy.orm import selectinload
 from strawberry.types import Info
 
+import nextline_rdb
 from nextline_rdb.db import DB
 from nextline_rdb.models import Run
 
@@ -41,6 +42,7 @@ class QueryRDB:
         resolver=types.query_connection_stdout
     )
     run: types.RunHistory | None = strawberry.field(resolver=query_run)
+    version: str = nextline_rdb.__version__
 
 
 @strawberry.type
