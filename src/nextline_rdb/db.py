@@ -7,7 +7,7 @@ from alembic.config import Config
 from alembic.migration import MigrationContext
 from alembic.runtime.environment import EnvironmentContext
 from alembic.script import ScriptDirectory
-from sqlalchemy import Connection, MetaData
+from sqlalchemy import Connection, Engine, MetaData, event
 from sqlalchemy.ext.asyncio import AsyncEngine, async_sessionmaker, create_async_engine
 from sqlalchemy.orm import DeclarativeBase
 
@@ -148,3 +148,15 @@ async def migrate(
 
     async with engine.connect() as connection:
         await connection.run_sync(do_run_migrations)
+
+
+@event.listens_for(Engine, 'connect')
+def set_sqlite_pragma(dbapi_connection, connection_record):
+    '''Enable foreign key constraints in SQLite.
+
+    The code copied from the SQLAlchemy documentation:
+    https://docs.sqlalchemy.org/en/20/dialects/sqlite.html#foreign-key-support
+    '''
+    cursor = dbapi_connection.cursor()
+    cursor.execute("PRAGMA foreign_keys=ON")
+    cursor.close()
