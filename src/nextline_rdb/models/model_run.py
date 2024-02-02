@@ -27,6 +27,12 @@ class Run(Model):
     )
     script: Mapped[Optional['Script']] = relationship(back_populates='runs')
 
-    traces: Mapped[list["Trace"]] = relationship(back_populates="run")
-    prompts: Mapped[list["Prompt"]] = relationship(back_populates="run")
-    stdouts: Mapped[list["Stdout"]] = relationship(back_populates="run")
+    traces: Mapped[list["Trace"]] = relationship(
+        back_populates='run', cascade='all, delete-orphan'
+    )
+    prompts: Mapped[list["Prompt"]] = relationship(
+        back_populates='run', cascade='all, delete-orphan'
+    )
+    stdouts: Mapped[list["Stdout"]] = relationship(
+        back_populates='run', cascade='all, delete-orphan'
+    )
