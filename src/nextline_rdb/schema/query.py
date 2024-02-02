@@ -27,6 +27,11 @@ async def query_run(
     return types.RunHistory.from_model(run) if run else None
 
 
+def query_migration_version(info: Info) -> str | None:
+    db = cast(DB, info.context['db'])
+    return db.migration_revision
+
+
 @strawberry.type
 class QueryRDB:
     runs: Connection[types.RunHistory] = strawberry.field(
@@ -43,6 +48,7 @@ class QueryRDB:
     )
     run: types.RunHistory | None = strawberry.field(resolver=query_run)
     version: str = nextline_rdb.__version__
+    migration_version: str | None = strawberry.field(resolver=query_migration_version)
 
 
 @strawberry.type
