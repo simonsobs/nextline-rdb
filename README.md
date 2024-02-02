@@ -30,6 +30,8 @@ pip install nextline-rdb
 | -------------------- | --------------------- | --------------------------------------------------------------------------------------------- |
 | `NEXTLINE_DB__URL`   | `sqlite+aiosqlite://` | The [DB URL](https://docs.sqlalchemy.org/en/20/core/engines.html#database-urls) of SQLAlchemy |
 
+Only tested on SQLite + aiosqlite.
+
 ## License
 
 - _Nextline RDB_ is licensed under the [MIT](https://spdx.org/licenses/MIT.html) license.
