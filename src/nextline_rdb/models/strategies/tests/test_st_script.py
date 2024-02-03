@@ -38,7 +38,6 @@ async def test_at_most_one_current_script() -> None:
             current_script = CurrentScript(script=Script(script=''))
             session.add(current_script)
             await session.commit()
-            ic(current_script.script._current)
 
             current_script = CurrentScript(script=Script(script=''))
             session.add(current_script)
