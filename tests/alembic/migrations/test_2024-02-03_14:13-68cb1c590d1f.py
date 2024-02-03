@@ -13,7 +13,7 @@ from .conftest import AlembicConfigFactory
 
 REVISION_START = 'f9a742bb2297'
 REVISION_STAGE_ONE = 'c72fa3ee6a1a'
-REVISION_NEW = '245c4152e8d7'
+REVISION_NEW = '68cb1c590d1f'
 
 
 @given(scripts=st.lists(st_model_script(), min_size=0, max_size=5))
