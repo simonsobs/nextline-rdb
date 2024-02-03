@@ -1,4 +1,5 @@
-from typing import TYPE_CHECKING
+from collections.abc import Iterable
+from typing import TYPE_CHECKING, Optional
 
 from sqlalchemy import CheckConstraint, ForeignKey, Text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
@@ -12,14 +13,32 @@ if TYPE_CHECKING:
 class Script(Model):
     __tablename__ = 'script'
     id: Mapped[int] = mapped_column(primary_key=True, index=True)
-    current: Mapped[bool] = mapped_column(default=False)
     script: Mapped[str] = mapped_column(Text)
 
     runs: Mapped[list['Run']] = relationship(back_populates='script')
 
-    _current: Mapped['CurrentScript'] = relationship(
+    _current: Mapped[Optional['CurrentScript']] = relationship(
         'CurrentScript', back_populates='script', cascade='all, delete-orphan'
     )
+
+    def _repr_keys(self) -> Iterable[str]:
+        '''Include the property 'current' in the repr.'''
+        return list(super()._repr_keys()) + ['current']
+
+    @property
+    def current(self) -> bool:
+        '''True if this script is the current script.
+
+        At most one script can be the current script at any time.
+        '''
+        return self._current is not None
+
+    @current.setter
+    def current(self, value: bool):
+        if value and self._current is None:
+            self._current = CurrentScript(script=self)
+        elif not value:
+            self._current = None
 
 
 class CurrentScript(Model):

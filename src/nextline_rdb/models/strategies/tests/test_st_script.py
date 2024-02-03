@@ -3,6 +3,7 @@ from hypothesis import given
 from hypothesis import strategies as st
 from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError
+from sqlalchemy.orm import selectinload
 
 from nextline_rdb.db import DB
 from nextline_rdb.utils.strategies import st_none_or
@@ -26,10 +27,11 @@ async def test_db(script: Script) -> None:
         async with db.session.begin() as session:
             session.add(script)
         async with db.session() as session:
-            select_script = select(Script)
+            select_script = select(Script).options(selectinload(Script._current))
             script_ = await session.scalar(select_script)
 
     assert repr(script) == repr(script_)
+    assert 'current' in repr(script)
 
 
 async def test_at_most_one_current_script() -> None:
