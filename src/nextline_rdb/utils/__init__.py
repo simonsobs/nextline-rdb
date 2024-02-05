@@ -1,5 +1,8 @@
 __all__ = [
     'mark_last',
+    'all_declared_models_based_on',
+    'class_name_and_primary_keys_of',
+    'primary_keys_of',
     'safe_compare',
     'safe_max',
     'safe_min',
@@ -10,6 +13,11 @@ __all__ = [
 ]
 
 from .gen import mark_last
+from .sa import (
+    all_declared_models_based_on,
+    class_name_and_primary_keys_of,
+    primary_keys_of,
+)
 from .safe import safe_compare, safe_max, safe_min
 from .url import ensure_async_url, ensure_sync_url
 from .utc import is_timezone_aware, utc_timestamp

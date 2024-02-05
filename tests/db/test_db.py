@@ -1,24 +1,18 @@
 from collections.abc import Callable
-from typing import Any, TypeVar
 
 import pytest
 from hypothesis import given
 from hypothesis import strategies as st
-from sqlalchemy import inspect, select
-from sqlalchemy.orm import DeclarativeBase
+from sqlalchemy import select
 
 from nextline_rdb.db import DB
-from nextline_rdb.utils import ensure_sync_url
+from nextline_rdb.utils import (
+    all_declared_models_based_on,
+    class_name_and_primary_keys_of,
+    ensure_sync_url,
+)
 
 from .models import Bar, Foo, Model, register_session_events
-
-T = TypeVar('T', bound=DeclarativeBase)
-
-
-def all_declared_models_based_on(model_base_class: type[T]) -> list[type[T]]:
-    '''The ORM classes inheriting from the base class.'''
-    return [m.class_ for m in model_base_class.registry.mappers]
-
 
 MODEL_CLASSES = all_declared_models_based_on(Model)  # i.e., [Foo, Bar]
 
@@ -117,22 +111,6 @@ async def test_session_begin(tmp_url_factory: Callable[[], str], sizes: list[int
             repr_loaded = [repr(m) for m in loaded]
 
         assert repr_added == repr_loaded
-
-
-def class_name_and_primary_keys_of(instance: DeclarativeBase) -> tuple[Any, ...]:
-    '''A tuple of the ORM class name followed by the primary key values.'''
-    class_name = type(instance).__name__
-    vals = primary_keys_of(instance)
-    return (class_name,) + vals
-
-
-def primary_keys_of(instance: DeclarativeBase) -> tuple[Any, ...]:
-    '''A tuple of the primary key values.'''
-    cls = type(instance)
-    instance_mapper = inspect(cls)
-    column_names = [attr.key for attr in instance_mapper.primary_key]
-    values = tuple(getattr(instance, name) for name in column_names)
-    return values
 
 
 @pytest.fixture(scope='session')
