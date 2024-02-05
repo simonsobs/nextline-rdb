@@ -3,9 +3,10 @@ from typing import Optional
 
 from nextline import Nextline
 from sqlalchemy import func, select
+from sqlalchemy.orm import selectinload
 
-from . import models
 from .db import DB
+from .models import CurrentScript, Run
 
 
 async def initialize_nextline(nextline: Nextline, db: DB) -> None:
@@ -21,26 +22,21 @@ async def initialize_nextline(nextline: Nextline, db: DB) -> None:
 
 async def _last_run_no(db: DB) -> Optional[int]:
     async with db.session() as session:
-        stmt = select(models.Run, func.max(models.Run.run_no))
+        stmt = select(Run, func.max(Run.run_no))
         if run := (await session.execute(stmt)).scalar_one_or_none():
             return run.run_no
         logger = getLogger(__name__)
-        msg = "No previous runs were found in the DB"
+        msg = 'No previous runs were found in the DB'
         logger.info(msg)
         return None
 
 
 async def _current_script(db: DB) -> Optional[str]:
     async with db.session() as session:
-        stmt = select(models.Script).where(
-            models.Script.id
-            == select(func.max(models.Script.id))
-            .where(models.Script.current)
-            .scalar_subquery()
-        )
-        if script := (await session.execute(stmt)).scalar_one_or_none():
-            return script.script
+        stmt = select(CurrentScript).options(selectinload(CurrentScript.script))
+        if current_script := (await session.execute(stmt)).scalar_one_or_none():
+            return current_script.script.script
         logger = getLogger(__name__)
-        msg = "No current scripts were found in the DB"
+        msg = 'No current scripts were found in the DB'
         logger.info(msg)
         return None
