@@ -1,5 +1,5 @@
 from collections.abc import Callable
-from typing import Any
+from typing import Any, TypeVar
 
 import pytest
 from hypothesis import given
@@ -12,15 +12,15 @@ from nextline_rdb.utils import ensure_sync_url
 
 from .models import Bar, Foo, Model, register_session_events
 
+T = TypeVar('T', bound=DeclarativeBase)
 
-def model_classes_of(
-    model_base_class: type[DeclarativeBase],
-) -> list[type[DeclarativeBase]]:
-    '''All declared ORM model classes.'''
+
+def all_declared_models_based_on(model_base_class: type[T]) -> list[type[T]]:
+    '''The ORM classes inheriting from the base class.'''
     return [m.class_ for m in model_base_class.registry.mappers]
 
 
-MODEL_CLASSES = model_classes_of(Model)  # i.e., [Foo, Bar]
+MODEL_CLASSES = all_declared_models_based_on(Model)  # i.e., [Foo, Bar]
 
 
 async def test_ensure_sync_url(tmp_url_factory: Callable[[], str]):
