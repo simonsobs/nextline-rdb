@@ -30,6 +30,7 @@ async def test_options(data: st.DataObject) -> None:
     )
 
     script = data.draw(st_none_or(st_model_script()))
+    generate_script = data.draw(st.booleans())
 
     generate_traces = data.draw(st.booleans())
 
@@ -43,6 +44,7 @@ async def test_options(data: st.DataObject) -> None:
             min_ended_at=min_ended_at,
             max_ended_at=max_ended_at,
             script=script,
+            generate_script=generate_script,
             generate_traces=generate_traces,
         )
     )
@@ -61,6 +63,8 @@ async def test_options(data: st.DataObject) -> None:
 
     if script is not None:
         assert run.script == script
+    elif not generate_script:
+        assert not run.script
 
     traces = run.traces
     prompts = run.prompts

@@ -22,8 +22,15 @@ def st_model_run(
     min_ended_at: Optional[dt.datetime] = None,
     max_ended_at: Optional[dt.datetime] = None,
     script: Optional[Script] = None,
+    generate_script: bool = True,
     generate_traces: bool = True,
 ) -> Run:
+    '''A strategy for `Run` models.
+
+    Note on `generate_script`: If `script` is `None` and `generate_script` is
+    `True`, a new `Script` model might be generated. If `script` is not `None`,
+    `generate_script` is ignored.
+    '''
     from .st_prompt import st_model_prompt_list
     from .st_script import st_model_script
     from .st_stdout import st_model_stdout_list
@@ -48,7 +55,7 @@ def st_model_run(
         )
     )
 
-    if script is None:
+    if script is None and generate_script:
         script = draw(st_none_or(st_model_script()))
 
     exception = draw(st_none_or(st.text()))
