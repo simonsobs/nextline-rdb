@@ -95,12 +95,9 @@ def st_model_run_list(
         ).map(cast(Callable[[Iterable[int]], list[int]], sorted))
     )
 
-    runs = list[Run]()
     scripts = list[Script]()
-    min_started_at = None
-    for last, run_no in mark_last(run_nos):
-        min_started_at = min_started_at or draw(st_datetimes())
-
+    scripts_for_runs = list[Script | None]()
+    for last, _ in mark_last(run_nos):
         if scripts:
             script = draw(
                 st.one_of(
@@ -116,6 +113,12 @@ def st_model_run_list(
         if script is not None:
             script.current = last
 
+        scripts_for_runs.append(script)
+
+    runs = list[Run]()
+    min_started_at = None
+    for run_no, script in zip(run_nos, scripts_for_runs):
+        min_started_at = min_started_at or draw(st_datetimes())
         run = draw(
             st_model_run(
                 run_no=run_no,
