@@ -3,11 +3,11 @@ from asyncio import to_thread
 from alembic import command
 from hypothesis import given, note
 from hypothesis import strategies as st
-from sqlalchemy import select
 
 from nextline_rdb.alembic.models import rev_f9a742bb2297 as models_old
 from nextline_rdb.alembic.models.rev_f9a742bb2297.strategies import st_model_script
 from nextline_rdb.db import DB
+from nextline_rdb.utils import load_all
 
 from .conftest import AlembicConfigFactory
 
@@ -38,9 +38,8 @@ async def test_migration(
     async with DB(url, model_base_class=models_old.Model, use_migration=False) as db:
         assert db.migration_revision == REVISION_STAGE_ONE
         async with db.session() as session:
-            select_scripts = select(models_old.Script).order_by(models_old.Script.id)
-            scripts_ = (await session.execute(select_scripts)).scalars().all()
-            expected = [repr(s) for s in scripts_]
+            loaded = await load_all(session, models_old.Model)
+            expected = [repr(s) for s in loaded]
 
     # Upgrade to the target revision.
     await to_thread(command.upgrade, config, REVISION_NEW)
@@ -50,8 +49,7 @@ async def test_migration(
     async with DB(url, model_base_class=models_old.Model, use_migration=False) as db:
         assert db.migration_revision == REVISION_START
         async with db.session() as session:
-            select_scripts = select(models_old.Script).order_by(models_old.Script.id)
-            scripts_ = (await session.execute(select_scripts)).scalars().all()
-            actual = [repr(s) for s in scripts_]
+            loaded = await load_all(session, models_old.Model)
+            actual = [repr(s) for s in loaded]
 
     assert expected == actual
