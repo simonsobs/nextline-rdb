@@ -113,18 +113,19 @@ def st_model_run_list(
             if script is not None:
                 scripts.append(script)
 
+        if script is not None:
+            script.current = last
+
         run = draw(
             st_model_run(
                 run_no=run_no,
                 script=script,
+                generate_script=False,
                 generate_traces=generate_traces,
                 min_started_at=min_started_at,
             )
         )
         assert run.run_no == run_no
-
-        if run.script is not None:
-            run.script.current = last
 
         if run.started_at is not None:
             min_started_at = run.started_at + dt.timedelta(seconds=1)
