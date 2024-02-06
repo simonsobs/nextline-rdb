@@ -1,11 +1,7 @@
 from hypothesis import given
-from sqlalchemy import select
 
 from nextline_rdb.db import DB
-from nextline_rdb.utils import (
-    all_declared_models_based_on,
-    class_name_and_primary_keys_of,
-)
+from nextline_rdb.utils import class_name_and_primary_keys_of, load_all
 
 from .. import CurrentScript, Model, Script
 from ..strategies import st_model_script
@@ -21,12 +17,7 @@ async def test_repr(script: Script) -> None:
         repr_added = repr(added)
 
         async with db.session() as session:
-            loaded = [
-                m
-                for c in all_declared_models_based_on(Model)
-                for m in (await session.scalars(select(c))).all()
-            ]
-            loaded = sorted(loaded, key=class_name_and_primary_keys_of)
+            loaded = await load_all(session, Model)
             repr_loaded = repr(loaded)
 
             assert repr_added == repr_loaded

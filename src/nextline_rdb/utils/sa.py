@@ -1,9 +1,24 @@
 from typing import Any, TypeVar
 
-from sqlalchemy import inspect
+from sqlalchemy import inspect, select
+from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import DeclarativeBase
 
 T = TypeVar('T', bound=DeclarativeBase)
+
+
+async def load_all(session: AsyncSession, model_base_class: type[T]) -> list[T]:
+    '''All rows of all tables in the database.
+
+    Sorted by the ORM class names and primary keys.
+    '''
+    objs = [
+        m
+        for c in all_declared_models_based_on(model_base_class)
+        for m in (await session.scalars(select(c))).all()
+    ]
+    objs = sorted(objs, key=class_name_and_primary_keys_of)
+    return objs
 
 
 def all_declared_models_based_on(model_base_class: type[T]) -> list[type[T]]:

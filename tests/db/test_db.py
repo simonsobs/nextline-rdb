@@ -3,18 +3,11 @@ from collections.abc import Callable
 import pytest
 from hypothesis import given
 from hypothesis import strategies as st
-from sqlalchemy import select
 
 from nextline_rdb.db import DB
-from nextline_rdb.utils import (
-    all_declared_models_based_on,
-    class_name_and_primary_keys_of,
-    ensure_sync_url,
-)
+from nextline_rdb.utils import class_name_and_primary_keys_of, ensure_sync_url, load_all
 
 from .models import Bar, Foo, Model, register_session_events
-
-MODEL_CLASSES = all_declared_models_based_on(Model)  # i.e., [Foo, Bar]
 
 
 async def test_ensure_sync_url(tmp_url_factory: Callable[[], str]):
@@ -68,12 +61,7 @@ async def test_session_nested(tmp_url_factory: Callable[[], str], sizes: list[in
             repr_added = [repr(m) for m in added]
 
         async with db.session() as session:
-            loaded = [
-                m
-                for c in MODEL_CLASSES
-                for m in (await session.scalars(select(c))).all()
-            ]
-            loaded = sorted(loaded, key=class_name_and_primary_keys_of)
+            loaded = await load_all(session, Model)
             repr_loaded = [repr(m) for m in loaded]
 
         assert repr_added == repr_loaded
@@ -102,12 +90,7 @@ async def test_session_begin(tmp_url_factory: Callable[[], str], sizes: list[int
         repr_added = [repr(m) for m in added]
 
         async with db.session() as session:
-            loaded = [
-                m
-                for c in MODEL_CLASSES
-                for m in (await session.scalars(select(c))).all()
-            ]
-            loaded = sorted(loaded, key=class_name_and_primary_keys_of)
+            loaded = await load_all(session, Model)
             repr_loaded = [repr(m) for m in loaded]
 
         assert repr_added == repr_loaded
