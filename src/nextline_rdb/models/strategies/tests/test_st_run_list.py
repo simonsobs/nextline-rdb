@@ -1,11 +1,11 @@
 from hypothesis import given
 from hypothesis import strategies as st
-from sqlalchemy import select
 
 from nextline_rdb.db import DB
+from nextline_rdb.utils import class_name_and_primary_keys_of, load_all
 from nextline_rdb.utils.strategies import st_ranges
 
-from ... import Model, Prompt, Run, Stdout, Trace
+from ... import Model, Run
 from .. import st_model_run_list
 
 
@@ -50,32 +50,16 @@ async def test_options(data: st.DataObject) -> None:
 
 @given(runs=st_model_run_list(generate_traces=True, min_size=0, max_size=3))
 async def test_db(runs: list[Run]) -> None:
-    traces = [trace for run in runs for trace in run.traces]
-    prompts = [prompt for run in runs for prompt in run.prompts]
-    stdouts = [stdout for run in runs for stdout in run.stdouts]
-
     async with DB(use_migration=False, model_base_class=Model) as db:
         async with db.session.begin() as session:
             session.add_all(runs)
+            added = list(session.new)
+            assert set(runs) <= set(added)
+        added = sorted(added, key=class_name_and_primary_keys_of)
+        repr_added = [repr(m) for m in added]
 
         async with db.session() as session:
-            select_run = select(Run).order_by(Run.run_no)
-            runs_ = (await session.scalars(select_run)).all()
-            select_trace = select(Trace).order_by(Trace.id)
-            traces_ = (await session.scalars(select_trace)).all()
-            select_prompt = select(Prompt).order_by(Prompt.id)
-            prompts_ = (await session.scalars(select_prompt)).all()
-            select_stdout = select(Stdout).order_by(Stdout.id)
-            stdouts_ = (await session.scalars(select_stdout)).all()
-            session.expunge_all()
+            loaded = await load_all(session, Model)
+            repr_loaded = [repr(m) for m in loaded]
 
-    assert repr(runs) == repr(runs_)
-
-    traces = sorted(traces, key=lambda m: m.id)
-    assert repr(traces) == repr(traces_)
-
-    prompts = sorted(prompts, key=lambda m: m.id)
-    assert repr(prompts) == repr(prompts_)
-
-    stdouts = sorted(stdouts, key=lambda m: m.id)
-    assert repr(stdouts) == repr(stdouts_)
+    assert repr_added == repr_loaded
