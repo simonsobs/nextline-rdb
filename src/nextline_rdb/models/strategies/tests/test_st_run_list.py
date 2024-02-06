@@ -11,6 +11,7 @@ from .. import st_model_run_list
 
 @given(st.data())
 async def test_options(data: st.DataObject) -> None:
+    # Generate options of the strategy to be tested
     generate_traces = data.draw(st.booleans())
     min_size, max_size = data.draw(
         st_ranges(
@@ -23,11 +24,15 @@ async def test_options(data: st.DataObject) -> None:
     )
     assert isinstance(min_size, int)
     assert isinstance(max_size, int)
+
+    # Call the strategy to be tested
     runs = data.draw(
         st_model_run_list(
             generate_traces=generate_traces, min_size=min_size, max_size=max_size
         )
     )
+
+    # Assert the generated values
     assert min_size <= len(runs) <= max_size
     run_nos = [run.run_no for run in runs]
     assert run_nos == sorted(run_nos)
