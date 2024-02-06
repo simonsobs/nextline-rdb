@@ -1,4 +1,3 @@
-from collections.abc import Iterable
 from typing import TYPE_CHECKING, Optional
 
 from sqlalchemy import CheckConstraint, ForeignKey, Text
@@ -20,10 +19,6 @@ class Script(Model):
     _current: Mapped[Optional['CurrentScript']] = relationship(
         'CurrentScript', back_populates='script', cascade='all, delete-orphan'
     )
-
-    def _repr_keys(self) -> Iterable[str]:
-        '''Include the property 'current' in the repr.'''
-        return list(super()._repr_keys()) + ['current']
 
     @property
     def current(self) -> bool:

@@ -31,7 +31,6 @@ async def test_db(script: Script) -> None:
             script_ = await session.scalar(select_script)
 
     assert repr(script) == repr(script_)
-    assert 'current' in repr(script)
 
 
 async def test_at_most_one_current_script() -> None:
