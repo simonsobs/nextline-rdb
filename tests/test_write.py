@@ -21,8 +21,8 @@ async def test_one(adb: DB, run_nextline, statement):
     async with adb.session() as session:
         stmt = select(db_models.Run).options(selectinload(db_models.Run.script))
         runs = (await session.scalars(stmt)).all()
-        assert 2 == len(runs)
-        run = runs[1]
+        assert 1 == len(runs)
+        run = runs[0]
         assert 2 == run.run_no
         assert run.started_at
         assert run.ended_at
