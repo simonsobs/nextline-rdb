@@ -83,10 +83,16 @@ def st_model_run_list(
     generate_traces: bool = False,
     min_size: int = 0,
     max_size: Optional[int] = None,
+    scripts: list[Script] | None = None,
 ) -> list[Run]:
     run_nos = draw(_st_run_nos(min_size=min_size, max_size=max_size))
 
-    scripts_for_runs = draw(_st_scripts_for_runs(n_runs=len(run_nos)))
+    st_scripts = (
+        _st_script_list(size=len(run_nos))
+        if scripts is None
+        else _st_script_list_choose_from(scripts, len(run_nos))
+    )
+    scripts_for_runs = draw(st_scripts)
 
     runs = list[Run]()
     min_started_at = None
@@ -121,12 +127,31 @@ def _st_run_nos(min_size: int, max_size: int | None) -> st.SearchStrategy[list[i
 
 
 @st.composite
-def _st_scripts_for_runs(draw: st.DrawFn, n_runs: int) -> list[Script | None]:
+def _st_script_list_choose_from(
+    draw: st.DrawFn, scripts: list[Script], size: int
+) -> list[Script | None]:
+    ret = list[Script | None]()
+    for _ in mark_last(range(size)):
+        if scripts:
+            script = draw(
+                st.one_of(
+                    st.none(),
+                    st.sampled_from(scripts),
+                )
+            )
+        else:
+            script = draw(st.none())
+        ret.append(script)
+    return ret
+
+
+@st.composite
+def _st_script_list(draw: st.DrawFn, size: int) -> list[Script | None]:
     from .st_script import st_model_script
 
     scripts = list[Script]()
-    scripts_for_runs = list[Script | None]()
-    for last, _ in mark_last(range(n_runs)):
+    ret = list[Script | None]()
+    for last, _ in mark_last(range(size)):
         if scripts:
             script = draw(
                 st.one_of(
@@ -142,5 +167,5 @@ def _st_scripts_for_runs(draw: st.DrawFn, n_runs: int) -> list[Script | None]:
         if script is not None:
             script.current = last
 
-        scripts_for_runs.append(script)
-    return scripts_for_runs
+        ret.append(script)
+    return ret

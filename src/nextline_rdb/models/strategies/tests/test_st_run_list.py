@@ -3,10 +3,10 @@ from hypothesis import strategies as st
 
 from nextline_rdb.db import DB
 from nextline_rdb.utils import class_name_and_primary_keys_of, load_all
-from nextline_rdb.utils.strategies import st_ranges
+from nextline_rdb.utils.strategies import st_none_or, st_ranges
 
 from ... import Model, Run
-from .. import st_model_run_list
+from .. import st_model_run_list, st_model_script_list
 
 
 @given(st.data())
@@ -25,10 +25,15 @@ async def test_options(data: st.DataObject) -> None:
     assert isinstance(min_size, int)
     assert isinstance(max_size, int)
 
+    scripts = data.draw(st_none_or(st_model_script_list(max_size=max_size)))
+
     # Call the strategy to be tested
     runs = data.draw(
         st_model_run_list(
-            generate_traces=generate_traces, min_size=min_size, max_size=max_size
+            generate_traces=generate_traces,
+            min_size=min_size,
+            max_size=max_size,
+            scripts=scripts,
         )
     )
 
@@ -49,8 +54,11 @@ async def test_options(data: st.DataObject) -> None:
     started_ats = [run.started_at for run in runs if run.started_at]
     assert started_ats == sorted(started_ats)
 
-    current_script = {run.script for run in runs if run.script and run.script.current}
+    scripts_ = {run.script for run in runs if run.script}
+    current_script = {script for script in scripts_ if script.current}
     assert len(current_script) <= 1
+    if scripts is not None:
+        assert scripts_ <= set(scripts)
 
 
 @given(runs=st_model_run_list(generate_traces=True, min_size=0, max_size=3))
