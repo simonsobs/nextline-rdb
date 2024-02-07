@@ -1,46 +1,26 @@
 import enum
 import math
-from collections.abc import Iterable
 from typing import Any
 
 from sqlalchemy.orm import ColumnProperty, class_mapper
 
 
 class ReprMixin:
-    '''A mixin for ORM models with __repr__ for object reconstruction.
-
-    Override methods of this class if necessary.
-    '''
-
     def __repr__(self) -> str:
         '''Return a string that can be used to reconstruct the object.'''
-        class_name = self._repr_class_name()
-        init_args = self._repr_init_args()
-        return f'{class_name}({init_args})'
-
-    def _repr_class_name(self) -> str:
-        '''The class name to use in the repr.'''
-        return self.__class__.__qualname__
-
-    def _repr_init_args(self) -> str:
-        '''The arguments to use in the repr.'''
-        keys = self._repr_keys()
-        fmts = (f'{k}={self._repr_val(k)}' for k in keys)
-        return ', '.join(fmts)
-
-    def _repr_keys(self) -> Iterable[str]:
-        '''The attribute names to include in the repr.'''
         props = class_mapper(self.__class__).iterate_properties
         columns = (p for p in props if isinstance(p, ColumnProperty))
-        return (c.key for c in columns if self._repr_filter(c.key))
+        keys = (c.key for c in columns if self._repr_filter(c.key))
+        fmts = (f'{k}={self._repr_val(k)}' for k in keys)
+        return f'{self.__class__.__qualname__}({", ".join(fmts)})'
 
     def _repr_filter(self, key: str) -> bool:
-        '''Exclude if the value is None.'''
+        '''Exclude if the value is None. Override this method if necessary.'''
         val = getattr(self, key)
         return val is not None
 
     def _repr_val(self, key: str) -> str:
-        '''Format the value so it can be reconstructed.'''
+        '''Format the value so it can be reconstructed. Override this method if necessary.'''
         val = getattr(self, key)
         return repr_val(val)
 

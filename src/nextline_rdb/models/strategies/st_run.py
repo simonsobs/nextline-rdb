@@ -22,8 +22,15 @@ def st_model_run(
     min_ended_at: Optional[dt.datetime] = None,
     max_ended_at: Optional[dt.datetime] = None,
     script: Optional[Script] = None,
+    generate_script: bool = True,
     generate_traces: bool = True,
 ) -> Run:
+    '''A strategy for `Run` models.
+
+    Note on `generate_script`: If `script` is `None` and `generate_script` is
+    `True`, a new `Script` model might be generated. If `script` is not `None`,
+    `generate_script` is ignored.
+    '''
     from .st_prompt import st_model_prompt_list
     from .st_script import st_model_script
     from .st_stdout import st_model_stdout_list
@@ -48,7 +55,7 @@ def st_model_run(
         )
     )
 
-    if script is None:
+    if script is None and generate_script:
         script = draw(st_none_or(st_model_script()))
 
     exception = draw(st_none_or(st.text()))
@@ -76,24 +83,75 @@ def st_model_run_list(
     generate_traces: bool = False,
     min_size: int = 0,
     max_size: Optional[int] = None,
+    scripts: list[Script] | None = None,
 ) -> list[Run]:
-    from .st_script import st_model_script
+    run_nos = draw(_st_run_nos(min_size=min_size, max_size=max_size))
 
-    run_nos = draw(
-        st.lists(
-            st_graphql_ints(min_value=1),
-            min_size=min_size,
-            max_size=max_size,
-            unique=True,
-        ).map(cast(Callable[[Iterable[int]], list[int]], sorted))
+    st_scripts = (
+        _st_script_list(size=len(run_nos))
+        if scripts is None
+        else _st_script_list_choose_from(scripts, len(run_nos))
     )
+    scripts_for_runs = draw(st_scripts)
 
     runs = list[Run]()
-    scripts = list[Script]()
     min_started_at = None
-    for last, run_no in mark_last(run_nos):
+    for run_no, script in zip(run_nos, scripts_for_runs):
         min_started_at = min_started_at or draw(st_datetimes())
+        run = draw(
+            st_model_run(
+                run_no=run_no,
+                script=script,
+                generate_script=False,
+                generate_traces=generate_traces,
+                min_started_at=min_started_at,
+            )
+        )
+        assert run.run_no == run_no
 
+        if run.started_at is not None:
+            min_started_at = run.started_at + dt.timedelta(seconds=1)
+        # if run.ended_at is not None:
+        #     min_started_at = run.ended_at + dt.timedelta(seconds=1)
+        runs.append(run)
+    return runs
+
+
+def _st_run_nos(min_size: int, max_size: int | None) -> st.SearchStrategy[list[int]]:
+    return st.lists(
+        st_graphql_ints(min_value=1),
+        min_size=min_size,
+        max_size=max_size,
+        unique=True,
+    ).map(cast(Callable[[Iterable[int]], list[int]], sorted))
+
+
+@st.composite
+def _st_script_list_choose_from(
+    draw: st.DrawFn, scripts: list[Script], size: int
+) -> list[Script | None]:
+    ret = list[Script | None]()
+    for _ in mark_last(range(size)):
+        if scripts:
+            script = draw(
+                st.one_of(
+                    st.none(),
+                    st.sampled_from(scripts),
+                )
+            )
+        else:
+            script = draw(st.none())
+        ret.append(script)
+    return ret
+
+
+@st.composite
+def _st_script_list(draw: st.DrawFn, size: int) -> list[Script | None]:
+    from .st_script import st_model_script
+
+    scripts = list[Script]()
+    ret = list[Script | None]()
+    for last, _ in mark_last(range(size)):
         if scripts:
             script = draw(
                 st.one_of(
@@ -106,22 +164,8 @@ def st_model_run_list(
             if script is not None:
                 scripts.append(script)
 
-        run = draw(
-            st_model_run(
-                run_no=run_no,
-                script=script,
-                generate_traces=generate_traces,
-                min_started_at=min_started_at,
-            )
-        )
-        assert run.run_no == run_no
+        if script is not None:
+            script.current = last
 
-        if run.script is not None:
-            run.script.current = last
-
-        if run.started_at is not None:
-            min_started_at = run.started_at + dt.timedelta(seconds=1)
-        # if run.ended_at is not None:
-        #     min_started_at = run.ended_at + dt.timedelta(seconds=1)
-        runs.append(run)
-    return runs
+        ret.append(script)
+    return ret

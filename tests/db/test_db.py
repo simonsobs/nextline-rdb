@@ -1,14 +1,11 @@
-from collections.abc import Callable, Iterable
-from typing import Any
+from collections.abc import Callable
 
 import pytest
 from hypothesis import given
 from hypothesis import strategies as st
-from sqlalchemy import select
-from sqlalchemy.ext.asyncio import AsyncSession
 
 from nextline_rdb.db import DB
-from nextline_rdb.utils import ensure_sync_url
+from nextline_rdb.utils import class_name_and_primary_keys_of, ensure_sync_url, load_all
 
 from .models import Bar, Foo, Model, register_session_events
 
@@ -54,14 +51,20 @@ async def test_session_nested(tmp_url_factory: Callable[[], str], sizes: list[in
     ) as db:
         async with db.session() as session:
             async with session.begin():
-                saved, model_classes = await write_db(session, objs)
-            repr_saved = [repr(m) for m in saved]
-        assert len(repr_saved) == sum(sizes) + len(sizes)
+                session.add_all(objs)  # Related objects will be automatically added.
+                added = list(session.new)
+                assert set(objs) <= set(added)
+
+            added = sorted(added, key=class_name_and_primary_keys_of)
+            assert len(added) == sum(sizes) + len(sizes)
+
+            repr_added = [repr(m) for m in added]
 
         async with db.session() as session:
-            repr_loaded = await read_db(session, model_classes)
+            loaded = await load_all(session, Model)
+            repr_loaded = [repr(m) for m in loaded]
 
-        assert repr_saved == repr_loaded
+        assert repr_added == repr_loaded
 
 
 @given(st.lists(st.integers(min_value=0, max_value=4), min_size=0, max_size=4))
@@ -77,29 +80,20 @@ async def test_session_begin(tmp_url_factory: Callable[[], str], sizes: list[int
         register_session_events=register_session_events,
     ) as db:
         async with db.session.begin() as session:
-            saved, model_classes = await write_db(session, objs)
-        repr_saved = [repr(m) for m in saved]
-        assert len(repr_saved) == sum(sizes) + len(sizes)
+            session.add_all(objs)  # Related objects will be automatically added.
+            added = list(session.new)
+            assert set(objs) <= set(added)
+
+        added = sorted(added, key=class_name_and_primary_keys_of)
+        assert len(added) == sum(sizes) + len(sizes)
+
+        repr_added = [repr(m) for m in added]
 
         async with db.session() as session:
-            repr_loaded = await read_db(session, model_classes)
+            loaded = await load_all(session, Model)
+            repr_loaded = [repr(m) for m in loaded]
 
-        assert repr_saved == repr_loaded
-
-
-async def write_db(
-    session: AsyncSession, objs: Iterable[Any]
-) -> tuple[list[Any], set[type[Any]]]:
-    session.add_all(objs)
-    added = sorted(session.new, key=lambda x: (x.__class__.__name__, x.id))
-    classes = {type(x) for x in added}
-    return added, classes
-
-
-async def read_db(session: AsyncSession, classes: Iterable[type[Any]]) -> list[str]:
-    objs = [m for cls in classes for m in (await session.scalars(select(cls))).all()]
-    objs = sorted(objs, key=lambda x: (x.__class__.__name__, x.id))
-    return [repr(m) for m in objs]
+        assert repr_added == repr_loaded
 
 
 @pytest.fixture(scope='session')

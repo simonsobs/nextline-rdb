@@ -1,9 +1,8 @@
 from hypothesis import given, settings
 from hypothesis import strategies as st
-from sqlalchemy import select
-from sqlalchemy.orm import selectinload
 
 from nextline_rdb.db import DB
+from nextline_rdb.utils import class_name_and_primary_keys_of, load_all
 from nextline_rdb.utils import safe_compare as sc
 from nextline_rdb.utils.strategies import (
     st_datetimes,
@@ -31,6 +30,7 @@ async def test_options(data: st.DataObject) -> None:
     )
 
     script = data.draw(st_none_or(st_model_script()))
+    generate_script = data.draw(st.booleans())
 
     generate_traces = data.draw(st.booleans())
 
@@ -44,6 +44,7 @@ async def test_options(data: st.DataObject) -> None:
             min_ended_at=min_ended_at,
             max_ended_at=max_ended_at,
             script=script,
+            generate_script=generate_script,
             generate_traces=generate_traces,
         )
     )
@@ -62,6 +63,8 @@ async def test_options(data: st.DataObject) -> None:
 
     if script is not None:
         assert run.script == script
+    elif not generate_script:
+        assert not run.script
 
     traces = run.traces
     prompts = run.prompts
@@ -76,32 +79,16 @@ async def test_options(data: st.DataObject) -> None:
 
 @given(run=st_model_run())
 async def test_db(run: Run) -> None:
-    script = run.script
-    traces = run.traces
-    prompts = run.prompts
-    stdouts = run.stdouts
-
     async with DB(use_migration=False, model_base_class=Model) as db:
         async with db.session.begin() as session:
             session.add(run)
-        async with db.session() as session:
-            select_run = select(Run)
-            # select_run = select_run.options(
-            #     selectinload(Run.script),
-            #     selectinload(Run.traces),
-            #     selectinload(Run.prompts),
-            #     selectinload(Run.stdouts),
-            # )
-            select_run = select_run.options(selectinload('*'))
-            run_ = await session.scalar(select_run)
-            assert run_
-            session.expunge_all()
+            added = list(session.new)
+            assert run in added
+        added = sorted(added, key=class_name_and_primary_keys_of)
+        repr_added = [repr(m) for m in added]
 
-    assert repr(run) == repr(run_)
-    assert repr(script) == repr(run_.script)
-    traces = sorted(traces, key=lambda m: m.id)
-    assert repr(traces) == repr(sorted(run_.traces, key=lambda m: m.id))
-    prompts = sorted(prompts, key=lambda m: m.id)
-    assert repr(prompts) == repr(sorted(run_.prompts, key=lambda m: m.id))
-    stdouts = sorted(stdouts, key=lambda m: m.id)
-    assert repr(stdouts) == repr(sorted(run_.stdouts, key=lambda m: m.id))
+        async with db.session() as session:
+            loaded = await load_all(session, Model)
+            repr_loaded = [repr(m) for m in loaded]
+
+    assert repr_added == repr_loaded

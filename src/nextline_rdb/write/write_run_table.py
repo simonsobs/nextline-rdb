@@ -3,9 +3,11 @@ from datetime import timezone
 
 from nextline.plugin.spec import Context, hookimpl
 from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import selectinload
 
 from nextline_rdb.db import DB
-from nextline_rdb.models import Run, Script
+from nextline_rdb.models import CurrentScript, Run, Script
 
 
 class WriteRunTable:
@@ -18,32 +20,39 @@ class WriteRunTable:
         run_no = run_arg.run_no
         if isinstance(run_arg.statement, str):
             statement = run_arg.statement
+            await self._on_initialize_run_with_statement(run_no, statement)
         else:
-            statement = None
+            await self._on_initialize_run_without_statement(run_no)
+
+    async def _on_initialize_run_without_statement(self, run_no: int) -> None:
         async with self._db.session.begin() as session:
-            stmt = select(Script).filter_by(current=True)
-            if statement is None:
-                scripts = (await session.execute(stmt)).scalars().all()
-                for script in scripts:
-                    script.current = False
-                run = Run(run_no=run_no, state='initialized')
-                session.add(run)
-            else:
-                scripts = (await session.execute(stmt)).scalars().all()
-                if len(scripts) > 1:
-                    for script in scripts:
-                        script.current = False
-                    script = Script(script=statement, current=True)
-                elif len(scripts) == 1:
-                    if scripts[0].script != statement:
-                        scripts[0].current = False
-                        script = Script(script=statement, current=True)
-                    else:
-                        script = scripts[0]
+            current_script = await self._load_current_script(session)
+            if current_script is not None:
+                await session.delete(current_script)
+            run = Run(run_no=run_no, state='initialized')
+            session.add(run)
+
+    async def _on_initialize_run_with_statement(
+        self, run_no: int, statement: str
+    ) -> None:
+        async with self._db.session.begin() as session:
+            current_script = await self._load_current_script(session)
+            if current_script is not None:
+                if current_script.script.script == statement:
+                    script = current_script.script
                 else:
-                    script = Script(script=statement, current=True)
-                run = Run(run_no=run_no, state='initialized', script=script)
-                session.add(run)
+                    script = Script(script=statement)
+                    current_script.script = script
+            else:
+                script = Script(script=statement)
+                current_script = CurrentScript(script=script)
+                session.add(current_script)
+            run = Run(run_no=run_no, state='initialized', script=script)
+            session.add(run)
+
+    async def _load_current_script(self, session: AsyncSession) -> CurrentScript | None:
+        stmt = select(CurrentScript).options(selectinload(CurrentScript.script))
+        return (await session.execute(stmt)).scalar_one_or_none()
 
     @hookimpl
     async def on_start_run(self, context: Context) -> None:
