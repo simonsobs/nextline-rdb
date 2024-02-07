@@ -84,36 +84,9 @@ def st_model_run_list(
     min_size: int = 0,
     max_size: Optional[int] = None,
 ) -> list[Run]:
-    from .st_script import st_model_script
+    run_nos = draw(_st_run_nos(min_size=min_size, max_size=max_size))
 
-    run_nos = draw(
-        st.lists(
-            st_graphql_ints(min_value=1),
-            min_size=min_size,
-            max_size=max_size,
-            unique=True,
-        ).map(cast(Callable[[Iterable[int]], list[int]], sorted))
-    )
-
-    scripts = list[Script]()
-    scripts_for_runs = list[Script | None]()
-    for last, _ in mark_last(run_nos):
-        if scripts:
-            script = draw(
-                st.one_of(
-                    st_none_or(st_model_script(current=False)),
-                    st.sampled_from(scripts),
-                )
-            )
-        else:
-            script = draw(st_none_or(st_model_script(current=False)))
-            if script is not None:
-                scripts.append(script)
-
-        if script is not None:
-            script.current = last
-
-        scripts_for_runs.append(script)
+    scripts_for_runs = draw(_st_scripts_for_runs(n_runs=len(run_nos)))
 
     runs = list[Run]()
     min_started_at = None
@@ -136,3 +109,38 @@ def st_model_run_list(
         #     min_started_at = run.ended_at + dt.timedelta(seconds=1)
         runs.append(run)
     return runs
+
+
+def _st_run_nos(min_size: int, max_size: int | None) -> st.SearchStrategy[list[int]]:
+    return st.lists(
+        st_graphql_ints(min_value=1),
+        min_size=min_size,
+        max_size=max_size,
+        unique=True,
+    ).map(cast(Callable[[Iterable[int]], list[int]], sorted))
+
+
+@st.composite
+def _st_scripts_for_runs(draw: st.DrawFn, n_runs: int) -> list[Script | None]:
+    from .st_script import st_model_script
+
+    scripts = list[Script]()
+    scripts_for_runs = list[Script | None]()
+    for last, _ in mark_last(range(n_runs)):
+        if scripts:
+            script = draw(
+                st.one_of(
+                    st_none_or(st_model_script(current=False)),
+                    st.sampled_from(scripts),
+                )
+            )
+        else:
+            script = draw(st_none_or(st_model_script(current=False)))
+            if script is not None:
+                scripts.append(script)
+
+        if script is not None:
+            script.current = last
+
+        scripts_for_runs.append(script)
+    return scripts_for_runs
