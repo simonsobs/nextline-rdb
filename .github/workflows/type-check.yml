@@ -23,7 +23,7 @@ jobs:
       - name: Install packages
         run: |
           pip install --upgrade pip
-          pip install --use-pep517 -e '.[host,tests]'
+          pip install -e '.[tests]'
           pip install --upgrade mypy
 
       - name: Run mypy
