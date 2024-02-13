@@ -29,11 +29,13 @@ class PageInfo:
 @strawberry.type
 class Connection(Generic[_T]):
     page_info: PageInfo
+    total_count: int
     edges: list[Edge[_T]]
 
 
 async def query_connection(
     query_edges: Callable[..., Coroutine[Any, Any, list[Edge[_T]]]],
+    query_total_count: Callable[..., Coroutine[Any, Any, int]],
     before: Optional[str] = None,
     after: Optional[str] = None,
     first: Optional[int] = None,
@@ -64,6 +66,8 @@ async def query_connection(
         has_previous_page = False
         has_next_page = False
 
+    total_count = await query_total_count()
+
     page_info = PageInfo(
         has_previous_page=has_previous_page,
         has_next_page=has_next_page,
@@ -71,4 +75,4 @@ async def query_connection(
         end_cursor=edges[-1].cursor if edges else None,
     )
 
-    return Connection(page_info=page_info, edges=edges)
+    return Connection(page_info=page_info, total_count=total_count, edges=edges)

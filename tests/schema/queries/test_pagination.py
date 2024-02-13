@@ -52,6 +52,7 @@ async def test_all(runs: list[Run]):
         note(f'runs: {runs}')
 
         nodes_saved = [Node(id=run.id, runNo=run.run_no) for run in runs]
+        n_nodes_saved = len(nodes_saved)
         note(f'nodes_saved: {nodes_saved}')
 
         resp = await schema.execute(QUERY_RDB_RUNS, context_value={'db': db})
@@ -59,11 +60,14 @@ async def test_all(runs: list[Run]):
 
         all_runs = resp.data['rdb']['runs']
         page_info: PageInfo = all_runs['pageInfo']
+        total_count = all_runs['totalCount']
         edges: list[Edge] = all_runs['edges']
 
         if edges:
             assert page_info['startCursor'] == edges[0]['cursor']
             assert page_info['endCursor'] == edges[-1]['cursor']
+
+        assert total_count == n_nodes_saved
 
         nodes = [edge['node'] for edge in edges]
 
@@ -83,6 +87,7 @@ async def test_forward(runs: list[Run], first: int):
         note(f'runs: {runs}')
 
         nodes_saved = [Node(id=run.id, runNo=run.run_no) for run in runs]
+        n_nodes_saved = len(nodes_saved)
         note(f'nodes_saved: {nodes_saved}')
 
         after = None
@@ -100,6 +105,7 @@ async def test_forward(runs: list[Run], first: int):
 
             all_runs = resp.data['rdb']['runs']
             page_info: PageInfo = all_runs['pageInfo']
+            total_count = all_runs['totalCount']
             edges: list[Edge] = all_runs['edges']
 
             has_next_page = page_info['hasNextPage']
@@ -112,6 +118,8 @@ async def test_forward(runs: list[Run], first: int):
 
             if edges:
                 assert after == edges[-1]['cursor']
+
+            assert total_count == n_nodes_saved
 
             nodes.extend(edge['node'] for edge in edges)
 
@@ -131,6 +139,7 @@ async def test_backward(runs: list[Run], last: int):
         note(f'runs: {runs}')
 
         nodes_saved = [Node(id=run.id, runNo=run.run_no) for run in runs]
+        n_nodes_saved = len(nodes_saved)
         note(f'nodes_saved: {nodes_saved}')
 
         before = None
@@ -148,6 +157,7 @@ async def test_backward(runs: list[Run], last: int):
 
             all_runs = resp.data['rdb']['runs']
             page_info: PageInfo = all_runs['pageInfo']
+            total_count = all_runs['totalCount']
             edges: list[Edge] = all_runs['edges']
 
             has_previous_page = page_info['hasPreviousPage']
@@ -160,6 +170,8 @@ async def test_backward(runs: list[Run], last: int):
 
             if edges:
                 assert before == edges[0]['cursor']
+
+            assert total_count == n_nodes_saved
 
             nodes.extend(edge['node'] for edge in reversed(edges))
 
