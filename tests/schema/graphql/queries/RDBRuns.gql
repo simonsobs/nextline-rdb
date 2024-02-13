@@ -12,6 +12,7 @@ query HistoryRuns(
         hasNextPage
         hasPreviousPage
       }
+      totalCount
       edges {
         cursor
         node {

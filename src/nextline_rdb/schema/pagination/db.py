@@ -3,6 +3,8 @@ from collections.abc import Callable
 from functools import partial
 from typing import Optional, Type, TypeVar
 
+from sqlalchemy import func, select
+
 from nextline_rdb import models as db_models
 from nextline_rdb.db import DB
 from nextline_rdb.pagination import Sort, load_models
@@ -41,13 +43,23 @@ async def load_connection(
         sort=sort,
     )
 
+    query_total_count = partial(load_total_count, db=db, Model=Model)
+
     return await query_connection(
         query_edges,
+        query_total_count,
         before,
         after,
         first,
         last,
     )
+
+
+async def load_total_count(db: DB, Model: Type[db_models.Model]) -> int:
+    async with db.session() as session:
+        stmt = select(func.count()).select_from(Model)
+        total_count = (await session.execute(stmt)).scalar() or 0
+    return total_count
 
 
 async def load_edges(
