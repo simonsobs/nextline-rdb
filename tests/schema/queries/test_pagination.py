@@ -71,7 +71,7 @@ async def test_all(runs: list[Run]):
 
         nodes = [edge['node'] for edge in edges]
 
-        assert nodes == nodes_saved
+        assert nodes == list(reversed(nodes_saved))
 
 
 @given(
@@ -123,7 +123,7 @@ async def test_forward(runs: list[Run], first: int):
 
             nodes.extend(edge['node'] for edge in edges)
 
-        assert nodes == nodes_saved
+        assert nodes == list(reversed(nodes_saved))
 
 
 @given(
@@ -175,7 +175,7 @@ async def test_backward(runs: list[Run], last: int):
 
             nodes.extend(edge['node'] for edge in reversed(edges))
 
-        assert nodes == list(reversed(nodes_saved))
+        assert nodes == nodes_saved
 
 
 @given(runs=st_model_run_list(generate_traces=False, min_size=0, max_size=12))
