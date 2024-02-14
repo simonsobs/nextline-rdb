@@ -20,7 +20,7 @@ async def query_connection_run(
     first: Optional[int] = None,
     last: Optional[int] = None,
 ) -> Connection[RunHistory]:
-    sort = [SortField('run_no')]
+    sort = [SortField('run_no', desc=True)]
     Model = db_models.Run
     NodeType = RunHistory
     return await query_connection(
