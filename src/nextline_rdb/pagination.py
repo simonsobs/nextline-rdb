@@ -63,6 +63,9 @@ def compose_statement(
 ) -> Select:
     '''Return a SELECT statement object to be given to session.scalars'''
 
+    # TODO: Turn this into an argument and test if it works with `where` clause
+    select_model = select(Model)
+
     forward = (after is not None) or (first is not None)
     backward = (before is not None) or (last is not None)
 
@@ -82,26 +85,25 @@ def compose_statement(
         ]
 
     if not (forward or backward):
-        return select(Model).order_by(*sorting_fields(Model))
+        return select_model.order_by(*sorting_fields(Model))
 
     cursor = after if forward else before
     limit = first if forward else last
 
     if cursor is None:
-        stmt = select(Model).order_by(*sorting_fields(Model, reverse=backward))
+        stmt = select_model.order_by(*sorting_fields(Model, reverse=backward))
     else:
-        cte = select(
-            Model,
+        cte = select_model.add_columns(
             func.row_number()
             .over(order_by=sorting_fields(Model, reverse=backward))
-            .label('row_number'),
+            .label('row_number')
         ).cte()
 
         subq = select(cte.c.row_number.label('cursor'))
         subq = subq.where(getattr(cte.c, id_field) == cursor)
         subq = cast(Select[tuple], subq.subquery())
 
-        Alias = aliased(Model, cte)  # type: ignore
+        Alias = aliased(Model, cte)
         stmt = select(Alias).select_from(cte)
         stmt = stmt.join(subq, literal(True))  # type: ignore # cartesian product
         stmt = stmt.order_by(*sorting_fields(Alias, reverse=backward))
