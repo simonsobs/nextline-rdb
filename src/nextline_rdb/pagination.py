@@ -75,6 +75,7 @@ def compose_statement(
         sort.append(SortField(id_field))
 
     def sorting_fields(Model, reverse=False):
+        # NOTE: Check if `reversed(sort)` is the right way for reverse sorting
         return [
             f.desc() if reverse ^ d else f
             for f, d in [(getattr(Model, s.field), s.desc) for s in sort]
