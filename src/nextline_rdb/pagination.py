@@ -22,10 +22,12 @@ Sort = list[SortField]
 
 _Id = TypeVar('_Id')
 
+T = TypeVar('T', bound=DeclarativeBase)
+
 
 async def load_models(
     session: AsyncSession,
-    Model: Type[DeclarativeBase],
+    Model: Type[T],
     id_field: str,
     *,
     sort: Optional[Sort] = None,
@@ -52,7 +54,7 @@ async def load_models(
 
 
 def compose_statement(
-    Model: Type[DeclarativeBase],
+    Model: Type[T],
     id_field: str,
     *,
     sort: Optional[Sort] = None,
@@ -60,7 +62,7 @@ def compose_statement(
     after: Optional[_Id] = None,
     first: Optional[int] = None,
     last: Optional[int] = None,
-) -> Select:
+) -> Select[tuple[T]]:
     '''Return a SELECT statement object to be given to session.scalars'''
 
     # TODO: Turn this into an argument and test if it works with `where` clause
@@ -111,10 +113,10 @@ def compose_statement(
     if limit is not None:
         stmt = stmt.limit(limit)
 
-    if backward:
-        cte = stmt.cte()
-        Alias = aliased(Model, cte)
-        stmt = select(Alias, cte.c.row_number).select_from(cte)
-        stmt = stmt.order_by(cte.c.row_number)
+    # Select only the model (not the row_number) and ensure the order
+    cte = stmt.cte()
+    Alias = aliased(Model, cte)
+    stmt = select(Alias).select_from(cte)
+    stmt = stmt.order_by(cte.c.row_number)
 
     return stmt
