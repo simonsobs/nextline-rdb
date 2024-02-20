@@ -77,43 +77,44 @@ def compose_statement(
     if id_field not in [s.field for s in sort]:
         sort.append(SortField(id_field))
 
-    def sorting_fields(Model, reverse=False):
-        # NOTE: Check if `reversed(sort)` is the right way for reverse sorting
-        return [
-            f.desc() if reverse ^ d else f
-            for f, d in [(getattr(Model, s.field), s.desc) for s in sort]
-        ]
+    order_by = [
+        f.desc() if d else f
+        for f, d in [(getattr(Model, s.field), s.desc) for s in sort]
+    ]
 
     if not (forward or backward):
-        return select_model.order_by(*sorting_fields(Model))
+        return select_model.order_by(*order_by)
 
     cursor = after if forward else before
     limit = first if forward else last
 
-    if cursor is None:
-        stmt = select_model.order_by(*sorting_fields(Model, reverse=backward))
-    else:
-        cte = select_model.add_columns(
-            func.row_number()
-            .over(order_by=sorting_fields(Model, reverse=backward))
-            .label('row_number')
-        ).cte()
+    cte = select_model.add_columns(
+        func.row_number().over(order_by=order_by).label('row_number')
+    ).cte()
+    Alias = aliased(Model, cte)
+    stmt = select(Alias, cte.c.row_number).select_from(cte)
 
+    if cursor is not None:
         subq = select(cte.c.row_number.label('cursor'))
         subq = subq.where(getattr(cte.c, id_field) == cursor)
         subq = cast(Select[tuple], subq.subquery())
 
-        Alias = aliased(Model, cte)
-        stmt = select(Alias).select_from(cte)
         stmt = stmt.join(subq, literal(True))  # type: ignore # cartesian product
-        stmt = stmt.order_by(*sorting_fields(Alias, reverse=backward))
-        stmt = stmt.where(cte.c.row_number > subq.c.cursor)
+        if backward:
+            stmt = stmt.where(cte.c.row_number < subq.c.cursor)
+        else:
+            stmt = stmt.where(cte.c.row_number > subq.c.cursor)
+
+    if backward:
+        stmt = stmt.order_by(cte.c.row_number.desc())
 
     if limit is not None:
         stmt = stmt.limit(limit)
 
     if backward:
-        Alias = aliased(Model, stmt.subquery())
-        stmt = select(Alias).order_by(*sorting_fields(Alias))
+        cte = stmt.cte()
+        Alias = aliased(Model, cte)
+        stmt = select(Alias, cte.c.row_number).select_from(cte)
+        stmt = stmt.order_by(cte.c.row_number)
 
     return stmt
