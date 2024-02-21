@@ -1,4 +1,5 @@
-from typing import NamedTuple, Optional, Type, TypeVar
+from collections.abc import Sequence
+from typing import Any, NamedTuple, Optional, Type, TypeVar
 
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -37,11 +38,21 @@ async def load_models(
 ):
     select_model = select(Model)
 
+    sort = sort or []
+
+    if id_field not in {s.field for s in sort}:
+        sort.append(SortField(id_field))
+
+    order_by = [
+        f.desc() if d else f
+        for f, d in [(getattr(Model, s.field), s.desc) for s in sort]
+    ]
+
     stmt = compose_statement(
         select_model,
         Model,
         id_field,
-        sort=sort,
+        order_by=order_by,
         before=before,
         after=after,
         first=first,
@@ -60,7 +71,7 @@ def compose_statement(
     Model: Type[T],
     id_field: str,
     *,
-    sort: Optional[Sort] = None,
+    order_by: Optional[Sequence[Any]] = None,
     before: Optional[_Id] = None,
     after: Optional[_Id] = None,
     first: Optional[int] = None,
@@ -74,15 +85,8 @@ def compose_statement(
     if forward and backward:
         raise ValueError('Only either after/first or before/last is allowed')
 
-    sort = sort or []
-
-    if id_field not in [s.field for s in sort]:
-        sort.append(SortField(id_field))
-
-    order_by = [
-        f.desc() if d else f
-        for f, d in [(getattr(Model, s.field), s.desc) for s in sort]
-    ]
+    if not order_by:
+        order_by = [getattr(Model, id_field)]
 
     if not (forward or backward):
         return select_model.order_by(*order_by)
