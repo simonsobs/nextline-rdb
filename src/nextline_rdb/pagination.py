@@ -36,6 +36,7 @@ async def load_models(
     first: Optional[int] = None,
     last: Optional[int] = None,
 ):
+    # TODO: Make this an argument so that the caller add `where` clause
     select_model = select(Model)
 
     sort = sort or []
@@ -49,9 +50,9 @@ async def load_models(
     ]
 
     stmt = compose_statement(
-        select_model,
         Model,
         id_field,
+        select_model=select_model,
         order_by=order_by,
         before=before,
         after=after,
@@ -67,17 +68,52 @@ async def load_models(
 
 
 def compose_statement(
-    select_model: Select[tuple[T]],
     Model: Type[T],
     id_field: str,
     *,
+    select_model: Optional[Select[tuple[T]]] = None,
     order_by: Optional[Sequence[Any]] = None,
     before: Optional[_Id] = None,
     after: Optional[_Id] = None,
     first: Optional[int] = None,
     last: Optional[int] = None,
 ) -> Select[tuple[T]]:
-    '''Return a SELECT statement object to be given to session.scalars'''
+    '''Return a SQL select statement for pagination.
+
+    Parameters
+    ----------
+    Model :
+        The class of the ORM model to query.
+    id_field :
+        The name of the primary key field, e.g., 'id'.
+    select_model : optional
+        E.g., `select(Model).where(...)`. If not provided, `select(Model)` is used.
+    order_by : optional
+        The arguments to `row_number().over(order_by=...)` and `order_by()`. If
+        not provided, the primary key field is used, e.g., `[Model.id]`.
+    before : optional
+        As in the GraphQL Cursor Connections Specification [1].
+    after : optional
+        As in the GraphQL Cursor Connections Specification [1].
+    first : optional
+        As in the GraphQL Cursor Connections Specification [1].
+    last : optional
+        As in the GraphQL Cursor Connections Specification [1].
+
+    Returns
+    -------
+    stmt
+        The composed select statement for pagination.
+
+    Raises
+    ------
+    ValueError
+        If both before/last and after/first parameters are provided.
+    
+    References
+    ----------
+    .. [1] https://relay.dev/graphql/connections.htm
+    '''
 
     forward = (after is not None) or (first is not None)
     backward = (before is not None) or (last is not None)
@@ -85,7 +121,11 @@ def compose_statement(
     if forward and backward:
         raise ValueError('Only either after/first or before/last is allowed')
 
+    if select_model is None:
+        select_model = select(Model)
+
     if not order_by:
+        # E.g., [T.id]
         order_by = [getattr(Model, id_field)]
 
     if not (forward or backward):
