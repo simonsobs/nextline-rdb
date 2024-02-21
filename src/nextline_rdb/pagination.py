@@ -36,7 +36,10 @@ async def load_models(
     first: Optional[int] = None,
     last: Optional[int] = None,
 ):
+    select_model = select(Model)
+
     stmt = compose_statement(
+        select_model,
         Model,
         id_field,
         sort=sort,
@@ -54,6 +57,7 @@ async def load_models(
 
 
 def compose_statement(
+    select_model: Select[tuple[T]],
     Model: Type[T],
     id_field: str,
     *,
@@ -64,9 +68,6 @@ def compose_statement(
     last: Optional[int] = None,
 ) -> Select[tuple[T]]:
     '''Return a SELECT statement object to be given to session.scalars'''
-
-    # TODO: Turn this into an argument and test if it works with `where` clause
-    select_model = select(Model)
 
     forward = (after is not None) or (first is not None)
     backward = (before is not None) or (last is not None)
