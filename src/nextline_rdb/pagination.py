@@ -1,9 +1,8 @@
-from typing import NamedTuple, Optional, Type, TypeVar, cast
+from typing import NamedTuple, Optional, Type, TypeVar
 
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import DeclarativeBase, aliased, selectinload
-from sqlalchemy.sql.expression import literal
 from sqlalchemy.sql.selectable import Select
 
 # import sqlparse
@@ -91,27 +90,33 @@ def compose_statement(
     cursor = after if forward else before
     limit = first if forward else last
 
+    # A CTE (Common Table Expression) with a row_number column
     cte = select_model.add_columns(
         func.row_number().over(order_by=order_by).label('row_number')
     ).cte()
+
     Alias = aliased(Model, cte)
     stmt = select(Alias, cte.c.row_number).select_from(cte)
 
     if cursor is not None:
-        subq = select(cte.c.row_number.label('cursor'))
-        subq = subq.where(getattr(cte.c, id_field) == cursor)
-        subq = cast(Select[tuple], subq.subquery())
+        # A subquery to find the row_number at the cursor
+        stmt_subq = select(cte.c.row_number.label('at_cursor'))
+        stmt_subq = stmt_subq.where(getattr(cte.c, id_field) == cursor)
+        subq = stmt_subq.subquery()
 
-        stmt = stmt.join(subq, literal(True))  # type: ignore # cartesian product
+        # Select rows after or before (if backward) the cursor
+        stmt = stmt.select_from(subq)
         if backward:
-            stmt = stmt.where(cte.c.row_number < subq.c.cursor)
+            stmt = stmt.where(cte.c.row_number < subq.c.at_cursor)
         else:
-            stmt = stmt.where(cte.c.row_number > subq.c.cursor)
-
-    if backward:
-        stmt = stmt.order_by(cte.c.row_number.desc())
+            stmt = stmt.where(cte.c.row_number > subq.c.at_cursor)
 
     if limit is not None:
+        # Specify the maximum number of rows to return
+        if backward:
+            stmt = stmt.order_by(cte.c.row_number.desc())
+        else:
+            stmt = stmt.order_by(cte.c.row_number)
         stmt = stmt.limit(limit)
 
     # Select only the model (not the row_number) and ensure the order
