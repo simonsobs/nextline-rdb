@@ -1,9 +1,9 @@
-from typing import NamedTuple, Optional, Type, TypeVar, cast
+from collections.abc import Sequence
+from typing import Any, NamedTuple, Optional, Type, TypeVar
 
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import DeclarativeBase, aliased, selectinload
-from sqlalchemy.sql.expression import literal
 from sqlalchemy.sql.selectable import Select
 
 # import sqlparse
@@ -22,10 +22,12 @@ Sort = list[SortField]
 
 _Id = TypeVar('_Id')
 
+T = TypeVar('T', bound=DeclarativeBase)
+
 
 async def load_models(
     session: AsyncSession,
-    Model: Type[DeclarativeBase],
+    Model: Type[T],
     id_field: str,
     *,
     sort: Optional[Sort] = None,
@@ -34,10 +36,24 @@ async def load_models(
     first: Optional[int] = None,
     last: Optional[int] = None,
 ):
+    # TODO: Make this an argument so that the caller add `where` clause
+    select_model = select(Model)
+
+    sort = sort or []
+
+    if id_field not in {s.field for s in sort}:
+        sort.append(SortField(id_field))
+
+    order_by = [
+        f.desc() if d else f
+        for f, d in [(getattr(Model, s.field), s.desc) for s in sort]
+    ]
+
     stmt = compose_statement(
         Model,
         id_field,
-        sort=sort,
+        select_model=select_model,
+        order_by=order_by,
         before=before,
         after=after,
         first=first,
@@ -52,16 +68,52 @@ async def load_models(
 
 
 def compose_statement(
-    Model: Type[DeclarativeBase],
+    Model: Type[T],
     id_field: str,
     *,
-    sort: Optional[Sort] = None,
+    select_model: Optional[Select[tuple[T]]] = None,
+    order_by: Optional[Sequence[Any]] = None,
     before: Optional[_Id] = None,
     after: Optional[_Id] = None,
     first: Optional[int] = None,
     last: Optional[int] = None,
-) -> Select:
-    '''Return a SELECT statement object to be given to session.scalars'''
+) -> Select[tuple[T]]:
+    '''Return a SQL select statement for pagination.
+
+    Parameters
+    ----------
+    Model :
+        The class of the ORM model to query.
+    id_field :
+        The name of the primary key field, e.g., 'id'.
+    select_model : optional
+        E.g., `select(Model).where(...)`. If not provided, `select(Model)` is used.
+    order_by : optional
+        The arguments to `row_number().over(order_by=...)` and `order_by()`. If
+        not provided, the primary key field is used, e.g., `[Model.id]`.
+    before : optional
+        As in the GraphQL Cursor Connections Specification [1].
+    after : optional
+        As in the GraphQL Cursor Connections Specification [1].
+    first : optional
+        As in the GraphQL Cursor Connections Specification [1].
+    last : optional
+        As in the GraphQL Cursor Connections Specification [1].
+
+    Returns
+    -------
+    stmt
+        The composed select statement for pagination.
+
+    Raises
+    ------
+    ValueError
+        If both before/last and after/first parameters are provided.
+    
+    References
+    ----------
+    .. [1] https://relay.dev/graphql/connections.htm
+    '''
 
     forward = (after is not None) or (first is not None)
     backward = (before is not None) or (last is not None)
@@ -69,48 +121,52 @@ def compose_statement(
     if forward and backward:
         raise ValueError('Only either after/first or before/last is allowed')
 
-    sort = sort or []
+    if select_model is None:
+        select_model = select(Model)
 
-    if id_field not in [s.field for s in sort]:
-        sort.append(SortField(id_field))
-
-    def sorting_fields(Model, reverse=False):
-        return [
-            f.desc() if reverse ^ d else f
-            for f, d in [(getattr(Model, s.field), s.desc) for s in sort]
-        ]
+    if not order_by:
+        # E.g., [T.id]
+        order_by = [getattr(Model, id_field)]
 
     if not (forward or backward):
-        return select(Model).order_by(*sorting_fields(Model))
+        return select_model.order_by(*order_by)
 
     cursor = after if forward else before
     limit = first if forward else last
 
-    if cursor is None:
-        stmt = select(Model).order_by(*sorting_fields(Model, reverse=backward))
-    else:
-        cte = select(
-            Model,
-            func.row_number()
-            .over(order_by=sorting_fields(Model, reverse=backward))
-            .label('row_number'),
-        ).cte()
+    # A CTE (Common Table Expression) with a row_number column
+    cte = select_model.add_columns(
+        func.row_number().over(order_by=order_by).label('row_number')
+    ).cte()
 
-        subq = select(cte.c.row_number.label('cursor'))
-        subq = subq.where(getattr(cte.c, id_field) == cursor)
-        subq = cast(Select[tuple], subq.subquery())
+    Alias = aliased(Model, cte)
+    stmt = select(Alias, cte.c.row_number).select_from(cte)
 
-        Alias = aliased(Model, cte)  # type: ignore
-        stmt = select(Alias).select_from(cte)
-        stmt = stmt.join(subq, literal(True))  # type: ignore # cartesian product
-        stmt = stmt.order_by(*sorting_fields(Alias, reverse=backward))
-        stmt = stmt.where(cte.c.row_number > subq.c.cursor)
+    if cursor is not None:
+        # A subquery to find the row_number at the cursor
+        stmt_subq = select(cte.c.row_number.label('at_cursor'))
+        stmt_subq = stmt_subq.where(getattr(cte.c, id_field) == cursor)
+        subq = stmt_subq.subquery()
+
+        # Select rows after or before (if backward) the cursor
+        stmt = stmt.select_from(subq)
+        if backward:
+            stmt = stmt.where(cte.c.row_number < subq.c.at_cursor)
+        else:
+            stmt = stmt.where(cte.c.row_number > subq.c.at_cursor)
 
     if limit is not None:
+        # Specify the maximum number of rows to return
+        if backward:
+            stmt = stmt.order_by(cte.c.row_number.desc())
+        else:
+            stmt = stmt.order_by(cte.c.row_number)
         stmt = stmt.limit(limit)
 
-    if backward:
-        Alias = aliased(Model, stmt.subquery())
-        stmt = select(Alias).order_by(*sorting_fields(Alias))
+    # Select only the model (not the row_number) and ensure the order
+    cte = stmt.cte()
+    Alias = aliased(Model, cte)
+    stmt = select(Alias).select_from(cte)
+    stmt = stmt.order_by(cte.c.row_number)
 
     return stmt

@@ -12,8 +12,8 @@ from .models import Entity
 def st_entity() -> st.SearchStrategy[Entity]:
     return st.builds(
         Entity,
-        num=st_none_or(st_graphql_ints()),
-        txt=st_none_or(st.text()),
+        num=st_none_or(st_graphql_ints(min_value=0, max_value=5)),
+        txt=st_none_or(st.text(alphabet='ABCDE', min_size=1, max_size=1)),
     )
 
 
