@@ -51,7 +51,7 @@ class WriteRunTable:
                 )
                 return Script(script=statement_, current=True)
             case str(statement_), CurrentScript() as cs:
-                if not cs.script == statement:
+                if not cs.script.script == statement:
                     self._logger.warning(
                         'The statement in CurrentScript is different from run_arg.statement'
                     )
