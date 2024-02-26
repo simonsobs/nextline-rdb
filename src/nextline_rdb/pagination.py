@@ -30,15 +30,13 @@ async def load_models(
     Model: Type[T],
     id_field: str,
     *,
+    select_model: Optional[Select[tuple[T]]] = None,
     sort: Optional[Sort] = None,
     before: Optional[_Id] = None,
     after: Optional[_Id] = None,
     first: Optional[int] = None,
     last: Optional[int] = None,
 ):
-    # TODO: Make this an argument so that the caller add `where` clause
-    select_model = select(Model)
-
     sort = sort or []
 
     if id_field not in {s.field for s in sort}:
@@ -109,7 +107,7 @@ def compose_statement(
     ------
     ValueError
         If both before/last and after/first parameters are provided.
-    
+
     References
     ----------
     .. [1] https://relay.dev/graphql/connections.htm
