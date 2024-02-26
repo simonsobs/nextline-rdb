@@ -4,6 +4,8 @@ from functools import partial
 from typing import Optional, Type, TypeVar
 
 from sqlalchemy import func, select
+from sqlalchemy.orm import DeclarativeBase
+from sqlalchemy.sql.selectable import Select
 
 from nextline_rdb import models as db_models
 from nextline_rdb.db import DB
@@ -11,7 +13,8 @@ from nextline_rdb.pagination import Sort, load_models
 
 from .connection import Connection, Edge, query_connection
 
-_T = TypeVar('_T')
+_M = TypeVar('_M', bound=DeclarativeBase)  # Model
+_N = TypeVar('_N')  # Node
 
 
 def encode_id(id: int) -> str:
@@ -24,22 +27,24 @@ def decode_id(cursor: str) -> int:
 
 async def load_connection(
     db: DB,
-    Model: Type[db_models.Model],
+    Model: Type[_M],
     id_field: str,
-    create_node_from_model: Callable[..., _T],
+    create_node_from_model: Callable[..., _M],
     *,
+    select_model: Optional[Select[tuple[_M]]] = None,
     sort: Optional[Sort] = None,
     before: Optional[str] = None,
     after: Optional[str] = None,
     first: Optional[int] = None,
     last: Optional[int] = None,
-) -> Connection[_T]:
+) -> Connection[_N]:
     query_edges = partial(
         load_edges,
         db=db,
         Model=Model,
         id_field=id_field,
         create_node_from_model=create_node_from_model,
+        select_model=select_model,
         sort=sort,
     )
 
@@ -64,21 +69,23 @@ async def load_total_count(db: DB, Model: Type[db_models.Model]) -> int:
 
 async def load_edges(
     db: DB,
-    Model: Type[db_models.Model],
+    Model: Type[_M],
     id_field: str,
-    create_node_from_model: Callable[..., _T],
+    create_node_from_model: Callable[..., _N],
     *,
+    select_model: Optional[Select[tuple[_M]]] = None,
     sort: Optional[Sort] = None,
     before: Optional[str] = None,
     after: Optional[str] = None,
     first: Optional[int] = None,
     last: Optional[int] = None,
-) -> list[Edge[_T]]:
+) -> list[Edge[_N]]:
     async with db.session() as session:
         models = await load_models(
             session,
             Model,
             id_field,
+            select_model=select_model,
             sort=sort,
             before=before if before is None else decode_id(before),
             after=after if after is None else decode_id(after),
