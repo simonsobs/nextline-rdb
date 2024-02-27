@@ -4,7 +4,9 @@ import datetime
 from typing import Optional, Type, TypeVar
 
 import strawberry
-from sqlalchemy import inspect
+from sqlalchemy import inspect, select
+from sqlalchemy.orm import DeclarativeBase
+from sqlalchemy.sql.selectable import Select
 from strawberry.types import Info
 
 from nextline_rdb import models as db_models
@@ -73,7 +75,8 @@ async def query_connection_stdout(
     )
 
 
-_T = TypeVar("_T")
+_M = TypeVar('_M', bound=DeclarativeBase)  # Model
+_N = TypeVar("_N")  # Node
 
 
 async def query_connection(
@@ -83,9 +86,9 @@ async def query_connection(
     after: Optional[str],
     first: Optional[int],
     last: Optional[int],
-    Model,
-    NodeType: Type[_T],
-) -> Connection[_T]:
+    Model: Type[_M],
+    NodeType: Type[_N],
+) -> Connection[_N]:
     id_field = inspect(Model).primary_key[0].name
     # TODO: handle multiple primary keys
 
