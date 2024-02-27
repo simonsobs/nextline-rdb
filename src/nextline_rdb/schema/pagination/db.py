@@ -4,6 +4,7 @@ from functools import partial
 from typing import Optional, Type, TypeVar
 
 from sqlalchemy import func, select
+from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import DeclarativeBase
 from sqlalchemy.sql.selectable import Select
 
@@ -38,37 +39,37 @@ async def load_connection(
     first: Optional[int] = None,
     last: Optional[int] = None,
 ) -> Connection[_N]:
-    query_edges = partial(
-        load_edges,
-        db=db,
-        Model=Model,
-        id_field=id_field,
-        create_node_from_model=create_node_from_model,
-        select_model=select_model,
-        sort=sort,
-    )
-
-    query_total_count = partial(load_total_count, db=db, Model=Model)
-
-    return await query_connection(
-        query_edges,
-        query_total_count,
-        before,
-        after,
-        first,
-        last,
-    )
-
-
-async def load_total_count(db: DB, Model: Type[db_models.Model]) -> int:
     async with db.session() as session:
-        stmt = select(func.count()).select_from(Model)
-        total_count = (await session.execute(stmt)).scalar() or 0
+        query_edges = partial(
+            load_edges,
+            session=session,
+            Model=Model,
+            id_field=id_field,
+            create_node_from_model=create_node_from_model,
+            select_model=select_model,
+            sort=sort,
+        )
+
+        query_total_count = partial(load_total_count, session=session, Model=Model)
+
+        return await query_connection(
+            query_edges,
+            query_total_count,
+            before,
+            after,
+            first,
+            last,
+        )
+
+
+async def load_total_count(session: AsyncSession, Model: Type[db_models.Model]) -> int:
+    stmt = select(func.count()).select_from(Model)
+    total_count = (await session.execute(stmt)).scalar() or 0
     return total_count
 
 
 async def load_edges(
-    db: DB,
+    session: AsyncSession,
     Model: Type[_M],
     id_field: str,
     create_node_from_model: Callable[..., _N],
@@ -80,18 +81,17 @@ async def load_edges(
     first: Optional[int] = None,
     last: Optional[int] = None,
 ) -> list[Edge[_N]]:
-    async with db.session() as session:
-        models = await load_models(
-            session,
-            Model,
-            id_field,
-            select_model=select_model,
-            sort=sort,
-            before=before if before is None else decode_id(before),
-            after=after if after is None else decode_id(after),
-            first=first,
-            last=last,
-        )
+    models = await load_models(
+        session,
+        Model,
+        id_field,
+        select_model=select_model,
+        sort=sort,
+        before=before if before is None else decode_id(before),
+        after=after if after is None else decode_id(after),
+        first=first,
+        last=last,
+    )
 
     nodes = [create_node_from_model(m) for m in models]
 
