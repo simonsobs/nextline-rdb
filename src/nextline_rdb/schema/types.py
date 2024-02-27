@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import datetime
-from typing import Optional, Type, TypeVar, cast
+from typing import Optional, Type, TypeVar
 
 import strawberry
 from sqlalchemy import inspect, select
@@ -11,82 +11,9 @@ from sqlalchemy.sql.selectable import Select
 from strawberry.types import Info
 
 from nextline_rdb import models as db_models
-from nextline_rdb.db import DB
 from nextline_rdb.pagination import Sort, SortField
 
 from .pagination import Connection, load_connection
-
-
-async def query_connection_run(
-    info: Info,
-    before: Optional[str] = None,
-    after: Optional[str] = None,
-    first: Optional[int] = None,
-    last: Optional[int] = None,
-) -> Connection[RunHistory]:
-    sort = [SortField('run_no', desc=True)]
-    Model = db_models.Run
-    NodeType = RunHistory
-    db = cast(DB, info.context['db'])
-    async with db.session() as session:
-        info.context['session'] = session
-        return await query_connection(
-            session, sort, before, after, first, last, Model, NodeType
-        )
-
-
-async def query_connection_trace(
-    info: Info,
-    before: Optional[str] = None,
-    after: Optional[str] = None,
-    first: Optional[int] = None,
-    last: Optional[int] = None,
-) -> Connection[TraceHistory]:
-    sort = [SortField('run_no'), SortField('trace_no')]
-    Model = db_models.Trace
-    NodeType = TraceHistory
-    db = cast(DB, info.context['db'])
-    async with db.session() as session:
-        info.context['session'] = session
-        return await query_connection(
-            session, sort, before, after, first, last, Model, NodeType
-        )
-
-
-async def query_connection_prompt(
-    info: Info,
-    before: Optional[str] = None,
-    after: Optional[str] = None,
-    first: Optional[int] = None,
-    last: Optional[int] = None,
-) -> Connection[PromptHistory]:
-    sort = [SortField('run_no'), SortField('prompt_no')]
-    Model = db_models.Prompt
-    NodeType = PromptHistory
-    db = cast(DB, info.context['db'])
-    async with db.session() as session:
-        info.context['session'] = session
-        return await query_connection(
-            session, sort, before, after, first, last, Model, NodeType
-        )
-
-
-async def query_connection_stdout(
-    info: Info,
-    before: Optional[str] = None,
-    after: Optional[str] = None,
-    first: Optional[int] = None,
-    last: Optional[int] = None,
-) -> Connection[StdoutHistory]:
-    sort = [SortField('run_no'), SortField('id')]
-    Model = db_models.Stdout
-    NodeType = StdoutHistory
-    db = cast(DB, info.context['db'])
-    async with db.session() as session:
-        info.context['session'] = session
-        return await query_connection(
-            session, sort, before, after, first, last, Model, NodeType
-        )
 
 
 _M = TypeVar('_M', bound=DeclarativeBase)  # Model
