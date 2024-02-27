@@ -88,6 +88,7 @@ async def query_connection(
     last: Optional[int],
     Model: Type[_M],
     NodeType: Type[_N],
+    select_model: Optional[Select[tuple[_M]]] = None,
 ) -> Connection[_N]:
     id_field = inspect(Model).primary_key[0].name
     # TODO: handle multiple primary keys
@@ -100,6 +101,7 @@ async def query_connection(
         Model,
         id_field,
         create_node_from_model,
+        select_model=select_model,
         sort=sort,
         before=before,
         after=after,
