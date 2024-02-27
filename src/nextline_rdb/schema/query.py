@@ -18,6 +18,7 @@ async def query_run(
 ) -> types.RunHistory | None:
     db = cast(DB, info.context['db'])
     async with db.session() as session:
+        info.context['session'] = session
         stmt = select(Run).options(selectinload('*'))
         if id is not None:
             stmt = stmt.filter(Run.id == id)
