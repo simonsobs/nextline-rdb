@@ -5,6 +5,7 @@ from typing import Optional, Type, TypeVar, cast
 
 import strawberry
 from sqlalchemy import inspect, select
+from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import DeclarativeBase
 from sqlalchemy.sql.selectable import Select
 from strawberry.types import Info
@@ -30,7 +31,7 @@ async def query_connection_run(
     async with db.session() as session:
         info.context['session'] = session
         return await query_connection(
-            info, sort, before, after, first, last, Model, NodeType
+            session, sort, before, after, first, last, Model, NodeType
         )
 
 
@@ -48,7 +49,7 @@ async def query_connection_trace(
     async with db.session() as session:
         info.context['session'] = session
         return await query_connection(
-            info, sort, before, after, first, last, Model, NodeType
+            session, sort, before, after, first, last, Model, NodeType
         )
 
 
@@ -66,7 +67,7 @@ async def query_connection_prompt(
     async with db.session() as session:
         info.context['session'] = session
         return await query_connection(
-            info, sort, before, after, first, last, Model, NodeType
+            session, sort, before, after, first, last, Model, NodeType
         )
 
 
@@ -84,7 +85,7 @@ async def query_connection_stdout(
     async with db.session() as session:
         info.context['session'] = session
         return await query_connection(
-            info, sort, before, after, first, last, Model, NodeType
+            session, sort, before, after, first, last, Model, NodeType
         )
 
 
@@ -93,7 +94,7 @@ _N = TypeVar("_N")  # Node
 
 
 async def query_connection(
-    info: Info,
+    session: AsyncSession,
     sort: Optional[Sort],
     before: Optional[str],
     after: Optional[str],
@@ -108,7 +109,6 @@ async def query_connection(
 
     create_node_from_model = NodeType.from_model  # type: ignore
 
-    session = info.context['session']
     return await load_connection(
         session,
         Model,
