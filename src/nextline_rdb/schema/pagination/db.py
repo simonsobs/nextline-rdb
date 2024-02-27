@@ -9,7 +9,6 @@ from sqlalchemy.orm import DeclarativeBase
 from sqlalchemy.sql.selectable import Select
 
 from nextline_rdb import models as db_models
-from nextline_rdb.db import DB
 from nextline_rdb.pagination import Sort, load_models
 
 from .connection import Connection, Edge, query_connection
@@ -27,7 +26,7 @@ def decode_id(cursor: str) -> int:
 
 
 async def load_connection(
-    db: DB,
+    session: AsyncSession,
     Model: Type[_M],
     id_field: str,
     create_node_from_model: Callable[..., _M],
@@ -39,27 +38,26 @@ async def load_connection(
     first: Optional[int] = None,
     last: Optional[int] = None,
 ) -> Connection[_N]:
-    async with db.session() as session:
-        query_edges = partial(
-            load_edges,
-            session=session,
-            Model=Model,
-            id_field=id_field,
-            create_node_from_model=create_node_from_model,
-            select_model=select_model,
-            sort=sort,
-        )
+    query_edges = partial(
+        load_edges,
+        session=session,
+        Model=Model,
+        id_field=id_field,
+        create_node_from_model=create_node_from_model,
+        select_model=select_model,
+        sort=sort,
+    )
 
-        query_total_count = partial(load_total_count, session=session, Model=Model)
+    query_total_count = partial(load_total_count, session=session, Model=Model)
 
-        return await query_connection(
-            query_edges,
-            query_total_count,
-            before,
-            after,
-            first,
-            last,
-        )
+    return await query_connection(
+        query_edges,
+        query_total_count,
+        before,
+        after,
+        first,
+        last,
+    )
 
 
 async def load_total_count(session: AsyncSession, Model: Type[db_models.Model]) -> int:
