@@ -13,7 +13,7 @@ from strawberry.types import Info
 from nextline_rdb import models as db_models
 from nextline_rdb.pagination import Sort, SortField
 
-from .pagination import Connection, load_connection
+from ..pagination import Connection, load_connection
 
 _M = TypeVar('_M', bound=DeclarativeBase)  # Model
 _N = TypeVar("_N")  # Node
