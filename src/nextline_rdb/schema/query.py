@@ -11,11 +11,11 @@ from nextline_rdb.db import DB
 
 from . import nodes
 from .nodes import (
-    PromptHistory,
-    RunHistory,
+    PromptNode,
+    RunNode,
     SortField,
-    StdoutHistory,
-    TraceHistory,
+    StdoutNode,
+    TraceNode,
     query_connection,
 )
 from .pagination import Connection
@@ -23,7 +23,7 @@ from .pagination import Connection
 
 async def resolve_run(
     info: Info, id: Optional[int] = None, run_no: Optional[int] = None
-) -> nodes.RunHistory | None:
+) -> nodes.RunNode | None:
     db = cast(DB, info.context['db'])
     async with db.session() as session:
         info.context['session'] = session
@@ -33,7 +33,7 @@ async def resolve_run(
         else:
             stmt = stmt.filter(db_models.Run.run_no == run_no)
         run = (await session.execute(stmt)).scalar_one_or_none()
-    return nodes.RunHistory.from_model(run) if run else None
+    return nodes.RunNode.from_model(run) if run else None
 
 
 async def resolve_runs(
@@ -42,10 +42,10 @@ async def resolve_runs(
     after: Optional[str] = None,
     first: Optional[int] = None,
     last: Optional[int] = None,
-) -> Connection[RunHistory]:
+) -> Connection[RunNode]:
     sort = [SortField('run_no', desc=True)]
     Model = db_models.Run
-    NodeType = RunHistory
+    NodeType = RunNode
     db = cast(DB, info.context['db'])
     async with db.session() as session:
         info.context['session'] = session
@@ -60,10 +60,10 @@ async def resolve_traces(
     after: Optional[str] = None,
     first: Optional[int] = None,
     last: Optional[int] = None,
-) -> Connection[TraceHistory]:
+) -> Connection[TraceNode]:
     sort = [SortField('run_no'), SortField('trace_no')]
     Model = db_models.Trace
-    NodeType = TraceHistory
+    NodeType = TraceNode
     db = cast(DB, info.context['db'])
     async with db.session() as session:
         info.context['session'] = session
@@ -78,10 +78,10 @@ async def resolve_prompts(
     after: Optional[str] = None,
     first: Optional[int] = None,
     last: Optional[int] = None,
-) -> Connection[PromptHistory]:
+) -> Connection[PromptNode]:
     sort = [SortField('run_no'), SortField('prompt_no')]
     Model = db_models.Prompt
-    NodeType = PromptHistory
+    NodeType = PromptNode
     db = cast(DB, info.context['db'])
     async with db.session() as session:
         info.context['session'] = session
@@ -96,10 +96,10 @@ async def resolve_stdouts(
     after: Optional[str] = None,
     first: Optional[int] = None,
     last: Optional[int] = None,
-) -> Connection[StdoutHistory]:
+) -> Connection[StdoutNode]:
     sort = [SortField('run_no'), SortField('id')]
     Model = db_models.Stdout
-    NodeType = StdoutHistory
+    NodeType = StdoutNode
     db = cast(DB, info.context['db'])
     async with db.session() as session:
         info.context['session'] = session
@@ -115,15 +115,11 @@ def resolve_migration_version(info: Info) -> str | None:
 
 @strawberry.type
 class QueryRDB:
-    runs: Connection[nodes.RunHistory] = strawberry.field(resolver=resolve_runs)
-    traces: Connection[nodes.TraceHistory] = strawberry.field(resolver=resolve_traces)
-    prompts: Connection[nodes.PromptHistory] = strawberry.field(
-        resolver=resolve_prompts
-    )
-    stdouts: Connection[nodes.StdoutHistory] = strawberry.field(
-        resolver=resolve_stdouts
-    )
-    run: nodes.RunHistory | None = strawberry.field(resolver=resolve_run)
+    runs: Connection[nodes.RunNode] = strawberry.field(resolver=resolve_runs)
+    traces: Connection[nodes.TraceNode] = strawberry.field(resolver=resolve_traces)
+    prompts: Connection[nodes.PromptNode] = strawberry.field(resolver=resolve_prompts)
+    stdouts: Connection[nodes.StdoutNode] = strawberry.field(resolver=resolve_stdouts)
+    run: nodes.RunNode | None = strawberry.field(resolver=resolve_run)
     version: str = nextline_rdb.__version__
     migration_version: str | None = strawberry.field(resolver=resolve_migration_version)
 

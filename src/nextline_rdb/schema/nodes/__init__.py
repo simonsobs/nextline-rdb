@@ -56,10 +56,10 @@ async def _query_connection_trace(
     after: Optional[str] = None,
     first: Optional[int] = None,
     last: Optional[int] = None,
-) -> Connection[TraceHistory]:
+) -> Connection[TraceNode]:
     sort = [SortField('run_no'), SortField('trace_no')]
     Model = db_models.Trace
-    NodeType = TraceHistory
+    NodeType = TraceNode
     ic(root._model)
     select_model = select(Model).where(Model.run == root._model)
     session = info.context['session']
@@ -77,7 +77,7 @@ async def _query_connection_trace(
 
 
 @strawberry.type
-class RunHistory:
+class RunNode:
     _model: strawberry.Private[db_models.Run]
     id: int
     run_no: int
@@ -87,9 +87,7 @@ class RunHistory:
     script: Optional[str]
     exception: Optional[str]
 
-    traces: Connection[TraceHistory] = strawberry.field(
-        resolver=_query_connection_trace
-    )
+    traces: Connection[TraceNode] = strawberry.field(resolver=_query_connection_trace)
 
     # prompts: Connection[PromptHistory] = strawberry.field(
     #     resolver=query_connection_prompt
@@ -103,15 +101,15 @@ class RunHistory:
     #     return [TraceHistory.from_model(m) for m in self._model.traces]  # type: ignore
 
     @strawberry.field
-    def prompts(self) -> list["PromptHistory"]:
-        return [PromptHistory.from_model(m) for m in self._model.prompts]  # type: ignore
+    def prompts(self) -> list["PromptNode"]:
+        return [PromptNode.from_model(m) for m in self._model.prompts]  # type: ignore
 
     @strawberry.field
-    def stdouts(self) -> list["StdoutHistory"]:
-        return [StdoutHistory.from_model(m) for m in self._model.stdouts]  # type: ignore
+    def stdouts(self) -> list["StdoutNode"]:
+        return [StdoutNode.from_model(m) for m in self._model.stdouts]  # type: ignore
 
     @classmethod
-    def from_model(cls: Type["RunHistory"], model: db_models.Run):
+    def from_model(cls: Type["RunNode"], model: db_models.Run):
         script = model.script.script if model.script else None
         return cls(
             _model=model,
@@ -126,7 +124,7 @@ class RunHistory:
 
 
 @strawberry.type
-class TraceHistory:
+class TraceNode:
     _model: strawberry.Private[db_models.Trace]
     id: int
     run_no: int
@@ -138,8 +136,8 @@ class TraceHistory:
     ended_at: Optional[datetime.datetime]
 
     @strawberry.field
-    def run(self) -> RunHistory:
-        return RunHistory.from_model(self._model.run)
+    def run(self) -> RunNode:
+        return RunNode.from_model(self._model.run)
 
     # prompts: Connection[PromptHistory] = strawberry.field(
     #     resolver=query_connection_prompt
@@ -150,15 +148,15 @@ class TraceHistory:
     # )
 
     @strawberry.field
-    def prompts(self) -> list["PromptHistory"]:
-        return [PromptHistory.from_model(m) for m in self._model.prompts]  # type: ignore
+    def prompts(self) -> list["PromptNode"]:
+        return [PromptNode.from_model(m) for m in self._model.prompts]  # type: ignore
 
     @strawberry.field
-    def stdouts(self) -> list["StdoutHistory"]:
-        return [StdoutHistory.from_model(m) for m in self._model.stdouts]  # type: ignore
+    def stdouts(self) -> list["StdoutNode"]:
+        return [StdoutNode.from_model(m) for m in self._model.stdouts]  # type: ignore
 
     @classmethod
-    def from_model(cls: Type[TraceHistory], model: db_models.Trace):
+    def from_model(cls: Type[TraceNode], model: db_models.Trace):
         return cls(
             _model=model,
             id=model.id,
@@ -173,7 +171,7 @@ class TraceHistory:
 
 
 @strawberry.type
-class PromptHistory:
+class PromptNode:
     _model: strawberry.Private[db_models.Prompt]
     id: int
     run_no: int
@@ -189,15 +187,15 @@ class PromptHistory:
     ended_at: Optional[datetime.datetime] = None
 
     @strawberry.field
-    def run(self) -> RunHistory:
-        return RunHistory.from_model(self._model.run)
+    def run(self) -> RunNode:
+        return RunNode.from_model(self._model.run)
 
     @strawberry.field
-    def trace(self) -> TraceHistory:
-        return TraceHistory.from_model(self._model.trace)
+    def trace(self) -> TraceNode:
+        return TraceNode.from_model(self._model.trace)
 
     @classmethod
-    def from_model(cls: Type[PromptHistory], model: db_models.Prompt):
+    def from_model(cls: Type[PromptNode], model: db_models.Prompt):
         return cls(
             _model=model,
             id=model.id,
@@ -216,7 +214,7 @@ class PromptHistory:
 
 
 @strawberry.type
-class StdoutHistory:
+class StdoutNode:
     _model: strawberry.Private[db_models.Stdout]
     id: int
     run_no: int
@@ -225,15 +223,15 @@ class StdoutHistory:
     written_at: Optional[datetime.datetime] = None
 
     @strawberry.field
-    def run(self) -> RunHistory:
-        return RunHistory.from_model(self._model.run)
+    def run(self) -> RunNode:
+        return RunNode.from_model(self._model.run)
 
     @strawberry.field
-    def trace(self) -> TraceHistory:
-        return TraceHistory.from_model(self._model.trace)
+    def trace(self) -> TraceNode:
+        return TraceNode.from_model(self._model.trace)
 
     @classmethod
-    def from_model(cls: Type[StdoutHistory], model: db_models.Stdout):
+    def from_model(cls: Type[StdoutNode], model: db_models.Stdout):
         return cls(
             _model=model,
             id=model.id,
