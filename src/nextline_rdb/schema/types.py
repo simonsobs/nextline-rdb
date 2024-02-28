@@ -15,7 +15,6 @@ from nextline_rdb.pagination import Sort, SortField
 
 from .pagination import Connection, load_connection
 
-
 _M = TypeVar('_M', bound=DeclarativeBase)  # Model
 _N = TypeVar("_N")  # Node
 
@@ -49,6 +48,31 @@ async def query_connection(
         last=last,
     )
 
+
+async def _query_connection_trace(
+    info: Info,
+    root,
+    before: Optional[str] = None,
+    after: Optional[str] = None,
+    first: Optional[int] = None,
+    last: Optional[int] = None,
+) -> Connection[TraceHistory]:
+    sort = [SortField('run_no'), SortField('trace_no')]
+    Model = db_models.Trace
+    NodeType = TraceHistory
+    ic(root._model)
+    select_model = select(Model).where(Model.run == root._model)
+    session = info.context['session']
+    return await query_connection(
+        session,
+        sort,
+        before,
+        after,
+        first,
+        last,
+        Model,
+        NodeType,
+        select_model=select_model,
     )
 
 
@@ -63,9 +87,10 @@ class RunHistory:
     script: Optional[str]
     exception: Optional[str]
 
-    # traces: Connection[TraceHistory] = strawberry.field(
-    #     resolver=query_connection_trace
-    # )
+    traces: Connection[TraceHistory] = strawberry.field(
+        resolver=_query_connection_trace
+    )
+
     # prompts: Connection[PromptHistory] = strawberry.field(
     #     resolver=query_connection_prompt
     # )
@@ -73,9 +98,9 @@ class RunHistory:
     #     resolver=query_connection_stdout
     # )
 
-    @strawberry.field
-    def traces(self) -> list["TraceHistory"]:
-        return [TraceHistory.from_model(m) for m in self._model.traces]  # type: ignore
+    # @strawberry.field
+    # def traces(self) -> list["TraceHistory"]:
+    #     return [TraceHistory.from_model(m) for m in self._model.traces]  # type: ignore
 
     @strawberry.field
     def prompts(self) -> list["PromptHistory"]:
