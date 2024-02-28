@@ -21,7 +21,7 @@ from .types import (
 )
 
 
-async def query_run(
+async def resolve_run(
     info: Info, id: Optional[int] = None, run_no: Optional[int] = None
 ) -> types.RunHistory | None:
     db = cast(DB, info.context['db'])
@@ -36,7 +36,7 @@ async def query_run(
     return types.RunHistory.from_model(run) if run else None
 
 
-async def query_connection_run(
+async def resolve_runs(
     info: Info,
     before: Optional[str] = None,
     after: Optional[str] = None,
@@ -54,7 +54,7 @@ async def query_connection_run(
         )
 
 
-async def query_connection_trace(
+async def resolve_traces(
     info: Info,
     before: Optional[str] = None,
     after: Optional[str] = None,
@@ -72,7 +72,7 @@ async def query_connection_trace(
         )
 
 
-async def query_connection_prompt(
+async def resolve_prompts(
     info: Info,
     before: Optional[str] = None,
     after: Optional[str] = None,
@@ -90,7 +90,7 @@ async def query_connection_prompt(
         )
 
 
-async def query_connection_stdout(
+async def resolve_stdouts(
     info: Info,
     before: Optional[str] = None,
     after: Optional[str] = None,
@@ -108,26 +108,24 @@ async def query_connection_stdout(
         )
 
 
-def query_migration_version(info: Info) -> str | None:
+def resolve_migration_version(info: Info) -> str | None:
     db = cast(DB, info.context['db'])
     return db.migration_revision
 
 
 @strawberry.type
 class QueryRDB:
-    runs: Connection[types.RunHistory] = strawberry.field(resolver=query_connection_run)
-    traces: Connection[types.TraceHistory] = strawberry.field(
-        resolver=query_connection_trace
-    )
+    runs: Connection[types.RunHistory] = strawberry.field(resolver=resolve_runs)
+    traces: Connection[types.TraceHistory] = strawberry.field(resolver=resolve_traces)
     prompts: Connection[types.PromptHistory] = strawberry.field(
-        resolver=query_connection_prompt
+        resolver=resolve_prompts
     )
     stdouts: Connection[types.StdoutHistory] = strawberry.field(
-        resolver=query_connection_stdout
+        resolver=resolve_stdouts
     )
-    run: types.RunHistory | None = strawberry.field(resolver=query_run)
+    run: types.RunHistory | None = strawberry.field(resolver=resolve_run)
     version: str = nextline_rdb.__version__
-    migration_version: str | None = strawberry.field(resolver=query_migration_version)
+    migration_version: str | None = strawberry.field(resolver=resolve_migration_version)
 
 
 @strawberry.type
