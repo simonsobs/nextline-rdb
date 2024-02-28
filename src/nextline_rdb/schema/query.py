@@ -9,9 +9,8 @@ import nextline_rdb
 from nextline_rdb import models as db_models
 from nextline_rdb.db import DB
 
-from . import types
-from .pagination import Connection
-from .types import (
+from . import nodes
+from .nodes import (
     PromptHistory,
     RunHistory,
     SortField,
@@ -19,11 +18,12 @@ from .types import (
     TraceHistory,
     query_connection,
 )
+from .pagination import Connection
 
 
 async def resolve_run(
     info: Info, id: Optional[int] = None, run_no: Optional[int] = None
-) -> types.RunHistory | None:
+) -> nodes.RunHistory | None:
     db = cast(DB, info.context['db'])
     async with db.session() as session:
         info.context['session'] = session
@@ -33,7 +33,7 @@ async def resolve_run(
         else:
             stmt = stmt.filter(db_models.Run.run_no == run_no)
         run = (await session.execute(stmt)).scalar_one_or_none()
-    return types.RunHistory.from_model(run) if run else None
+    return nodes.RunHistory.from_model(run) if run else None
 
 
 async def resolve_runs(
@@ -115,15 +115,15 @@ def resolve_migration_version(info: Info) -> str | None:
 
 @strawberry.type
 class QueryRDB:
-    runs: Connection[types.RunHistory] = strawberry.field(resolver=resolve_runs)
-    traces: Connection[types.TraceHistory] = strawberry.field(resolver=resolve_traces)
-    prompts: Connection[types.PromptHistory] = strawberry.field(
+    runs: Connection[nodes.RunHistory] = strawberry.field(resolver=resolve_runs)
+    traces: Connection[nodes.TraceHistory] = strawberry.field(resolver=resolve_traces)
+    prompts: Connection[nodes.PromptHistory] = strawberry.field(
         resolver=resolve_prompts
     )
-    stdouts: Connection[types.StdoutHistory] = strawberry.field(
+    stdouts: Connection[nodes.StdoutHistory] = strawberry.field(
         resolver=resolve_stdouts
     )
-    run: types.RunHistory | None = strawberry.field(resolver=resolve_run)
+    run: nodes.RunHistory | None = strawberry.field(resolver=resolve_run)
     version: str = nextline_rdb.__version__
     migration_version: str | None = strawberry.field(resolver=resolve_migration_version)
 
