@@ -9,7 +9,6 @@ import nextline_rdb
 from nextline_rdb import models as db_models
 from nextline_rdb.db import DB
 
-from . import nodes
 from .nodes import (
     PromptNode,
     RunNode,
@@ -23,7 +22,7 @@ from .pagination import Connection
 
 async def resolve_run(
     info: Info, id: Optional[int] = None, run_no: Optional[int] = None
-) -> nodes.RunNode | None:
+) -> RunNode | None:
     db = cast(DB, info.context['db'])
     async with db.session() as session:
         info.context['session'] = session
@@ -33,7 +32,7 @@ async def resolve_run(
         else:
             stmt = stmt.filter(db_models.Run.run_no == run_no)
         run = (await session.execute(stmt)).scalar_one_or_none()
-    return nodes.RunNode.from_model(run) if run else None
+    return RunNode.from_model(run) if run else None
 
 
 async def resolve_runs(
@@ -115,11 +114,11 @@ def resolve_migration_version(info: Info) -> str | None:
 
 @strawberry.type
 class QueryRDB:
-    runs: Connection[nodes.RunNode] = strawberry.field(resolver=resolve_runs)
-    traces: Connection[nodes.TraceNode] = strawberry.field(resolver=resolve_traces)
-    prompts: Connection[nodes.PromptNode] = strawberry.field(resolver=resolve_prompts)
-    stdouts: Connection[nodes.StdoutNode] = strawberry.field(resolver=resolve_stdouts)
-    run: nodes.RunNode | None = strawberry.field(resolver=resolve_run)
+    runs: Connection[RunNode] = strawberry.field(resolver=resolve_runs)
+    traces: Connection[TraceNode] = strawberry.field(resolver=resolve_traces)
+    prompts: Connection[PromptNode] = strawberry.field(resolver=resolve_prompts)
+    stdouts: Connection[StdoutNode] = strawberry.field(resolver=resolve_stdouts)
+    run: RunNode | None = strawberry.field(resolver=resolve_run)
     version: str = nextline_rdb.__version__
     migration_version: str | None = strawberry.field(resolver=resolve_migration_version)
 
