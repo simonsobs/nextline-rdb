@@ -1,13 +1,14 @@
 from __future__ import annotations
 
 import datetime
-from typing import Optional, Type
+from typing import Optional, Type, cast
 
 import strawberry
 from sqlalchemy import select
 from strawberry.types import Info
 
 from nextline_rdb import models as db_models
+from nextline_rdb.db import DB
 from nextline_rdb.pagination import SortField
 
 from ..pagination import Connection, load_connection
@@ -15,7 +16,7 @@ from ..pagination import Connection, load_connection
 
 async def _query_connection_trace(
     info: Info,
-    root,
+    root: RunNode,
     before: Optional[str] = None,
     after: Optional[str] = None,
     first: Optional[int] = None,
@@ -25,20 +26,20 @@ async def _query_connection_trace(
     Model = db_models.Trace
     NodeType = TraceNode
     create_node_from_model = NodeType.from_model
-    ic(root._model)
-    select_model = select(Model).where(Model.run == root._model)
-    session = info.context['session']
-    return await load_connection(
-        session,
-        Model,
-        create_node_from_model,
-        select_model=select_model,
-        sort=sort,
-        before=before,
-        after=after,
-        first=first,
-        last=last,
-    )
+    select_model = select(Model).where(Model.run_id == root._model.id)
+    db = cast(DB, info.context['db'])
+    async with db.session() as session:
+        return await load_connection(
+            session,
+            Model,
+            create_node_from_model,
+            select_model=select_model,
+            sort=sort,
+            before=before,
+            after=after,
+            first=first,
+            last=last,
+        )
 
 
 @strawberry.type

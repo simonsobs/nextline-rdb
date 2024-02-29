@@ -18,7 +18,6 @@ async def resolve_run(
 ) -> RunNode | None:
     db = cast(DB, info.context['db'])
     async with db.session() as session:
-        info.context['session'] = session
         stmt = select(db_models.Run).options(selectinload('*'))
         if id is not None:
             stmt = stmt.filter(db_models.Run.id == id)
@@ -41,7 +40,6 @@ async def resolve_runs(
     create_node_from_model = NodeType.from_model
     db = cast(DB, info.context['db'])
     async with db.session() as session:
-        info.context['session'] = session
         return await load_connection(
             session,
             Model,
@@ -67,7 +65,6 @@ async def resolve_traces(
     create_node_from_model = NodeType.from_model
     db = cast(DB, info.context['db'])
     async with db.session() as session:
-        info.context['session'] = session
         return await load_connection(
             session,
             Model,
@@ -93,7 +90,6 @@ async def resolve_prompts(
     create_node_from_model = NodeType.from_model
     db = cast(DB, info.context['db'])
     async with db.session() as session:
-        info.context['session'] = session
         return await load_connection(
             session,
             Model,
@@ -119,7 +115,6 @@ async def resolve_stdouts(
     create_node_from_model = NodeType.from_model
     db = cast(DB, info.context['db'])
     async with db.session() as session:
-        info.context['session'] = session
         return await load_connection(
             session,
             Model,
