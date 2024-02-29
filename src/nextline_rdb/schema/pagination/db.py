@@ -3,7 +3,7 @@ from collections.abc import Callable
 from functools import partial
 from typing import Optional, Type, TypeVar
 
-from sqlalchemy import func, select
+from sqlalchemy import func, inspect, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import DeclarativeBase
 from sqlalchemy.sql.selectable import Select
@@ -28,7 +28,6 @@ def decode_id(cursor: str) -> int:
 async def load_connection(
     session: AsyncSession,
     Model: Type[_M],
-    id_field: str,
     create_node_from_model: Callable[..., _M],
     *,
     select_model: Optional[Select[tuple[_M]]] = None,
@@ -42,7 +41,6 @@ async def load_connection(
         load_edges,
         session=session,
         Model=Model,
-        id_field=id_field,
         create_node_from_model=create_node_from_model,
         select_model=select_model,
         sort=sort,
@@ -69,7 +67,6 @@ async def load_total_count(session: AsyncSession, Model: Type[db_models.Model]) 
 async def load_edges(
     session: AsyncSession,
     Model: Type[_M],
-    id_field: str,
     create_node_from_model: Callable[..., _N],
     *,
     select_model: Optional[Select[tuple[_M]]] = None,
@@ -79,6 +76,11 @@ async def load_edges(
     first: Optional[int] = None,
     last: Optional[int] = None,
 ) -> list[Edge[_N]]:
+    # TODO: handle multiple primary keys
+    primary_keys = list(inspect(Model).primary_key)
+    assert len(primary_keys) == 1, 'Multiple primary keys are not supported'
+    id_field = primary_keys[0].name
+
     models = await load_models(
         session,
         Model,

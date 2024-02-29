@@ -4,7 +4,7 @@ import datetime
 from typing import Optional, Type, TypeVar
 
 import strawberry
-from sqlalchemy import inspect, select
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import DeclarativeBase
 from sqlalchemy.sql.selectable import Select
@@ -30,15 +30,11 @@ async def query_connection(
     NodeType: Type[_N],
     select_model: Optional[Select[tuple[_M]]] = None,
 ) -> Connection[_N]:
-    id_field = inspect(Model).primary_key[0].name
-    # TODO: handle multiple primary keys
-
     create_node_from_model = NodeType.from_model  # type: ignore
 
     return await load_connection(
         session,
         Model,
-        id_field,
         create_node_from_model,
         select_model=select_model,
         sort=sort,
