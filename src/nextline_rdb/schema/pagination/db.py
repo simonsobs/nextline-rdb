@@ -28,7 +28,7 @@ def decode_id(cursor: str) -> int:
 async def load_connection(
     session: AsyncSession,
     Model: Type[_M],
-    create_node_from_model: Callable[..., _M],
+    create_node_from_model: Callable[[_M], _N],
     *,
     select_model: Optional[Select[tuple[_M]]] = None,
     sort: Optional[Sort] = None,
@@ -67,7 +67,7 @@ async def load_total_count(session: AsyncSession, Model: Type[db_models.Model]) 
 async def load_edges(
     session: AsyncSession,
     Model: Type[_M],
-    create_node_from_model: Callable[..., _N],
+    create_node_from_model: Callable[[_M], _N],
     *,
     select_model: Optional[Select[tuple[_M]]] = None,
     sort: Optional[Sort] = None,
