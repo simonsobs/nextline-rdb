@@ -1,48 +1,16 @@
 from __future__ import annotations
 
 import datetime
-from typing import Optional, Type, TypeVar
+from typing import Optional, Type
 
 import strawberry
 from sqlalchemy import select
-from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.orm import DeclarativeBase
-from sqlalchemy.sql.selectable import Select
 from strawberry.types import Info
 
 from nextline_rdb import models as db_models
-from nextline_rdb.pagination import Sort, SortField
+from nextline_rdb.pagination import SortField
 
 from ..pagination import Connection, load_connection
-
-_M = TypeVar('_M', bound=DeclarativeBase)  # Model
-_N = TypeVar("_N")  # Node
-
-
-async def query_connection(
-    session: AsyncSession,
-    sort: Optional[Sort],
-    before: Optional[str],
-    after: Optional[str],
-    first: Optional[int],
-    last: Optional[int],
-    Model: Type[_M],
-    NodeType: Type[_N],
-    select_model: Optional[Select[tuple[_M]]] = None,
-) -> Connection[_N]:
-    create_node_from_model = NodeType.from_model  # type: ignore
-
-    return await load_connection(
-        session,
-        Model,
-        create_node_from_model,
-        select_model=select_model,
-        sort=sort,
-        before=before,
-        after=after,
-        first=first,
-        last=last,
-    )
 
 
 async def _query_connection_trace(
@@ -56,19 +24,20 @@ async def _query_connection_trace(
     sort = [SortField('run_no'), SortField('trace_no')]
     Model = db_models.Trace
     NodeType = TraceNode
+    create_node_from_model = NodeType.from_model
     ic(root._model)
     select_model = select(Model).where(Model.run == root._model)
     session = info.context['session']
-    return await query_connection(
+    return await load_connection(
         session,
-        sort,
-        before,
-        after,
-        first,
-        last,
         Model,
-        NodeType,
+        create_node_from_model,
         select_model=select_model,
+        sort=sort,
+        before=before,
+        after=after,
+        first=first,
+        last=last,
     )
 
 

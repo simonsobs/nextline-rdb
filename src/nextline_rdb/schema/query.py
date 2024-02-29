@@ -9,15 +9,8 @@ import nextline_rdb
 from nextline_rdb import models as db_models
 from nextline_rdb.db import DB
 
-from .nodes import (
-    PromptNode,
-    RunNode,
-    SortField,
-    StdoutNode,
-    TraceNode,
-    query_connection,
-)
-from .pagination import Connection
+from .nodes import PromptNode, RunNode, SortField, StdoutNode, TraceNode
+from .pagination import Connection, load_connection
 
 
 async def resolve_run(
@@ -45,11 +38,19 @@ async def resolve_runs(
     sort = [SortField('run_no', desc=True)]
     Model = db_models.Run
     NodeType = RunNode
+    create_node_from_model = NodeType.from_model
     db = cast(DB, info.context['db'])
     async with db.session() as session:
         info.context['session'] = session
-        return await query_connection(
-            session, sort, before, after, first, last, Model, NodeType
+        return await load_connection(
+            session,
+            Model,
+            create_node_from_model,
+            sort=sort,
+            before=before,
+            after=after,
+            first=first,
+            last=last,
         )
 
 
@@ -63,11 +64,19 @@ async def resolve_traces(
     sort = [SortField('run_no'), SortField('trace_no')]
     Model = db_models.Trace
     NodeType = TraceNode
+    create_node_from_model = NodeType.from_model
     db = cast(DB, info.context['db'])
     async with db.session() as session:
         info.context['session'] = session
-        return await query_connection(
-            session, sort, before, after, first, last, Model, NodeType
+        return await load_connection(
+            session,
+            Model,
+            create_node_from_model,
+            sort=sort,
+            before=before,
+            after=after,
+            first=first,
+            last=last,
         )
 
 
@@ -81,11 +90,19 @@ async def resolve_prompts(
     sort = [SortField('run_no'), SortField('prompt_no')]
     Model = db_models.Prompt
     NodeType = PromptNode
+    create_node_from_model = NodeType.from_model
     db = cast(DB, info.context['db'])
     async with db.session() as session:
         info.context['session'] = session
-        return await query_connection(
-            session, sort, before, after, first, last, Model, NodeType
+        return await load_connection(
+            session,
+            Model,
+            create_node_from_model,
+            sort=sort,
+            before=before,
+            after=after,
+            first=first,
+            last=last,
         )
 
 
@@ -99,11 +116,19 @@ async def resolve_stdouts(
     sort = [SortField('run_no'), SortField('id')]
     Model = db_models.Stdout
     NodeType = StdoutNode
+    create_node_from_model = NodeType.from_model
     db = cast(DB, info.context['db'])
     async with db.session() as session:
         info.context['session'] = session
-        return await query_connection(
-            session, sort, before, after, first, last, Model, NodeType
+        return await load_connection(
+            session,
+            Model,
+            create_node_from_model,
+            sort=sort,
+            before=before,
+            after=after,
+            first=first,
+            last=last,
         )
 
 
