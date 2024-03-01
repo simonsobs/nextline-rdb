@@ -8,8 +8,9 @@ from strawberry.types import Info
 import nextline_rdb
 from nextline_rdb import models as db_models
 from nextline_rdb.db import DB
+from nextline_rdb.pagination import SortField
 
-from .nodes import PromptNode, RunNode, SortField, StdoutNode, TraceNode
+from .nodes import PromptNode, RunNode, StdoutNode, TraceNode
 from .pagination import Connection, load_connection
 
 
