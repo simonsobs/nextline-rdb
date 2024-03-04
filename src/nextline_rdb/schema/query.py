@@ -19,7 +19,8 @@ async def resolve_run(
 ) -> RunNode | None:
     db = cast(DB, info.context['db'])
     async with db.session() as session:
-        stmt = select(db_models.Run).options(selectinload('*'))
+        # stmt = select(db_models.Run).options(selectinload('*'))
+        stmt = select(db_models.Run).options(selectinload(db_models.Run.script))
         if id is not None:
             stmt = stmt.filter(db_models.Run.id == id)
         else:
