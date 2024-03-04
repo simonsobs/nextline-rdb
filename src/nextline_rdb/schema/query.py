@@ -6,8 +6,8 @@ from sqlalchemy.orm import selectinload
 from strawberry.types import Info
 
 import nextline_rdb
-from nextline_rdb import models as db_models
 from nextline_rdb.db import DB
+from nextline_rdb.models import Prompt, Run, Stdout, Trace
 from nextline_rdb.pagination import SortField
 
 from .nodes import PromptNode, RunNode, StdoutNode, TraceNode
@@ -19,12 +19,12 @@ async def resolve_run(
 ) -> RunNode | None:
     db = cast(DB, info.context['db'])
     async with db.session() as session:
-        # stmt = select(db_models.Run).options(selectinload('*'))
-        stmt = select(db_models.Run).options(selectinload(db_models.Run.script))
+        # stmt = select(Run).options(selectinload('*'))
+        stmt = select(Run).options(selectinload(Run.script))
         if id is not None:
-            stmt = stmt.filter(db_models.Run.id == id)
+            stmt = stmt.filter(Run.id == id)
         else:
-            stmt = stmt.filter(db_models.Run.run_no == run_no)
+            stmt = stmt.filter(Run.run_no == run_no)
         run = (await session.execute(stmt)).scalar_one_or_none()
     return RunNode.from_model(run) if run else None
 
@@ -37,15 +37,12 @@ async def resolve_runs(
     last: Optional[int] = None,
 ) -> Connection[RunNode]:
     sort = [SortField('run_no', desc=True)]
-    Model = db_models.Run
-    NodeType = RunNode
-    create_node_from_model = NodeType.from_model
     db = cast(DB, info.context['db'])
     async with db.session() as session:
         return await load_connection(
             session,
-            Model,
-            create_node_from_model,
+            Run,
+            create_node_from_model=RunNode.from_model,
             sort=sort,
             before=before,
             after=after,
@@ -62,15 +59,12 @@ async def resolve_traces(
     last: Optional[int] = None,
 ) -> Connection[TraceNode]:
     sort = [SortField('run_no'), SortField('trace_no')]
-    Model = db_models.Trace
-    NodeType = TraceNode
-    create_node_from_model = NodeType.from_model
     db = cast(DB, info.context['db'])
     async with db.session() as session:
         return await load_connection(
             session,
-            Model,
-            create_node_from_model,
+            Trace,
+            create_node_from_model=TraceNode.from_model,
             sort=sort,
             before=before,
             after=after,
@@ -87,15 +81,12 @@ async def resolve_prompts(
     last: Optional[int] = None,
 ) -> Connection[PromptNode]:
     sort = [SortField('run_no'), SortField('prompt_no')]
-    Model = db_models.Prompt
-    NodeType = PromptNode
-    create_node_from_model = NodeType.from_model
     db = cast(DB, info.context['db'])
     async with db.session() as session:
         return await load_connection(
             session,
-            Model,
-            create_node_from_model,
+            Prompt,
+            create_node_from_model=PromptNode.from_model,
             sort=sort,
             before=before,
             after=after,
@@ -112,15 +103,12 @@ async def resolve_stdouts(
     last: Optional[int] = None,
 ) -> Connection[StdoutNode]:
     sort = [SortField('run_no'), SortField('id')]
-    Model = db_models.Stdout
-    NodeType = StdoutNode
-    create_node_from_model = NodeType.from_model
     db = cast(DB, info.context['db'])
     async with db.session() as session:
         return await load_connection(
             session,
-            Model,
-            create_node_from_model,
+            Stdout,
+            create_node_from_model=StdoutNode.from_model,
             sort=sort,
             before=before,
             after=after,

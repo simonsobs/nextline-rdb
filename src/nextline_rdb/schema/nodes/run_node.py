@@ -5,8 +5,8 @@ import strawberry
 from sqlalchemy import select
 from strawberry.types import Info
 
-from nextline_rdb import models as db_models
 from nextline_rdb.db import DB
+from nextline_rdb.models import Prompt, Run, Stdout, Trace
 from nextline_rdb.pagination import SortField
 
 from ..pagination import Connection, load_connection
@@ -28,16 +28,13 @@ async def _resolve_traces(
     from .trace_node import TraceNode
 
     sort = [SortField('trace_no')]
-    Model = db_models.Trace
-    NodeType = TraceNode
-    create_node_from_model = NodeType.from_model
-    select_model = select(Model).where(Model.run_id == root._model.id)
+    select_model = select(Trace).where(Trace.run_id == root._model.id)
     db = cast(DB, info.context['db'])
     async with db.session() as session:
         return await load_connection(
             session,
-            Model,
-            create_node_from_model,
+            Trace,
+            create_node_from_model=TraceNode.from_model,
             select_model=select_model,
             sort=sort,
             before=before,
@@ -58,16 +55,13 @@ async def _resolve_prompts(
     from .prompt_node import PromptNode
 
     sort = [SortField('prompt_no')]
-    Model = db_models.Prompt
-    NodeType = PromptNode
-    create_node_from_model = NodeType.from_model
-    select_model = select(Model).where(Model.run_id == root._model.id)
+    select_model = select(Prompt).where(Prompt.run_id == root._model.id)
     db = cast(DB, info.context['db'])
     async with db.session() as session:
         return await load_connection(
             session,
-            Model,
-            create_node_from_model,
+            Prompt,
+            create_node_from_model=PromptNode.from_model,
             select_model=select_model,
             sort=sort,
             before=before,
@@ -88,16 +82,13 @@ async def _resolve_stdouts(
     from .stdout_node import StdoutNode
 
     sort = [SortField('written_at')]
-    Model = db_models.Stdout
-    NodeType = StdoutNode
-    create_node_from_model = NodeType.from_model
-    select_model = select(Model).where(Model.run_id == root._model.id)
+    select_model = select(Stdout).where(Stdout.run_id == root._model.id)
     db = cast(DB, info.context['db'])
     async with db.session() as session:
         return await load_connection(
             session,
-            Model,
-            create_node_from_model,
+            Stdout,
+            create_node_from_model=StdoutNode.from_model,
             select_model=select_model,
             sort=sort,
             before=before,
@@ -109,7 +100,7 @@ async def _resolve_stdouts(
 
 @strawberry.type
 class RunNode:
-    _model: strawberry.Private[db_models.Run]
+    _model: strawberry.Private[Run]
     id: int
     run_no: int
     state: Optional[str]
@@ -131,7 +122,7 @@ class RunNode:
     ] = strawberry.field(resolver=_resolve_stdouts)
 
     @classmethod
-    def from_model(cls: type['RunNode'], model: db_models.Run):
+    def from_model(cls: type['RunNode'], model: Run):
         script = model.script.script if model.script else None
         return cls(
             _model=model,
