@@ -38,6 +38,21 @@ query RDBRun($id: Int, $runNo: Int) {
           }
         }
       }
+      stdouts {
+        pageInfo {
+          startCursor
+          endCursor
+        }
+        totalCount
+        edges {
+          cursor
+          node {
+            id
+            runNo
+            writtenAt
+          }
+        }
+      }
     }
   }
 }

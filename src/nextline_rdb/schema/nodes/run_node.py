@@ -77,6 +77,36 @@ async def _resolve_prompts(
         )
 
 
+async def _resolve_stdouts(
+    info: Info,
+    root: 'RunNode',
+    before: Optional[str] = None,
+    after: Optional[str] = None,
+    first: Optional[int] = None,
+    last: Optional[int] = None,
+) -> Connection['StdoutNode']:
+    from .stdout_node import StdoutNode
+
+    sort = [SortField('written_at')]
+    Model = db_models.Stdout
+    NodeType = StdoutNode
+    create_node_from_model = NodeType.from_model
+    select_model = select(Model).where(Model.run_id == root._model.id)
+    db = cast(DB, info.context['db'])
+    async with db.session() as session:
+        return await load_connection(
+            session,
+            Model,
+            create_node_from_model,
+            select_model=select_model,
+            sort=sort,
+            before=before,
+            after=after,
+            first=first,
+            last=last,
+        )
+
+
 @strawberry.type
 class RunNode:
     _model: strawberry.Private[db_models.Run]
@@ -96,15 +126,9 @@ class RunNode:
         Annotated['PromptNode', strawberry.lazy('.prompt_node')]
     ] = strawberry.field(resolver=_resolve_prompts)
 
-    # stdouts: Connection[StdoutHistory] = strawberry.field(
-    #     resolver=query_connection_stdout
-    # )
-
-    @strawberry.field
-    def stdouts(self) -> list[Annotated['StdoutNode', strawberry.lazy('.stdout_node')]]:
-        from .stdout_node import StdoutNode
-
-        return [StdoutNode.from_model(m) for m in self._model.stdouts]  # type: ignore
+    stdouts: Connection[
+        Annotated['StdoutNode', strawberry.lazy('.stdout_node')]
+    ] = strawberry.field(resolver=_resolve_stdouts)
 
     @classmethod
     def from_model(cls: type['RunNode'], model: db_models.Run):
