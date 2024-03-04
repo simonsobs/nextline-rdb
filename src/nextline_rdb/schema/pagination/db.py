@@ -8,7 +8,6 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import DeclarativeBase
 from sqlalchemy.sql.selectable import Select
 
-from nextline_rdb import models as db_models
 from nextline_rdb.pagination import Sort, load_models
 
 from .connection import Connection, Edge, query_connection
@@ -46,7 +45,12 @@ async def load_connection(
         sort=sort,
     )
 
-    query_total_count = partial(load_total_count, session=session, Model=Model)
+    query_total_count = partial(
+        load_total_count,
+        session=session,
+        Model=Model,
+        select_model=select_model,
+    )
 
     return await query_connection(
         query_edges,
@@ -58,8 +62,16 @@ async def load_connection(
     )
 
 
-async def load_total_count(session: AsyncSession, Model: Type[db_models.Model]) -> int:
-    stmt = select(func.count()).select_from(Model)
+async def load_total_count(
+    session: AsyncSession,
+    Model: Type[_M],
+    *,
+    select_model: Optional[Select[tuple[_M]]] = None,
+) -> int:
+    if select_model is None:
+        select_model = select(Model)
+    cte = select_model.cte()
+    stmt = select(func.count()).select_from(cte)
     total_count = (await session.execute(stmt)).scalar() or 0
     return total_count
 
