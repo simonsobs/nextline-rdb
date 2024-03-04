@@ -27,7 +27,7 @@ async def _resolve_traces(
 ) -> Connection['TraceNode']:
     from .trace_node import TraceNode
 
-    sort = [SortField('run_no'), SortField('trace_no')]
+    sort = [SortField('trace_no')]
     Model = db_models.Trace
     NodeType = TraceNode
     create_node_from_model = NodeType.from_model
