@@ -3,6 +3,26 @@ query RDBRun($id: Int, $runNo: Int) {
     run(id: $id, runNo: $runNo) {
       id
       runNo
+      state
+      startedAt
+      endedAt
+      script
+      exception
+      traces {
+        pageInfo {
+          startCursor
+          endCursor
+        }
+        totalCount
+        edges {
+          cursor
+          node {
+            id
+            runNo
+            traceNo
+          }
+        }
+      }
     }
   }
 }
