@@ -47,6 +47,36 @@ async def _resolve_traces(
         )
 
 
+async def _resolve_prompts(
+    info: Info,
+    root: 'RunNode',
+    before: Optional[str] = None,
+    after: Optional[str] = None,
+    first: Optional[int] = None,
+    last: Optional[int] = None,
+) -> Connection['PromptNode']:
+    from .prompt_node import PromptNode
+
+    sort = [SortField('prompt_no')]
+    Model = db_models.Prompt
+    NodeType = PromptNode
+    create_node_from_model = NodeType.from_model
+    select_model = select(Model).where(Model.run_id == root._model.id)
+    db = cast(DB, info.context['db'])
+    async with db.session() as session:
+        return await load_connection(
+            session,
+            Model,
+            create_node_from_model,
+            select_model=select_model,
+            sort=sort,
+            before=before,
+            after=after,
+            first=first,
+            last=last,
+        )
+
+
 @strawberry.type
 class RunNode:
     _model: strawberry.Private[db_models.Run]
@@ -62,22 +92,13 @@ class RunNode:
         Annotated['TraceNode', strawberry.lazy('.trace_node')]
     ] = strawberry.field(resolver=_resolve_traces)
 
-    # prompts: Connection[PromptHistory] = strawberry.field(
-    #     resolver=query_connection_prompt
-    # )
+    prompts: Connection[
+        Annotated['PromptNode', strawberry.lazy('.prompt_node')]
+    ] = strawberry.field(resolver=_resolve_prompts)
+
     # stdouts: Connection[StdoutHistory] = strawberry.field(
     #     resolver=query_connection_stdout
     # )
-
-    # @strawberry.field
-    # def traces(self) -> list["TraceHistory"]:
-    #     return [TraceHistory.from_model(m) for m in self._model.traces]  # type: ignore
-
-    @strawberry.field
-    def prompts(self) -> list[Annotated['PromptNode', strawberry.lazy('.prompt_node')]]:
-        from .prompt_node import PromptNode
-
-        return [PromptNode.from_model(m) for m in self._model.prompts]  # type: ignore
 
     @strawberry.field
     def stdouts(self) -> list[Annotated['StdoutNode', strawberry.lazy('.stdout_node')]]:
