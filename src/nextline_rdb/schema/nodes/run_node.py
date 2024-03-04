@@ -17,7 +17,7 @@ if TYPE_CHECKING:
     from .trace_node import TraceNode
 
 
-async def _query_connection_trace(
+async def _resolve_traces(
     info: Info,
     root: 'RunNode',
     before: Optional[str] = None,
@@ -60,7 +60,7 @@ class RunNode:
 
     traces: Connection[
         Annotated['TraceNode', strawberry.lazy('.trace_node')]
-    ] = strawberry.field(resolver=_query_connection_trace)
+    ] = strawberry.field(resolver=_resolve_traces)
 
     # prompts: Connection[PromptHistory] = strawberry.field(
     #     resolver=query_connection_prompt
