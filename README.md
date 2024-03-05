@@ -82,7 +82,7 @@ The directory `db/` and the file `db.sqlite3` will be created if
 they don't exist.
 
 ```bash
-docker run -p 8080:8000 --env NEXTLINE_DB__URL='sqlite+aiosqlite:////db/db.sqlite3' -v "$(pwd)/db:/db" ghcr.io/simonsobs/nextline-graphql
+docker run -p 8080:8000 --env NEXTLINE_DB__URL='sqlite+aiosqlite:////db/db.sqlite3' -v "$(pwd)/db:/db" nextline-rdb
 ```
 
 Check with a web browser at <http://localhost:8080/>.
