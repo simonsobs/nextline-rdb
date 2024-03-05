@@ -20,6 +20,40 @@ query RDBRun($id: Int, $runNo: Int) {
             id
             runNo
             traceNo
+            run {
+              id
+            }
+            prompts {
+              edges {
+                node {
+                  id
+                  runNo
+                  traceNo
+                  promptNo
+                  run {
+                    id
+                  }
+                  trace {
+                    id
+                  }
+                }
+              }
+            }
+            stdouts {
+              edges {
+                node {
+                  id
+                  runNo
+                  traceNo
+                  run {
+                    id
+                  }
+                  trace {
+                    id
+                  }
+                }
+              }
+            }
           }
         }
       }
@@ -34,7 +68,14 @@ query RDBRun($id: Int, $runNo: Int) {
           node {
             id
             runNo
+            traceNo
             promptNo
+            run {
+              id
+            }
+            trace {
+              id
+            }
           }
         }
       }
@@ -49,7 +90,14 @@ query RDBRun($id: Int, $runNo: Int) {
           node {
             id
             runNo
+            traceNo
             writtenAt
+            run {
+              id
+            }
+            trace {
+              id
+            }
           }
         }
       }
