@@ -3,6 +3,104 @@ query RDBRun($id: Int, $runNo: Int) {
     run(id: $id, runNo: $runNo) {
       id
       runNo
+      state
+      startedAt
+      endedAt
+      script
+      exception
+      traces {
+        pageInfo {
+          startCursor
+          endCursor
+        }
+        totalCount
+        edges {
+          cursor
+          node {
+            id
+            runNo
+            traceNo
+            run {
+              id
+            }
+            prompts {
+              edges {
+                node {
+                  id
+                  runNo
+                  traceNo
+                  promptNo
+                  run {
+                    id
+                  }
+                  trace {
+                    id
+                  }
+                }
+              }
+            }
+            stdouts {
+              edges {
+                node {
+                  id
+                  runNo
+                  traceNo
+                  run {
+                    id
+                  }
+                  trace {
+                    id
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+      prompts {
+        pageInfo {
+          startCursor
+          endCursor
+        }
+        totalCount
+        edges {
+          cursor
+          node {
+            id
+            runNo
+            traceNo
+            promptNo
+            run {
+              id
+            }
+            trace {
+              id
+            }
+          }
+        }
+      }
+      stdouts {
+        pageInfo {
+          startCursor
+          endCursor
+        }
+        totalCount
+        edges {
+          cursor
+          node {
+            id
+            runNo
+            traceNo
+            writtenAt
+            run {
+              id
+            }
+            trace {
+              id
+            }
+          }
+        }
+      }
     }
   }
 }
