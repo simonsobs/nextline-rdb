@@ -4,10 +4,9 @@ from pathlib import Path
 import pytest
 import tomli
 import tomli_w
-from async_asgi_testclient import TestClient
 from nextlinegraphql import create_app
 from nextlinegraphql.plugins.ctrl.graphql import MUTATE_RUN_AND_CONTINUE
-from nextlinegraphql.plugins.graphql.test import gql_request
+from nextlinegraphql.plugins.graphql.test import TestClient, gql_request
 
 from nextline_rdb.db import DB
 from nextline_rdb.models.strategies import st_model_run_list
