@@ -30,7 +30,7 @@ async def test_plugin(set_new_url: Callable[[], str]):
     app = create_app()  # the plugin is loaded here
     async with TestClient(app) as client:
         data = await gql_request(client, MUTATE_RUN_AND_CONTINUE)
-        assert data['runAndContinue']
+        assert data['ctrl']['runAndContinue']
         data = await gql_request(client, QUERY_RDB_CONNECTIONS)
         n_runs = len(data['rdb']['runs']['edges'])
 
