@@ -1,4 +1,4 @@
-# Nextline RDB
+# nextline-rdb
 
 [![PyPI - Version](https://img.shields.io/pypi/v/nextline-rdb.svg)](https://pypi.org/project/nextline-rdb)
 [![PyPI - Python Version](https://img.shields.io/pypi/pyversions/nextline-rdb.svg)](https://pypi.org/project/nextline-rdb)
