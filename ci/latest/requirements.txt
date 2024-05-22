@@ -2,7 +2,7 @@
 # is used in a GitHub Actions workflow to test the compatibility with the
 # latest versions of the dependencies. This file is monitored by Dependabot.
 nextline-graphql==0.7.8
-alembic==1.9.0
+alembic==1.13.1
 SQLAlchemy[asyncio]==2.0.0
 aiosqlite==0.20.0
 hypothesis==6.88.0
