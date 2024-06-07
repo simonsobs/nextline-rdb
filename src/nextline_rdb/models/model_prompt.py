@@ -16,7 +16,7 @@ class Prompt(Model):
     id: Mapped[int] = mapped_column(primary_key=True, index=True)
     run_no: Mapped[int]
     trace_no: Mapped[int]
-    prompt_no: Mapped[int]
+    prompt_no: Mapped[int]  # unique in each run
     open: Mapped[bool]
     event: Mapped[str]
     started_at: Mapped[datetime]
@@ -32,4 +32,4 @@ class Prompt(Model):
     trace_id: Mapped[int] = mapped_column(ForeignKey('trace.id'))
     trace: Mapped['Trace'] = relationship(back_populates='prompts')
 
-    __table_args__ = (UniqueConstraint("run_no", "prompt_no"),)
+    __table_args__ = (UniqueConstraint("run_id", "prompt_no"),)
