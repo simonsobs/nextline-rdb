@@ -1,4 +1,4 @@
-from hypothesis import given
+from hypothesis import Phase, given, settings
 from hypothesis import strategies as st
 
 from nextline_rdb.db import DB
@@ -9,6 +9,7 @@ from ... import Model
 from .. import st_model_instance_list
 
 
+@settings(phases=(Phase.generate,))  # Avoid shrinking
 @given(st.data())
 async def test_options(data: st.DataObject) -> None:
     # Generate options of the strategy to be tested
@@ -31,6 +32,7 @@ async def test_options(data: st.DataObject) -> None:
     assert min_size <= len(instances) <= max_size
 
 
+@settings(phases=(Phase.generate,))  # Avoid shrinking
 @given(instances=st_model_instance_list(min_size=0, max_size=5))
 async def test_db(instances: list[Model]) -> None:
     async with DB(use_migration=False, model_base_class=Model) as db:

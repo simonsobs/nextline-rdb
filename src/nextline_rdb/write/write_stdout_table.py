@@ -20,16 +20,16 @@ class WriteStdoutTable:
                 run := (await session.execute(select_runs)).scalar_one_or_none()
             ):
                 await asyncio.sleep(0)
-            select_traces = select(Trace).filter_by(
-                run_no=event.run_no, trace_no=event.trace_no
+            select_traces = (
+                select(Trace)
+                .join(Run)
+                .filter(Run.run_no == event.run_no, Trace.trace_no == event.trace_no)
             )
             while not (
                 trace := (await session.execute(select_traces)).scalar_one_or_none()
             ):
                 await asyncio.sleep(0)
             stdout = Stdout(
-                run_no=event.run_no,
-                trace_no=event.trace_no,
                 text=event.text,
                 written_at=event.written_at,
                 run=run,

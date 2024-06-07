@@ -1,6 +1,6 @@
 import datetime
 
-from hypothesis import given
+from hypothesis import Phase, given, settings
 from sqlalchemy import select
 
 from nextline_rdb.db import DB
@@ -23,6 +23,7 @@ async def test_repr(run: Run):
                 assert repr_ == repr(eval(repr_))
 
 
+@settings(phases=(Phase.generate,))  # Avoid shrinking
 @given(run=st_model_run(generate_traces=True))
 async def test_cascade(run: Run):
     async with DB(use_migration=False, model_base_class=Model) as db:

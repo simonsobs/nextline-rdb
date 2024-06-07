@@ -36,8 +36,8 @@ class StdoutNode:
         return cls(
             _model=model,
             id=model.id,
-            run_no=model.run_no,
-            trace_no=model.trace_no,
+            run_no=model.run.run_no,
+            trace_no=model.trace.trace_no,
             text=model.text,
             written_at=model.written_at,
         )

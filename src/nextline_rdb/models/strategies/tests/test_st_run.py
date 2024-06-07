@@ -1,4 +1,4 @@
-from hypothesis import given, settings
+from hypothesis import Phase, given, settings
 from hypothesis import strategies as st
 
 from nextline_rdb.db import DB
@@ -16,7 +16,7 @@ from .. import st_model_run, st_model_script
 
 
 @given(st.data())
-@settings(max_examples=200)
+@settings(phases=(Phase.generate,))
 async def test_options(data: st.DataObject) -> None:
     run_no = data.draw(st_none_or(st_graphql_ints(min_value=1)))
     if run_no is None:
@@ -77,6 +77,7 @@ async def test_options(data: st.DataObject) -> None:
         assert not stdouts
 
 
+@settings(phases=(Phase.generate,))  # Avoid shrinking
 @given(run=st_model_run())
 async def test_db(run: Run) -> None:
     async with DB(use_migration=False, model_base_class=Model) as db:

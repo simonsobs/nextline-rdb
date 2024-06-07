@@ -17,8 +17,6 @@ def st_model_prompt(
     trace: Optional[Trace] = None,
 ) -> Prompt:
     trace = trace or draw(st_model_trace())
-    run_no = trace.run_no
-    trace_no = trace.trace_no
     if prompt_no is None:
         prompt_no = draw(st_graphql_ints(min_value=1))
     open = draw(st.booleans())
@@ -35,8 +33,6 @@ def st_model_prompt(
     stdout = draw(st_none_or(st.text()))
     command = draw(st_none_or(st.text()))
     model = Prompt(
-        run_no=run_no,
-        trace_no=trace_no,
         prompt_no=prompt_no,
         open=open,
         event=event,

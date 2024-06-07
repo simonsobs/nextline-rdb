@@ -58,7 +58,7 @@ async def resolve_traces(
     first: Optional[int] = None,
     last: Optional[int] = None,
 ) -> Connection[TraceNode]:
-    sort = [SortField('run_no'), SortField('trace_no')]
+    sort = [SortField('run_id'), SortField('trace_no')]
     db = cast(DB, info.context['db'])
     async with db.session() as session:
         return await load_connection(
@@ -80,7 +80,7 @@ async def resolve_prompts(
     first: Optional[int] = None,
     last: Optional[int] = None,
 ) -> Connection[PromptNode]:
-    sort = [SortField('run_no'), SortField('prompt_no')]
+    sort = [SortField('run_id'), SortField('prompt_no')]
     db = cast(DB, info.context['db'])
     async with db.session() as session:
         return await load_connection(
@@ -102,7 +102,7 @@ async def resolve_stdouts(
     first: Optional[int] = None,
     last: Optional[int] = None,
 ) -> Connection[StdoutNode]:
-    sort = [SortField('run_no'), SortField('id')]
+    sort = [SortField('run_id'), SortField('id')]
     db = cast(DB, info.context['db'])
     async with db.session() as session:
         return await load_connection(

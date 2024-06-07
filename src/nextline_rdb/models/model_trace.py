@@ -15,8 +15,7 @@ if TYPE_CHECKING:
 class Trace(Model):
     __tablename__ = "trace"
     id: Mapped[int] = mapped_column(primary_key=True, index=True)
-    run_no: Mapped[int]
-    trace_no: Mapped[int]
+    trace_no: Mapped[int]  # unique in each run
     state: Mapped[str]
     thread_no: Mapped[int]
     task_no: Mapped[int | None]
@@ -29,4 +28,4 @@ class Trace(Model):
     prompts: Mapped[list["Prompt"]] = relationship(back_populates="trace")
     stdouts: Mapped[list["Stdout"]] = relationship(back_populates="trace")
 
-    __table_args__ = (UniqueConstraint("run_no", "trace_no"),)
+    __table_args__ = (UniqueConstraint("run_id", "trace_no"),)
