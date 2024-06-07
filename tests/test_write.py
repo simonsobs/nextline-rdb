@@ -37,7 +37,7 @@ async def test_one(adb: DB, run_nextline, statement):
         for trace in traces:
             trace_no += 1
             assert trace_no == trace.trace_no
-            assert run_no == trace.run_no
+            assert run_no == trace.run.run_no
             assert trace.started_at
             assert trace.ended_at
 

@@ -11,7 +11,7 @@ from .st_trace import st_model_trace
 @st.composite
 def st_model_stdout(draw: st.DrawFn, trace: Optional[Trace] = None) -> Stdout:
     trace = trace or draw(st_model_trace())
-    run_no = trace.run_no
+    run_no = trace.run.run_no
     trace_no = trace.trace_no
     text = draw(st.text())
     written_at = draw(st_datetimes())

@@ -22,7 +22,6 @@ class WriteTraceTable:
             while not (run := (await session.execute(stmt)).scalar_one_or_none()):
                 await asyncio.sleep(0)
             trace = Trace(
-                run_no=event.run_no,
                 trace_no=event.trace_no,
                 state='running',
                 thread_no=event.thread_no,
@@ -36,7 +35,11 @@ class WriteTraceTable:
     @hookimpl
     async def on_end_trace(self, event: OnEndTrace) -> None:
         async with self._db.session.begin() as session:
-            stmt = select(Trace).filter_by(run_no=event.run_no, trace_no=event.trace_no)
+            stmt = (
+                select(Trace)
+                .join(Run)
+                .filter(Run.run_no == event.run_no, Trace.trace_no == event.trace_no)
+            )
             while not (trace := (await session.execute(stmt)).scalar_one_or_none()):
                 await asyncio.sleep(0)
             trace.state = 'finished'
@@ -58,8 +61,10 @@ class WriteTraceTable:
         async with self._db.session.begin() as session:
             stmt = (
                 select(Trace)
-                .filter_by(run_no=run_no)
-                .filter(Trace.trace_no.in_(self._running_trace_nos))
+                .join(Run)
+                .filter(
+                    Run.run_no == run_no, Trace.trace_no.in_(self._running_trace_nos)
+                )
             )
             traces = (await session.execute(stmt)).scalars().all()
             for trace in traces:

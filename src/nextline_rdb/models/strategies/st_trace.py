@@ -52,7 +52,6 @@ def st_model_trace(
 
     assert started_at
 
-    trace.run_no = run.run_no
     trace.started_at = started_at
     trace.ended_at = ended_at
     trace.run = run

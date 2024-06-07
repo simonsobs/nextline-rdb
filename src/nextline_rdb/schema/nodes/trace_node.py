@@ -103,7 +103,7 @@ class TraceNode:
         return cls(
             _model=model,
             id=model.id,
-            run_no=model.run_no,
+            run_no=model.run.run_no,
             trace_no=model.trace_no,
             state=model.state,
             thread_no=model.thread_no,
