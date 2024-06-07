@@ -14,8 +14,6 @@ if TYPE_CHECKING:
 class Prompt(Model):
     __tablename__ = "prompt"
     id: Mapped[int] = mapped_column(primary_key=True, index=True)
-    run_no: Mapped[int]
-    trace_no: Mapped[int]
     prompt_no: Mapped[int]  # unique in each run
     open: Mapped[bool]
     event: Mapped[str]

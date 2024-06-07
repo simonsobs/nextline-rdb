@@ -30,8 +30,6 @@ class WritePromptTable:
             ):
                 await asyncio.sleep(0)
             prompt = Prompt(
-                run_no=event.run_no,
-                trace_no=event.trace_no,
                 prompt_no=event.prompt_no,
                 open=True,
                 event=event.event,
@@ -47,8 +45,10 @@ class WritePromptTable:
     @hookimpl
     async def on_end_prompt(self, event: OnEndPrompt) -> None:
         async with self._db.session.begin() as session:
-            stmt = select(Prompt).filter_by(
-                run_no=event.run_no, prompt_no=event.prompt_no
+            stmt = (
+                select(Prompt)
+                .join(Run)
+                .filter(Run.run_no == event.run_no, Prompt.prompt_no == event.prompt_no)
             )
             while not (prompt := (await session.execute(stmt)).scalar_one_or_none()):
                 await asyncio.sleep(0)

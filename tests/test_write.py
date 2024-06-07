@@ -44,8 +44,7 @@ async def test_one(adb: DB, run_nextline, statement):
         prompts = (await session.scalars(select(db_models.Prompt))).all()
         assert 58 == len(prompts)
         for prompt in prompts:
-            assert run_no == prompt.run_no
-            assert prompt.trace_no
+            assert run_no == prompt.run.run_no
             assert prompt.started_at
             assert prompt.line_no
             assert prompt.file_name

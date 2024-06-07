@@ -80,7 +80,7 @@ async def resolve_prompts(
     first: Optional[int] = None,
     last: Optional[int] = None,
 ) -> Connection[PromptNode]:
-    sort = [SortField('run_no'), SortField('prompt_no')]
+    sort = [SortField('run_id'), SortField('prompt_no')]
     db = cast(DB, info.context['db'])
     async with db.session() as session:
         return await load_connection(
