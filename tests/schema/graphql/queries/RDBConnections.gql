@@ -41,5 +41,17 @@ query RDBConnections {
         }
       }
     }
+    stdouts {
+      edges {
+        cursor
+        node {
+          id
+          runNo
+          traceNo
+          text
+          writtenAt
+        }
+      }
+    }
   }
 }
