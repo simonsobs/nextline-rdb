@@ -1,4 +1,4 @@
-from hypothesis import given
+from hypothesis import Phase, given, settings
 from hypothesis import strategies as st
 from sqlalchemy import select
 
@@ -9,6 +9,7 @@ from ... import Model, Prompt
 from .. import st_model_prompt_list, st_model_run, st_model_trace_list
 
 
+@settings(phases=(Phase.generate,))  # Avoid shrinking
 @given(st.data())
 async def test_st_model_prompt_lists(data: st.DataObject) -> None:
     # generate_traces=False because that would generate a trace with prompts

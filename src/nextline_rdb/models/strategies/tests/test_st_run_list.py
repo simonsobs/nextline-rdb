@@ -1,4 +1,4 @@
-from hypothesis import given
+from hypothesis import Phase, given, settings
 from hypothesis import strategies as st
 
 from nextline_rdb.db import DB
@@ -9,6 +9,7 @@ from ... import Model, Run
 from .. import st_model_run_list, st_model_script_list
 
 
+@settings(phases=(Phase.generate,))  # Avoid shrinking
 @given(st.data())
 async def test_options(data: st.DataObject) -> None:
     # Generate options of the strategy to be tested
@@ -61,6 +62,7 @@ async def test_options(data: st.DataObject) -> None:
         assert scripts_ <= set(scripts)
 
 
+@settings(phases=(Phase.generate,))  # Avoid shrinking
 @given(runs=st_model_run_list(generate_traces=True, min_size=0, max_size=3))
 async def test_db(runs: list[Run]) -> None:
     async with DB(use_migration=False, model_base_class=Model) as db:
