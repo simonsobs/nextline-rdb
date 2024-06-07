@@ -14,8 +14,6 @@ if TYPE_CHECKING:
 class Stdout(Model):
     __tablename__ = "stdout"
     id: Mapped[int] = mapped_column(primary_key=True, index=True)
-    run_no: Mapped[int]
-    trace_no: Mapped[int]
     text: Mapped[str | None]
     written_at: Mapped[datetime | None]
 

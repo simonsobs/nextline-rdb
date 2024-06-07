@@ -102,7 +102,7 @@ async def resolve_stdouts(
     first: Optional[int] = None,
     last: Optional[int] = None,
 ) -> Connection[StdoutNode]:
-    sort = [SortField('run_no'), SortField('id')]
+    sort = [SortField('run_id'), SortField('id')]
     db = cast(DB, info.context['db'])
     async with db.session() as session:
         return await load_connection(

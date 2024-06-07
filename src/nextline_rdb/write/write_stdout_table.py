@@ -30,8 +30,6 @@ class WriteStdoutTable:
             ):
                 await asyncio.sleep(0)
             stdout = Stdout(
-                run_no=event.run_no,
-                trace_no=event.trace_no,
                 text=event.text,
                 written_at=event.written_at,
                 run=run,
