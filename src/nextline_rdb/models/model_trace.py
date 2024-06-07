@@ -15,7 +15,6 @@ if TYPE_CHECKING:
 class Trace(Model):
     __tablename__ = "trace"
     id: Mapped[int] = mapped_column(primary_key=True, index=True)
-    run_no: Mapped[int]
     trace_no: Mapped[int]  # unique in each run
     state: Mapped[str]
     thread_no: Mapped[int]
