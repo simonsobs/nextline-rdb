@@ -1,5 +1,5 @@
 import strawberry
-from hypothesis import given, note
+from hypothesis import Phase, given, note, settings
 from hypothesis import strategies as st
 
 from nextline_rdb.db import DB
@@ -7,8 +7,7 @@ from nextline_rdb.models import Run
 from nextline_rdb.models.strategies import st_model_run_list
 from nextline_rdb.schema import Query
 from nextline_rdb.utils.strategies import st_graphql_ints, st_none_or
-
-from ..graphql import QUERY_RDB_RUN
+from tests.schema.graphql import QUERY_RDB_RUN
 
 
 @st.composite
@@ -48,6 +47,7 @@ def st_query_variables(
     return variables
 
 
+@settings(phases=(Phase.generate,))  # Avoid shrinking
 @given(st.data())
 async def test_run(data: st.DataObject) -> None:
     schema = strawberry.Schema(query=Query)
