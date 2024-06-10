@@ -31,7 +31,7 @@ class Prompt(Model):
     trace_id: Mapped[int] = mapped_column(ForeignKey('trace.id'))
     trace: Mapped['Trace'] = relationship(back_populates='prompts')
 
-    trace_call_id: Mapped[int | None] = mapped_column(ForeignKey('trace_call.id'))
-    trace_call: Mapped['TraceCall | None'] = relationship(back_populates='prompts')
+    trace_call_id: Mapped[int] = mapped_column(ForeignKey('trace_call.id'))
+    trace_call: Mapped['TraceCall'] = relationship(back_populates='prompts')
 
     __table_args__ = (UniqueConstraint("run_id", "prompt_no"),)

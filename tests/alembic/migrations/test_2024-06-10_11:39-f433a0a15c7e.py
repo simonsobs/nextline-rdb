@@ -13,7 +13,7 @@ from nextline_rdb.utils import load_all
 from .conftest import AlembicConfigFactory
 
 REVISION_START = 'f3edea6dbde2'
-REVISION_NEW = '5a61f247dd07'
+REVISION_NEW = 'f433a0a15c7e'
 
 
 @settings(phases=(Phase.generate,))  # Avoid shrinking
