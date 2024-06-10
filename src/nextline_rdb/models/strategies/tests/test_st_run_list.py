@@ -44,11 +44,19 @@ async def test_options(data: st.DataObject) -> None:
     assert run_nos == sorted(run_nos)
 
     traces = [trace for run in runs for trace in run.traces]
+    trace_calls = [trace_call for run in runs for trace_call in run.trace_calls]
     prompts = [prompt for run in runs for prompt in run.prompts]
     stdouts = [stdout for run in runs for stdout in run.stdouts]
 
-    if generate_traces is False:
+    if generate_traces and runs:
+        assert traces
+        assert trace_calls
+        assert prompts
+        assert stdouts
+
+    if not generate_traces:
         assert not traces
+        assert not trace_calls
         assert not prompts
         assert not stdouts
 

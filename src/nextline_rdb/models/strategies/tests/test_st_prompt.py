@@ -20,7 +20,9 @@ async def test_st_model_prompt(data: st.DataObject) -> None:
             select_prompt = select(Prompt)
             prompt_ = await session.scalar(
                 select_prompt.options(
-                    selectinload(Prompt.run), selectinload(Prompt.trace)
+                    selectinload(Prompt.run),
+                    selectinload(Prompt.trace),
+                    selectinload(Prompt.trace_call),
                 )
             )
             assert prompt_

@@ -16,12 +16,19 @@ def st_model_trace(
     run: Optional[Run] = None,
     trace_no: Optional[int] = None,
     thread_task_no: Optional[tuple[int, int | None]] = None,
+    generate_trace_calls: bool = False,
     generate_prompts: bool = False,
 ) -> Trace:
     from .st_prompt import st_model_prompt_list
+    from .st_trace_call import st_model_trace_call_list
 
     if run is not None:
-        # Unable to meet the unique constraint on the prompts table
+        # Unable to meet the unique constraints
+        assert not generate_trace_calls
+        assert not generate_prompts
+
+    if not generate_trace_calls:
+        # A prompt must be associated with a trace call
         assert not generate_prompts
 
     if trace_no is None:
@@ -55,6 +62,9 @@ def st_model_trace(
     trace.started_at = started_at
     trace.ended_at = ended_at
     trace.run = run
+
+    if generate_trace_calls:
+        draw(st_model_trace_call_list(run=run, min_size=1, max_size=10))
 
     if generate_prompts:
         draw(st_model_prompt_list(run=run, min_size=1, max_size=10))

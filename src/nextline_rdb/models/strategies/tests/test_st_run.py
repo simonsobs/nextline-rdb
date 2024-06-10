@@ -15,8 +15,8 @@ from ... import Model, Run
 from .. import st_model_run, st_model_script
 
 
-@given(st.data())
 @settings(phases=(Phase.generate,))
+@given(st.data())
 async def test_options(data: st.DataObject) -> None:
     run_no = data.draw(st_none_or(st_graphql_ints(min_value=1)))
     if run_no is None:
@@ -67,12 +67,17 @@ async def test_options(data: st.DataObject) -> None:
         assert not run.script
 
     traces = run.traces
+    trace_calls = run.trace_calls
     prompts = run.prompts
     stdouts = run.stdouts
     if generate_traces:
         assert traces
+        assert trace_calls
+        assert prompts
+        assert stdouts
     else:
         assert not traces
+        assert not trace_calls
         assert not prompts
         assert not stdouts
 

@@ -13,17 +13,21 @@ from .. import st_model_run, st_model_trace, st_thread_task_no
 
 @settings(phases=(Phase.generate,))  # Avoid shrinking
 @given(st.data())
-async def test_st_model_trace(data: st.DataObject) -> None:
+async def test_options(data: st.DataObject) -> None:
     run = data.draw(st_none_or(st_model_run(generate_traces=False)))
     trace_no = data.draw(st_none_or(st_graphql_ints(min_value=1)))
     thread_task_no = data.draw(st_none_or(st_thread_task_no()))
-    generate_prompts = False if run else data.draw(st.booleans())
+    generate_trace_calls = False if run else data.draw(st.booleans())
+    generate_prompts = (
+        False if run or not generate_trace_calls else data.draw(st.booleans())
+    )
 
     trace = data.draw(
         st_model_trace(
             run=run,
             trace_no=trace_no,
             thread_task_no=thread_task_no,
+            generate_trace_calls=generate_trace_calls,
             generate_prompts=generate_prompts,
         )
     )
@@ -38,6 +42,7 @@ async def test_st_model_trace(data: st.DataObject) -> None:
     assert trace.started_at <= sc(trace.ended_at)
     assert sc(trace.ended_at) <= sc(run.ended_at)
 
+    assert not generate_trace_calls or trace.trace_calls
     assert not generate_prompts or trace.prompts
 
     async with DB(use_migration=False, model_base_class=Model) as db:

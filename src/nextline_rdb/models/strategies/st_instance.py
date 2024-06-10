@@ -27,10 +27,13 @@ def st_model_instance_list(
     min_size = max(0, min_size - size)
     max_size = max_size - size if max_size is not None else None
 
+    #
+    generate_traces = draw(st.booleans())
+
     # Generate a list of `Run` models
     runs = draw(
         st_model_run_list(
-            generate_traces=True,
+            generate_traces=generate_traces,
             min_size=min_size,
             max_size=max_size,
             scripts=scripts,

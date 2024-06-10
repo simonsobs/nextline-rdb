@@ -27,7 +27,7 @@ async def test_options(data: st.DataObject) -> None:
 
     # Call the strategy to be tested
     instances = data.draw(st_model_instance_list(min_size=min_size, max_size=max_size))
-
+    
     # Assert the generated values
     assert min_size <= len(instances) <= max_size
 

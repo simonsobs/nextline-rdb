@@ -11,7 +11,7 @@ from .. import st_model_run, st_model_trace_list
 
 @settings(phases=(Phase.generate,))  # Avoid shrinking
 @given(st.data())
-async def test_st_model_trace_lists(data: st.DataObject) -> None:
+async def test_db(data: st.DataObject) -> None:
     run = data.draw(st_none_or(st_model_run(generate_traces=False)))
     max_size = data.draw(st.integers(min_value=0, max_value=3))
     traces = data.draw(st_model_trace_list(run=run, max_size=max_size))
