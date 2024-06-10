@@ -6,6 +6,7 @@ __all__ = [
     'Hello',
     'Run',
     'Trace',
+    'TraceCall',
     'Prompt',
     'CurrentScript',
     'Script',
@@ -20,3 +21,4 @@ from .model_run import Run
 from .model_script import CurrentScript, Script
 from .model_stdout import Stdout
 from .model_trace import Trace
+from .model_trace_call import TraceCall

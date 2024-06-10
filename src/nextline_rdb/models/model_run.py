@@ -11,6 +11,7 @@ if TYPE_CHECKING:
     from .model_script import Script
     from .model_stdout import Stdout
     from .model_trace import Trace
+    from .model_trace_call import TraceCall
 
 
 class Run(Model):
@@ -28,6 +29,9 @@ class Run(Model):
     script: Mapped[Optional['Script']] = relationship(back_populates='runs')
 
     traces: Mapped[list["Trace"]] = relationship(
+        back_populates='run', cascade='all, delete-orphan'
+    )
+    trace_calls: Mapped[list['TraceCall']] = relationship(
         back_populates='run', cascade='all, delete-orphan'
     )
     prompts: Mapped[list["Prompt"]] = relationship(

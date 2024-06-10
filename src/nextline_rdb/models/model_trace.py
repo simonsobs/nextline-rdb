@@ -10,6 +10,7 @@ if TYPE_CHECKING:
     from .model_prompt import Prompt
     from .model_run import Run
     from .model_stdout import Stdout
+    from .model_trace_call import TraceCall
 
 
 class Trace(Model):
@@ -25,6 +26,7 @@ class Trace(Model):
     run_id: Mapped[int] = mapped_column(ForeignKey('run.id'))
     run: Mapped['Run'] = relationship(back_populates='traces')
 
+    trace_calls: Mapped[list['TraceCall']] = relationship(back_populates='trace')
     prompts: Mapped[list["Prompt"]] = relationship(back_populates="trace")
     stdouts: Mapped[list["Stdout"]] = relationship(back_populates="trace")
 
