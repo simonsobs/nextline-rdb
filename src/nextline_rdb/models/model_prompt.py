@@ -17,10 +17,7 @@ class Prompt(Model):
     id: Mapped[int] = mapped_column(primary_key=True, index=True)
     prompt_no: Mapped[int]  # unique in each run
     open: Mapped[bool]
-    event: Mapped[str]
     started_at: Mapped[datetime]
-    file_name: Mapped[str | None]
-    line_no: Mapped[int | None]
     stdout: Mapped[str | None]
     command: Mapped[str | None]
     ended_at: Mapped[datetime | None]
