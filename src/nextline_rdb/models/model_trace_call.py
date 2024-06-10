@@ -28,6 +28,8 @@ class TraceCall(Model):
     trace_id: Mapped[int] = mapped_column(ForeignKey('trace.id'))
     trace: Mapped['Trace'] = relationship(back_populates='trace_calls')
 
-    prompts: Mapped[list['Prompt']] = relationship(back_populates='trace_call')
+    prompts: Mapped[list['Prompt']] = relationship(
+        back_populates='trace_call', cascade='all, delete-orphan'
+    )
 
     __table_args__ = (UniqueConstraint('run_id', 'trace_call_no'),)

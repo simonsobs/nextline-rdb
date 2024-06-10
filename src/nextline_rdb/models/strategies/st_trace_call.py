@@ -17,6 +17,12 @@ def st_model_trace_call(
     trace: Optional[Trace] = None,
     generate_prompts: bool = False,
 ) -> TraceCall:
+    from .st_prompt import st_model_prompt_list
+
+    if trace is not None:
+        # Unable to meet the unique constraints
+        assert not generate_prompts
+
     trace = trace or draw(st_model_trace())
     if trace_call_no is None:
         trace_call_no = draw(st_graphql_ints(min_value=1))
@@ -40,6 +46,10 @@ def st_model_trace_call(
         run=trace.run,
         trace=trace,
     )
+
+    if generate_prompts:
+        draw(st_model_prompt_list(run=trace.run, min_size=1, max_size=10))
+
     return model
 
 
