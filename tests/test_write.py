@@ -41,14 +41,20 @@ async def test_one(adb: DB, run_nextline, statement):
             assert trace.started_at
             assert trace.ended_at
 
+        trace_calls = (await session.scalars(select(db_models.TraceCall))).all()
+        assert 169 == len(trace_calls)
+        for trace_call in trace_calls:
+            assert run_no == trace_call.run.run_no
+            assert trace_call.started_at
+            assert trace_call.file_name
+            assert trace_call.line_no
+            assert trace_call.event
+
         prompts = (await session.scalars(select(db_models.Prompt))).all()
         assert 58 == len(prompts)
         for prompt in prompts:
             assert run_no == prompt.run.run_no
             assert prompt.started_at
-            assert prompt.line_no
-            assert prompt.file_name
-            assert prompt.event
 
         stdouts = (await session.scalars(select(db_models.Stdout))).all()
         assert 1 == len(stdouts)
