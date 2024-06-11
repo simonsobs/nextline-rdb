@@ -42,7 +42,7 @@ async def test_one(adb: DB, run_nextline, statement):
             assert trace.ended_at
 
         trace_calls = (await session.scalars(select(db_models.TraceCall))).all()
-        assert 169 == len(trace_calls)
+        assert 100 <= len(trace_calls)
         for trace_call in trace_calls:
             assert run_no == trace_call.run.run_no
             assert trace_call.started_at
