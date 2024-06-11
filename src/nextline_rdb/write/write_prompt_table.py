@@ -1,5 +1,3 @@
-import asyncio
-
 from nextline.events import OnEndPrompt, OnStartPrompt
 from nextline.plugin.spec import hookimpl
 from sqlalchemy import select
@@ -7,6 +5,7 @@ from sqlalchemy.orm import selectinload
 
 from nextline_rdb.db import DB
 from nextline_rdb.models import Prompt, Run, Trace, TraceCall
+from nextline_rdb.utils import until_scalar_one
 
 
 class WritePromptTable:
@@ -27,10 +26,7 @@ class WritePromptTable:
                 )
             )
             stmt = stmt.options(selectinload(TraceCall.trace).selectinload(Trace.run))
-            while not (
-                trace_call := (await session.execute(stmt)).scalar_one_or_none()
-            ):
-                await asyncio.sleep(0)
+            trace_call = await until_scalar_one(session, stmt)
             prompt = Prompt(
                 prompt_no=event.prompt_no,
                 open=True,
@@ -50,8 +46,7 @@ class WritePromptTable:
                 .join(Run)
                 .filter(Run.run_no == event.run_no, Prompt.prompt_no == event.prompt_no)
             )
-            while not (prompt := (await session.execute(stmt)).scalar_one_or_none()):
-                await asyncio.sleep(0)
+            prompt = await until_scalar_one(session, stmt)
             prompt.open = False
             prompt.command = event.command
             prompt.ended_at = event.ended_at

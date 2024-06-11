@@ -4,6 +4,7 @@ __all__ = [
     'class_name_and_primary_keys_of',
     'load_all',
     'primary_keys_of',
+    'until_scalar_one',
     'safe_compare',
     'safe_max',
     'safe_min',
@@ -21,6 +22,7 @@ from .sa import (
     class_name_and_primary_keys_of,
     load_all,
     primary_keys_of,
+    until_scalar_one,
 )
 from .safe import safe_compare, safe_max, safe_min
 from .until import UntilNotNoneTimeout, until_not_none
