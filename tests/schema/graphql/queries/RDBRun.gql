@@ -36,6 +36,9 @@ query RDBRun($id: Int, $runNo: Int) {
                   trace {
                     id
                   }
+                  traceCall {
+                    id
+                  }
                 }
               }
             }
@@ -57,6 +60,30 @@ query RDBRun($id: Int, $runNo: Int) {
           }
         }
       }
+      traceCalls {
+        pageInfo {
+          startCursor
+          endCursor
+        }
+        totalCount
+        edges {
+          cursor
+          node {
+            id
+            runNo
+            traceNo
+            threadNo
+            taskNo
+            traceCallNo
+            run {
+              id
+            }
+            trace {
+              id
+            }
+          }
+        }
+      }
       prompts {
         pageInfo {
           startCursor
@@ -74,6 +101,9 @@ query RDBRun($id: Int, $runNo: Int) {
               id
             }
             trace {
+              id
+            }
+            traceCall {
               id
             }
           }

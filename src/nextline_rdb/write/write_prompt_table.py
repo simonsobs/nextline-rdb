@@ -3,9 +3,10 @@ import asyncio
 from nextline.events import OnEndPrompt, OnStartPrompt
 from nextline.plugin.spec import hookimpl
 from sqlalchemy import select
+from sqlalchemy.orm import selectinload
 
 from nextline_rdb.db import DB
-from nextline_rdb.models import Prompt, Run, Trace
+from nextline_rdb.models import Prompt, Run, Trace, TraceCall
 
 
 class WritePromptTable:
@@ -15,30 +16,29 @@ class WritePromptTable:
     @hookimpl
     async def on_start_prompt(self, event: OnStartPrompt) -> None:
         async with self._db.session.begin() as session:
-            select_runs = select(Run).filter_by(run_no=event.run_no)
-            while not (
-                run := (await session.execute(select_runs)).scalar_one_or_none()
-            ):
-                await asyncio.sleep(0)
-            select_traces = (
-                select(Trace)
-                .join(Run)
-                .filter(Run.run_no == event.run_no, Trace.trace_no == event.trace_no)
+            stmt = (
+                select(TraceCall)
+                .join(TraceCall.trace)
+                .join(TraceCall.run)
+                .filter(
+                    Run.run_no == event.run_no,
+                    Trace.trace_no == event.trace_no,
+                    TraceCall.trace_call_no == event.trace_call_no,
+                )
             )
+            stmt = stmt.options(selectinload(TraceCall.trace).selectinload(Trace.run))
             while not (
-                trace := (await session.execute(select_traces)).scalar_one_or_none()
+                trace_call := (await session.execute(stmt)).scalar_one_or_none()
             ):
                 await asyncio.sleep(0)
             prompt = Prompt(
                 prompt_no=event.prompt_no,
                 open=True,
-                event=event.event,
-                file_name=event.file_name,
-                line_no=event.line_no,
                 stdout=event.prompt_text,
                 started_at=event.started_at,
-                run=run,
-                trace=trace,
+                run=trace_call.trace.run,
+                trace=trace_call.trace,
+                trace_call=trace_call,
             )
             session.add(prompt)
 

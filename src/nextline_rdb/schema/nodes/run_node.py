@@ -6,7 +6,7 @@ from sqlalchemy import select
 from strawberry.types import Info
 
 from nextline_rdb.db import DB
-from nextline_rdb.models import Prompt, Run, Stdout, Trace
+from nextline_rdb.models import Prompt, Run, Stdout, Trace, TraceCall
 from nextline_rdb.pagination import SortField
 
 from ..pagination import Connection, load_connection
@@ -14,6 +14,7 @@ from ..pagination import Connection, load_connection
 if TYPE_CHECKING:
     from .prompt_node import PromptNode
     from .stdout_node import StdoutNode
+    from .trace_call_node import TraceCallNode
     from .trace_node import TraceNode
 
 
@@ -35,6 +36,33 @@ async def _resolve_traces(
             session,
             Trace,
             create_node_from_model=TraceNode.from_model,
+            select_model=select_model,
+            sort=sort,
+            before=before,
+            after=after,
+            first=first,
+            last=last,
+        )
+
+
+async def _resolve_trace_calls(
+    info: Info,
+    root: 'RunNode',
+    before: Optional[str] = None,
+    after: Optional[str] = None,
+    first: Optional[int] = None,
+    last: Optional[int] = None,
+) -> Connection['TraceCallNode']:
+    from .trace_call_node import TraceCallNode
+
+    sort = [SortField('trace_call_no')]
+    select_model = select(TraceCall).where(TraceCall.run_id == root._model.id)
+    db = cast(DB, info.context['db'])
+    async with db.session() as session:
+        return await load_connection(
+            session,
+            TraceCall,
+            create_node_from_model=TraceCallNode.from_model,
             select_model=select_model,
             sort=sort,
             before=before,
@@ -112,6 +140,10 @@ class RunNode:
     traces: Connection[
         Annotated['TraceNode', strawberry.lazy('.trace_node')]
     ] = strawberry.field(resolver=_resolve_traces)
+    
+    trace_calls: Connection[
+        Annotated['TraceCallNode', strawberry.lazy('.trace_call_node')]
+    ] = strawberry.field(resolver=_resolve_trace_calls)
 
     prompts: Connection[
         Annotated['PromptNode', strawberry.lazy('.prompt_node')]

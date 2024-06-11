@@ -20,5 +20,7 @@ class Stdout(Model):
     run_id: Mapped[int] = mapped_column(ForeignKey('run.id'))
     run: Mapped['Run'] = relationship(back_populates='stdouts')
 
+    # TODO: Allow trace to be None. Stdout written from threads or async tasks
+    # that are not traced should still be recorded.
     trace_id: Mapped[int] = mapped_column(ForeignKey('trace.id'))
     trace: Mapped['Trace'] = relationship(back_populates='stdouts')

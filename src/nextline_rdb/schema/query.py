@@ -7,10 +7,10 @@ from strawberry.types import Info
 
 import nextline_rdb
 from nextline_rdb.db import DB
-from nextline_rdb.models import Prompt, Run, Stdout, Trace
+from nextline_rdb.models import Prompt, Run, Stdout, Trace, TraceCall
 from nextline_rdb.pagination import SortField
 
-from .nodes import PromptNode, RunNode, StdoutNode, TraceNode
+from .nodes import PromptNode, RunNode, StdoutNode, TraceCallNode, TraceNode
 from .pagination import Connection, load_connection
 
 
@@ -73,6 +73,28 @@ async def resolve_traces(
         )
 
 
+async def resolve_trace_calls(
+    info: Info,
+    before: Optional[str] = None,
+    after: Optional[str] = None,
+    first: Optional[int] = None,
+    last: Optional[int] = None,
+) -> Connection[TraceCallNode]:
+    sort = [SortField('run_id'), SortField('trace_call_no')]
+    db = cast(DB, info.context['db'])
+    async with db.session() as session:
+        return await load_connection(
+            session,
+            TraceCall,
+            create_node_from_model=TraceCallNode.from_model,
+            sort=sort,
+            before=before,
+            after=after,
+            first=first,
+            last=last,
+        )
+
+
 async def resolve_prompts(
     info: Info,
     before: Optional[str] = None,
@@ -126,6 +148,9 @@ def resolve_migration_version(info: Info) -> str | None:
 class QueryRDB:
     runs: Connection[RunNode] = strawberry.field(resolver=resolve_runs)
     traces: Connection[TraceNode] = strawberry.field(resolver=resolve_traces)
+    trace_calls: Connection[TraceCallNode] = strawberry.field(
+        resolver=resolve_trace_calls
+    )
     prompts: Connection[PromptNode] = strawberry.field(resolver=resolve_prompts)
     stdouts: Connection[StdoutNode] = strawberry.field(resolver=resolve_stdouts)
     run: RunNode | None = strawberry.field(resolver=resolve_run)
