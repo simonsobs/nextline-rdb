@@ -7,6 +7,7 @@ from nextline_rdb import models as db_models
 
 if TYPE_CHECKING:
     from .run_node import RunNode
+    from .trace_call_node import TraceCallNode
     from .trace_node import TraceNode
 
 
@@ -38,6 +39,14 @@ class PromptNode:
 
         return TraceNode.from_model(self._model.trace)
 
+    @strawberry.field
+    def trace_call(
+        self,
+    ) -> Annotated['TraceCallNode', strawberry.lazy('.trace_call_node')]:
+        from .trace_call_node import TraceCallNode
+
+        return TraceCallNode.from_model(self._model.trace_call)
+
     @classmethod
     def from_model(cls: type['PromptNode'], model: db_models.Prompt):
         return cls(
@@ -47,10 +56,10 @@ class PromptNode:
             trace_no=model.trace.trace_no,
             prompt_no=model.prompt_no,
             open=model.open,
-            event=model.event,
+            event=model.trace_call.event,
             started_at=model.started_at,
-            file_name=model.file_name,
-            line_no=model.line_no,
+            file_name=model.trace_call.file_name,
+            line_no=model.trace_call.line_no,
             stdout=model.stdout,
             command=model.command,
             ended_at=model.ended_at,

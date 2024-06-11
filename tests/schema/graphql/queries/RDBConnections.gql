@@ -21,8 +21,29 @@ query RDBConnections {
           id
           runNo
           traceNo
+          threadNo
+          taskNo
           startedAt
           endedAt
+          state
+        }
+      }
+    }
+    traceCalls {
+      edges {
+        cursor
+        node {
+          id
+          runNo
+          traceNo
+          threadNo
+          taskNo
+          traceCallNo
+          startedAt
+          endedAt
+          fileName
+          lineNo
+          event
         }
       }
     }
@@ -34,10 +55,13 @@ query RDBConnections {
           runNo
           traceNo
           promptNo
-          event
           startedAt
+          endedAt
           fileName
           lineNo
+          event
+          open
+          command
         }
       }
     }
