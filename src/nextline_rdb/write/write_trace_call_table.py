@@ -1,5 +1,3 @@
-import asyncio
-
 from nextline.events import OnEndTraceCall, OnStartTraceCall
 from nextline.plugin.spec import hookimpl
 from nextline.types import TraceNo
@@ -8,6 +6,7 @@ from sqlalchemy.orm import selectinload
 
 from nextline_rdb.db import DB
 from nextline_rdb.models import Run, Trace, TraceCall
+from nextline_rdb.utils import until_scalar_one
 
 
 class WriteTraceCallTable:
@@ -24,8 +23,7 @@ class WriteTraceCallTable:
                 .filter(Run.run_no == event.run_no, Trace.trace_no == event.trace_no)
             )
             stmt = stmt.options(selectinload(Trace.run))
-            while not (trace := (await session.execute(stmt)).scalar_one_or_none()):
-                await asyncio.sleep(0)
+            trace = await until_scalar_one(session, stmt)
             trace_call = TraceCall(
                 trace_call_no=event.trace_call_no,
                 started_at=event.started_at,
@@ -50,8 +48,5 @@ class WriteTraceCallTable:
                     TraceCall.trace_call_no == event.trace_call_no,
                 )
             )
-            while not (
-                trace_call := (await session.execute(stmt)).scalar_one_or_none()
-            ):
-                await asyncio.sleep(0)
+            trace_call = await until_scalar_one(session, stmt)
             trace_call.ended_at = event.ended_at

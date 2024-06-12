@@ -1,4 +1,3 @@
-import asyncio
 from datetime import timezone
 from logging import getLogger
 
@@ -10,6 +9,7 @@ from sqlalchemy.orm import selectinload
 
 from nextline_rdb.db import DB
 from nextline_rdb.models import CurrentScript, Run, Script
+from nextline_rdb.utils import until_scalar_one
 
 
 class WriteRunTable:
@@ -80,8 +80,7 @@ class WriteRunTable:
         run_no = run_arg.run_no
         async with self._db.session.begin() as session:
             stmt = select(Run).filter_by(run_no=run_no)
-            while not (run := (await session.execute(stmt)).scalar_one_or_none()):
-                await asyncio.sleep(0)
+            run = await until_scalar_one(session, stmt)
             run.state = 'finished'
             run.ended_at = ended_at
             run.exception = returned.fmt_exc

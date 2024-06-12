@@ -1,10 +1,38 @@
+from logging import getLogger
 from typing import Any, TypeVar
 
-from sqlalchemy import inspect, select
+from sqlalchemy import Select, inspect, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import DeclarativeBase
 
+from .until import until_not_none
+
 T = TypeVar('T', bound=DeclarativeBase)
+
+# NOTE: Consider make this configurable.
+DEFAULT_UNTIL_SCALAR_ONE_TIMEOUT = 60  # seconds
+
+
+async def until_scalar_one(
+    session: AsyncSession,
+    stmt: Select[tuple[T]],
+    timeout: float = DEFAULT_UNTIL_SCALAR_ONE_TIMEOUT,
+) -> T:
+    '''Execute the statement until it returns exactly one row.
+
+    The statement is repeatedly executed while it returns no rows. An exception
+    is raised if the statement returns more than one row.
+    '''
+
+    async def _f() -> T | None:
+        return (await session.execute(stmt)).scalar_one_or_none()
+
+    try:
+        return await until_not_none(_f, timeout=timeout)
+    except Exception:
+        logger = getLogger(__name__)
+        logger.exception('')
+        raise
 
 
 async def load_all(session: AsyncSession, model_base_class: type[T]) -> list[T]:

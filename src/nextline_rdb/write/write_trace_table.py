@@ -1,4 +1,3 @@
-import asyncio
 from datetime import timezone
 
 from nextline.events import OnEndTrace, OnStartTrace
@@ -8,6 +7,7 @@ from sqlalchemy import select
 
 from nextline_rdb.db import DB
 from nextline_rdb.models import Run, Trace
+from nextline_rdb.utils import until_scalar_one
 
 
 class WriteTraceTable:
@@ -19,8 +19,7 @@ class WriteTraceTable:
     async def on_start_trace(self, event: OnStartTrace) -> None:
         async with self._db.session.begin() as session:
             stmt = select(Run).filter_by(run_no=event.run_no)
-            while not (run := (await session.execute(stmt)).scalar_one_or_none()):
-                await asyncio.sleep(0)
+            run = await until_scalar_one(session, stmt)
             trace = Trace(
                 trace_no=event.trace_no,
                 state='running',
@@ -40,8 +39,7 @@ class WriteTraceTable:
                 .join(Run)
                 .filter(Run.run_no == event.run_no, Trace.trace_no == event.trace_no)
             )
-            while not (trace := (await session.execute(stmt)).scalar_one_or_none()):
-                await asyncio.sleep(0)
+            trace = await until_scalar_one(session, stmt)
             trace.state = 'finished'
             trace.ended_at = event.ended_at
         self._running_trace_nos.remove(event.trace_no)
