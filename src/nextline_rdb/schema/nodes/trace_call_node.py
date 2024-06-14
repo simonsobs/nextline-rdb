@@ -77,7 +77,9 @@ class TraceCallNode:
     ] = strawberry.field(resolver=_resolve_prompts)
 
     @classmethod
-    def from_model(cls: type['TraceCallNode'], model: db_models.TraceCall):
+    def from_model(
+        cls: type['TraceCallNode'], model: db_models.TraceCall
+    ) -> 'TraceCallNode':
         return cls(
             _model=model,
             id=model.id,

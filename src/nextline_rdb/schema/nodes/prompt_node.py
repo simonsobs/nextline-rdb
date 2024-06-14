@@ -48,7 +48,7 @@ class PromptNode:
         return TraceCallNode.from_model(self._model.trace_call)
 
     @classmethod
-    def from_model(cls: type['PromptNode'], model: db_models.Prompt):
+    def from_model(cls: type['PromptNode'], model: db_models.Prompt) -> 'PromptNode':
         return cls(
             _model=model,
             id=model.id,

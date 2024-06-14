@@ -43,7 +43,7 @@ class Edge(TypedDict):
 
 
 @given(runs=st_model_run_list(generate_traces=False, min_size=0, max_size=12))
-async def test_all(runs: list[Run]):
+async def test_all(runs: list[Run]) -> None:
     schema = strawberry.Schema(query=Query)
 
     async with DB() as db:
@@ -78,7 +78,7 @@ async def test_all(runs: list[Run]):
     runs=st_model_run_list(generate_traces=False, min_size=0, max_size=12),
     first=st.integers(min_value=1, max_value=15),
 )
-async def test_forward(runs: list[Run], first: int):
+async def test_forward(runs: list[Run], first: int) -> None:
     schema = strawberry.Schema(query=Query)
 
     async with DB() as db:
@@ -130,7 +130,7 @@ async def test_forward(runs: list[Run], first: int):
     runs=st_model_run_list(generate_traces=False, min_size=0, max_size=12),
     last=st.integers(min_value=1, max_value=15),
 )
-async def test_backward(runs: list[Run], last: int):
+async def test_backward(runs: list[Run], last: int) -> None:
     schema = strawberry.Schema(query=Query)
 
     async with DB() as db:
@@ -179,7 +179,7 @@ async def test_backward(runs: list[Run], last: int):
 
 
 @given(runs=st_model_run_list(generate_traces=False, min_size=0, max_size=12))
-async def test_cursor(runs: list[Run]):
+async def test_cursor(runs: list[Run]) -> None:
     schema = strawberry.Schema(query=Query)
 
     async with DB() as db:

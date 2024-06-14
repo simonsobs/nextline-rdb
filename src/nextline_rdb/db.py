@@ -2,7 +2,7 @@ from collections.abc import Callable
 from logging import getLogger
 from os import PathLike
 from pathlib import Path
-from typing import Optional, Type
+from typing import Any, Optional, Type
 
 from alembic.config import Config
 from alembic.migration import MigrationContext
@@ -136,7 +136,7 @@ class DB:
         await self.start()
         return self
 
-    async def __aexit__(self, *_, **__) -> None:
+    async def __aexit__(self, *_: Any, **__: Any) -> None:
         await self.aclose()
 
 
@@ -168,7 +168,7 @@ async def migrate(
 
 
 @event.listens_for(Engine, 'connect')
-def set_sqlite_pragma(dbapi_connection, connection_record):
+def set_sqlite_pragma(dbapi_connection: Any, connection_record: Any) -> None:
     '''Enable foreign key constraints in SQLite.
 
     The code copied from the SQLAlchemy documentation:

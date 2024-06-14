@@ -45,7 +45,7 @@ def test_enum(value: Color) -> None:
 
 
 @st.composite
-def st_enum_type(draw: st.DrawFn):
+def st_enum_type(draw: st.DrawFn) -> type[Enum]:
     '''Generate an Enum type.
 
     >>> enum_type = st_enum_type().example()
@@ -59,11 +59,11 @@ def st_enum_type(draw: st.DrawFn):
     names_ = st.text(ascii_lowercase, min_size=1)
     names = st.builds(lambda x: x.capitalize(), names_).filter(str.isidentifier)
     values = st.lists(st.text(ascii_uppercase, min_size=1), min_size=1, unique=True)
-    return draw(st.builds(Enum, names, values))
+    return draw(st.builds(Enum, names, values))  # type: ignore
 
 
 @given(st.data())
-def test_arbitrary_enum(data: st.DataObject):
+def test_arbitrary_enum(data: st.DataObject) -> None:
     enum_type = data.draw(st_enum_type())
     item = data.draw(st.sampled_from(enum_type))
     repr_ = repr_val(item)

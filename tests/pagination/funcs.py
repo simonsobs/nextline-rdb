@@ -25,7 +25,7 @@ def st_sort(draw: st.DrawFn) -> Sort:
 
 
 @given(st_sort())
-def test_st_sort(sort: Sort):
+def test_st_sort(sort: Sort) -> None:
     # ic(sort)
     pass
 

@@ -12,7 +12,7 @@ from ..strategies import st_model_prompt
 
 
 @given(st.data())
-async def test_repr(data: st.DataObject):
+async def test_repr(data: st.DataObject) -> None:
     async with DB(use_migration=False, model_base_class=Model) as db:
         async with db.session.begin() as session:
             model = data.draw(st_model_prompt())

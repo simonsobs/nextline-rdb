@@ -1,4 +1,6 @@
 import asyncio
+from collections.abc import AsyncIterator
+from typing import NoReturn
 
 import pytest
 from hypothesis import given
@@ -18,7 +20,7 @@ async def test_return(data: st.DataObject) -> None:
 
 
 async def test_timeout() -> None:
-    async def gen_none():
+    async def gen_none() -> AsyncIterator[None]:
         while True:
             await asyncio.sleep(0)
             yield None
@@ -31,7 +33,7 @@ async def test_timeout() -> None:
 
 @pytest.mark.timeout(5)
 async def test_timeout_never_return() -> None:
-    async def func():
+    async def func() -> NoReturn:
         while True:
             await asyncio.sleep(0)
 

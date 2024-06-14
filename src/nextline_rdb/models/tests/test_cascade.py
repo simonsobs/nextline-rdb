@@ -13,19 +13,19 @@ T = TypeVar('T', bound=Model)
 
 @settings(phases=(Phase.generate,))  # Avoid shrinking
 @given(parent=st_model_run(generate_traces=True))
-async def test_run(parent: Run):
+async def test_run(parent: Run) -> None:
     await assert_cascade(parent, Run, [Prompt, Trace, TraceCall, Stdout])
 
 
 @settings(phases=(Phase.generate,))  # Avoid shrinking
 @given(parent=st_model_trace(generate_trace_calls=True, generate_prompts=True))
-async def test_trace(parent: Trace):
+async def test_trace(parent: Trace) -> None:
     await assert_cascade(parent, Trace, [Prompt, TraceCall])
 
 
 @settings(phases=(Phase.generate,))  # Avoid shrinking
 @given(parent=st_model_trace_call(generate_prompts=True))
-async def test_trace_call(parent: TraceCall):
+async def test_trace_call(parent: TraceCall) -> None:
     await assert_cascade(parent, TraceCall, [Prompt])  # type: ignore
 
 

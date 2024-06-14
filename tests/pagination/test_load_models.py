@@ -12,7 +12,7 @@ from .models import Base, Entity
 
 
 @given(st.data())
-async def test_all(data: st.DataObject):
+async def test_all(data: st.DataObject) -> None:
     n_max = 10
 
     entities = data.draw(st.lists(st_entity(), min_size=0, max_size=n_max))
@@ -35,7 +35,7 @@ async def test_all(data: st.DataObject):
 
 
 @given(st.data())
-async def test_forward(data: st.DataObject):
+async def test_forward(data: st.DataObject) -> None:
     n_max = 10
 
     entities = data.draw(st.lists(st_entity(), min_size=0, max_size=n_max))
@@ -73,7 +73,7 @@ async def test_forward(data: st.DataObject):
 
 
 @given(st.data())
-async def test_backward(data: st.DataObject):
+async def test_backward(data: st.DataObject) -> None:
     n_max = 10
 
     entities = data.draw(st.lists(st_entity(), min_size=0, max_size=n_max))

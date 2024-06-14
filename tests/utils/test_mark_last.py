@@ -5,7 +5,7 @@ from nextline_rdb.utils import mark_last
 
 
 @given(st.lists(st.integers()))
-def test_one(items: list[int]):
+def test_one(items: list[int]) -> None:
     it = iter(items)
     actual = list(mark_last(it))
 

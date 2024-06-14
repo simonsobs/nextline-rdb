@@ -14,7 +14,7 @@ from nextline_rdb.models.strategies import st_model_run_list
 from .schema.graphql import QUERY_RDB_CONNECTIONS
 
 
-async def test_plugin(set_new_url: Callable[[], str]):
+async def test_plugin(set_new_url: Callable[[], str]) -> None:
     # Enter some runs into the database.
     runs = st_model_run_list(generate_traces=False, max_size=2).example()
 
@@ -37,7 +37,7 @@ async def test_plugin(set_new_url: Callable[[], str]):
     assert n_runs == expected_n_runs
 
 
-def test_fixture(settings_path: Path, set_new_url: Callable[[], str]):
+def test_fixture(settings_path: Path, set_new_url: Callable[[], str]) -> None:
     from nextline_rdb import plugin
 
     assert str(settings_path) in plugin.SETTINGS
@@ -67,7 +67,9 @@ def set_new_url(
 
 
 @pytest.fixture(autouse=True)
-def monkeypatch_settings_path(monkeypatch: pytest.MonkeyPatch, settings_path: Path):
+def monkeypatch_settings_path(
+    monkeypatch: pytest.MonkeyPatch, settings_path: Path
+) -> None:
     from nextline_rdb import plugin
 
     monkeypatch.setattr(plugin, 'SETTINGS', (str(settings_path),))

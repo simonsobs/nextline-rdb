@@ -154,7 +154,7 @@ class RunNode:
     ] = strawberry.field(resolver=_resolve_stdouts)
 
     @classmethod
-    def from_model(cls: type['RunNode'], model: Run):
+    def from_model(cls: type['RunNode'], model: Run) -> 'RunNode':
         script = model.script.script if model.script else None
         return cls(
             _model=model,

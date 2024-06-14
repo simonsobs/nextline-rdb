@@ -10,7 +10,7 @@ from ..strategies import st_model_run
 
 
 @given(run=st_model_run(generate_traces=False))
-async def test_repr(run: Run):
+async def test_repr(run: Run) -> None:
     async with DB(use_migration=False, model_base_class=Model) as db:
         async with db.session.begin() as session:
             session.add(run)
@@ -24,7 +24,7 @@ async def test_repr(run: Run):
 
 
 @given(run=st_model_run(generate_traces=True))
-async def test_cascade(run: Run):
+async def test_cascade(run: Run) -> None:
     async with DB(use_migration=False, model_base_class=Model) as db:
         async with db.session.begin() as session:
             session.add(run)
