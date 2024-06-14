@@ -88,6 +88,7 @@ def st_model_run_list(
     min_size: int = 0,
     max_size: Optional[int] = None,
     scripts: list[Script] | None = None,
+    allow_started_at_none: bool = True,
 ) -> list[Run]:
     run_nos = draw(_st_run_nos(min_size=min_size, max_size=max_size))
 
@@ -109,6 +110,7 @@ def st_model_run_list(
                 generate_script=False,
                 generate_traces=generate_traces,
                 min_started_at=min_started_at,
+                allow_started_at_none=allow_started_at_none,
             )
         )
         assert run.run_no == run_no
