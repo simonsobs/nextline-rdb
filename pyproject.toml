@@ -93,6 +93,7 @@ exclude = '''(?x)(
     src/nextline_rdb/alembic/versions/.*\.py$
     | example_script/.*\.py$
 )'''
+disallow_untyped_defs = true
 
 [[tool.mypy.overrides]]
 module = ["dynaconf.*", "async_asgi_testclient.*", "apluggy.*"]
