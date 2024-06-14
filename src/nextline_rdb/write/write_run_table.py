@@ -1,8 +1,8 @@
 from datetime import timezone
 from logging import getLogger
 
-from nextline.plugin.spec import Context, hookimpl
-from nextline.spawned import RunArg
+from nextline.events import OnEndRun, OnStartRun
+from nextline.plugin.spec import hookimpl
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
@@ -18,24 +18,23 @@ class WriteRunTable:
         self._logger = getLogger(__name__)
 
     @hookimpl
-    async def on_start_run(self, context: Context) -> None:
-        assert (run_arg := context.run_arg)
-        assert (running_process := context.running_process)
-        started_at = running_process.process_created_at
-        assert started_at.tzinfo is timezone.utc
-        started_at = started_at.replace(tzinfo=None)
-        run_no = run_arg.run_no
+    async def on_start_run(self, event: OnStartRun) -> None:
+        assert event.started_at.tzinfo is timezone.utc
+        started_at = event.started_at.replace(tzinfo=None)
         async with self._db.session.begin() as session:
-            script = await self._find_script(run_arg, session)
+            script = await self._find_script(event, session)
             run = Run(
-                run_no=run_no, state='running', started_at=started_at, script=script
+                run_no=event.run_no,
+                state='running',
+                started_at=started_at,
+                script=script,
             )
             session.add(run)
 
     async def _find_script(
-        self, run_arg: RunArg, session: AsyncSession
+        self, event: OnStartRun, session: AsyncSession
     ) -> Script | None:
-        statement = self._str_statement_or_none(run_arg)
+        statement = self._str_statement_or_none(event)
         current_script = await self._load_current_script(session)
         match statement, current_script:
             case None, None:
@@ -60,9 +59,9 @@ class WriteRunTable:
                 return cs.script
         return None
 
-    def _str_statement_or_none(self, run_arg: RunArg) -> str | None:
-        if isinstance(run_arg.statement, str):
-            return run_arg.statement
+    def _str_statement_or_none(self, event: OnStartRun) -> str | None:
+        if isinstance(event.statement, str):
+            return event.statement
         return None
 
     async def _load_current_script(self, session: AsyncSession) -> CurrentScript | None:
@@ -70,17 +69,12 @@ class WriteRunTable:
         return (await session.execute(stmt)).scalar_one_or_none()
 
     @hookimpl
-    async def on_end_run(self, context: Context) -> None:
-        assert (run_arg := context.run_arg)
-        assert (exited_process := context.exited_process)
-        assert (returned := exited_process.returned)
-        ended_at = exited_process.process_exited_at
-        assert ended_at.tzinfo is timezone.utc
-        ended_at = ended_at.replace(tzinfo=None)
-        run_no = run_arg.run_no
+    async def on_end_run(self, event: OnEndRun) -> None:
+        assert event.ended_at.tzinfo is timezone.utc
+        ended_at = event.ended_at.replace(tzinfo=None)
         async with self._db.session.begin() as session:
-            stmt = select(Run).filter_by(run_no=run_no)
+            stmt = select(Run).filter_by(run_no=event.run_no)
             run = await until_scalar_one(session, stmt)
             run.state = 'finished'
             run.ended_at = ended_at
-            run.exception = returned.fmt_exc
+            run.exception = event.raised

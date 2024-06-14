@@ -1,7 +1,7 @@
 from datetime import timezone
 
-from nextline.events import OnEndTrace, OnStartTrace
-from nextline.plugin.spec import Context, hookimpl
+from nextline.events import OnEndRun, OnEndTrace, OnStartTrace
+from nextline.plugin.spec import hookimpl
 from nextline.types import TraceNo
 from sqlalchemy import select
 
@@ -49,13 +49,10 @@ class WriteTraceTable:
         self._running_trace_nos.clear()
 
     @hookimpl
-    async def on_end_run(self, context: Context) -> None:
-        assert (run_arg := context.run_arg)
-        assert (exited_process := context.exited_process)
-        ended_at = exited_process.process_exited_at
-        assert ended_at.tzinfo is timezone.utc
-        ended_at = ended_at.replace(tzinfo=None)
-        run_no = run_arg.run_no
+    async def on_end_run(self, event: OnEndRun) -> None:
+        assert event.ended_at.tzinfo is timezone.utc
+        ended_at = event.ended_at.replace(tzinfo=None)
+        run_no = event.run_no
         async with self._db.session.begin() as session:
             stmt = (
                 select(Trace)
