@@ -28,6 +28,8 @@ async def test_options(data: st.DataObject) -> None:
 
     scripts = data.draw(st_none_or(st_model_script_list(max_size=max_size)))
 
+    allow_started_at_none = data.draw(st.booleans())
+
     # Call the strategy to be tested
     runs = data.draw(
         st_model_run_list(
@@ -35,6 +37,7 @@ async def test_options(data: st.DataObject) -> None:
             min_size=min_size,
             max_size=max_size,
             scripts=scripts,
+            allow_started_at_none=allow_started_at_none,
         )
     )
 
@@ -59,6 +62,9 @@ async def test_options(data: st.DataObject) -> None:
         assert not trace_calls
         assert not prompts
         assert not stdouts
+
+    if not allow_started_at_none:
+        assert all(run.started_at for run in runs)
 
     started_ats = [run.started_at for run in runs if run.started_at]
     assert started_ats == sorted(started_ats)

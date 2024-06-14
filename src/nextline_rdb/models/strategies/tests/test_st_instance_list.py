@@ -5,7 +5,7 @@ from nextline_rdb.db import DB
 from nextline_rdb.utils import class_name_and_primary_keys_of, load_all
 from nextline_rdb.utils.strategies import st_ranges
 
-from ... import Model
+from ... import Model, Run
 from .. import st_model_instance_list
 
 
@@ -25,11 +25,23 @@ async def test_options(data: st.DataObject) -> None:
     assert isinstance(min_size, int)
     assert isinstance(max_size, int)
 
+    allow_run_started_at_none = data.draw(st.booleans())
+
     # Call the strategy to be tested
-    instances = data.draw(st_model_instance_list(min_size=min_size, max_size=max_size))
-    
+    instances = data.draw(
+        st_model_instance_list(
+            min_size=min_size,
+            max_size=max_size,
+            allow_run_started_at_none=allow_run_started_at_none,
+        )
+    )
+
     # Assert the generated values
     assert min_size <= len(instances) <= max_size
+
+    if not allow_run_started_at_none:
+        runs = [instance for instance in instances if isinstance(instance, Run)]
+        assert all(run.started_at is not None for run in runs)
 
 
 @settings(phases=(Phase.generate,))  # Avoid shrinking
