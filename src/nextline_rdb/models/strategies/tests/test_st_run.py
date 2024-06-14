@@ -18,6 +18,7 @@ from .. import st_model_run, st_model_script
 @settings(phases=(Phase.generate,))
 @given(st.data())
 async def test_options(data: st.DataObject) -> None:
+    # Generate options of the strategy to be tested
     run_no = data.draw(st_none_or(st_graphql_ints(min_value=1)))
     if run_no is None:
         min_run_no, max_run_no = data.draw(st_ranges(st_=st_graphql_ints, min_start=1))
@@ -29,11 +30,14 @@ async def test_options(data: st.DataObject) -> None:
         st_ranges(st_=st_datetimes, min_start=min_started_at)
     )
 
+    allow_started_at_none = data.draw(st.booleans())
+
     script = data.draw(st_none_or(st_model_script()))
     generate_script = data.draw(st.booleans())
 
     generate_traces = data.draw(st.booleans())
 
+    # Call the strategy to be tested
     run = data.draw(
         st_model_run(
             run_no=run_no,
@@ -44,15 +48,20 @@ async def test_options(data: st.DataObject) -> None:
             min_ended_at=min_ended_at,
             max_ended_at=max_ended_at,
             script=script,
+            allow_started_at_none=allow_started_at_none,
             generate_script=generate_script,
             generate_traces=generate_traces,
         )
     )
 
+    # Assert the generated values
     if run_no is not None:
         assert run.run_no == run_no
     else:
         assert sc(min_run_no) <= run.run_no <= sc(max_run_no)
+
+    if not allow_started_at_none:
+        assert run.started_at is not None
 
     assert sc(min_started_at) <= sc(run.started_at) <= sc(max_started_at)
     assert sc(min_ended_at) <= sc(run.ended_at) <= sc(max_ended_at)

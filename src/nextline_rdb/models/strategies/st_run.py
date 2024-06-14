@@ -22,6 +22,7 @@ def st_model_run(
     min_ended_at: Optional[dt.datetime] = None,
     max_ended_at: Optional[dt.datetime] = None,
     script: Optional[Script] = None,
+    allow_started_at_none: bool = True,
     generate_script: bool = True,
     generate_traces: bool = True,
 ) -> Run:
@@ -53,6 +54,7 @@ def st_model_run(
             max_start=max_started_at,
             min_end=min_ended_at,
             max_end=max_ended_at,
+            allow_start_none=allow_started_at_none,
         )
     )
 
