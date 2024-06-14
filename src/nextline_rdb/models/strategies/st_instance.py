@@ -10,6 +10,7 @@ def st_model_instance_list(
     draw: st.DrawFn,
     min_size: int = 0,
     max_size: Optional[int] = None,
+    allow_run_started_at_none: bool = True,
 ) -> list[Model]:
     '''A strategy for a list of `Model` instances.
 
@@ -37,6 +38,7 @@ def st_model_instance_list(
             min_size=min_size,
             max_size=max_size,
             scripts=scripts,
+            allow_started_at_none=allow_run_started_at_none,
         )
     )
 
