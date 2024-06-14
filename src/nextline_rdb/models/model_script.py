@@ -29,7 +29,7 @@ class Script(Model):
         return self._current is not None
 
     @current.setter
-    def current(self, value: bool):
+    def current(self, value: bool) -> None:
         if value and self._current is None:
             self._current = CurrentScript(script=self)
         elif not value:
