@@ -1,3 +1,4 @@
+import json
 from datetime import timezone
 from pathlib import Path
 from unittest.mock import Mock
@@ -7,15 +8,17 @@ from hypothesis import Phase, given, settings
 from nextline import Nextline
 from nextline.events import (
     OnEndPrompt,
+    OnEndRun,
     OnEndTrace,
     OnEndTraceCall,
     OnStartPrompt,
+    OnStartRun,
     OnStartTrace,
     OnStartTraceCall,
     OnWriteStdout,
 )
 from nextline.plugin import spec
-from nextline.spawned import RunArg, RunResult
+from nextline.spawned import RunArg
 from nextline.types import (
     PromptNo,
     RunNo,
@@ -25,7 +28,6 @@ from nextline.types import (
     TraceCallNo,
     TraceNo,
 )
-from nextline.utils import ExitedProcess, RunningProcess
 
 from nextline_rdb.db import DB
 from nextline_rdb.models import (
@@ -126,15 +128,16 @@ async def _handle_run(context: spec.Context, run: Run) -> None:
     if run_started_at is None:
         return
 
-    # running_process = Mock(spec=RunningProcess[RunResult])
-    running_process = Mock(spec=RunningProcess)
-    running_process.process_created_at = run_started_at.replace(tzinfo=timezone.utc)
-    context.running_process = running_process
+    on_start_run = OnStartRun(
+        started_at=run_started_at.replace(tzinfo=timezone.utc),
+        run_no=RunNo(run.run_no),
+        statement=statement,
+    )
 
     # ic(run_started_at)
     # ic(run.started_at == run_started_at.replace(tzinfo=None))
 
-    await context.hook.ahook.on_start_run(context=context)
+    await context.hook.ahook.on_start_run(context=context, event=on_start_run)
     run.state = 'running'
 
     for trace in run.traces:
@@ -148,18 +151,16 @@ async def _handle_run(context: spec.Context, run: Run) -> None:
         run.exception = None
         return
 
-    returned = Mock(spec=RunResult)
-    returned.fmt_exc = run.exception = run.exception or ''
+    raised = run.exception = run.exception or ''
 
-    exited_process = ExitedProcess[RunResult](
-        returned=returned,
-        raised=None,
-        process=Mock(),
-        process_created_at=running_process.process_created_at,
-        process_exited_at=run_ended_at.replace(tzinfo=timezone.utc),
+    on_end_run = OnEndRun(
+        ended_at=run_ended_at.replace(tzinfo=timezone.utc),
+        run_no=RunNo(run.run_no),
+        returned=json.dumps(None),
+        raised=raised,
     )
-    context.exited_process = exited_process
-    await context.hook.ahook.on_end_run(context=context)
+
+    await context.hook.ahook.on_end_run(context=context, event=on_end_run)
     run.state = 'finished'
 
 
