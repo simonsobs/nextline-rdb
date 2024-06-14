@@ -22,7 +22,7 @@ classifiers = [
   "Programming Language :: Python :: 3.12",
 ]
 dependencies = [
-  "nextline>=0.7.11",
+  "nextline>=0.7.13",
   "nextline-graphql>=0.7.9",
   "alembic>=1.9",
   "SQLAlchemy[asyncio]>=2.0",
