@@ -1,3 +1,5 @@
+from typing import Any
+
 from sqlalchemy import ForeignKey, event
 from sqlalchemy.orm import (
     DeclarativeBase,
@@ -31,10 +33,10 @@ def register_session_events(session: sessionmaker[Session]) -> None:
     new: set[Model]
 
     @event.listens_for(session, 'before_flush')
-    def _before_flush(session: Session, flush_context, instances):
+    def _before_flush(session: Session, flush_context: Any, instances: Any) -> None:
         nonlocal new
         new = set(session.new)
 
     @event.listens_for(session, 'after_flush_postexec')
-    def _after_flush_postexec(session: Session, flush_context):
+    def _after_flush_postexec(session: Session, flush_context: Any) -> None:
         pass

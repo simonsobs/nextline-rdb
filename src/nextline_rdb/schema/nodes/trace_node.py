@@ -99,7 +99,7 @@ class TraceNode:
     ] = strawberry.field(resolver=_resolve_stdouts)
 
     @classmethod
-    def from_model(cls: type['TraceNode'], model: db_models.Trace):
+    def from_model(cls: type['TraceNode'], model: db_models.Trace) -> 'TraceNode':
         return cls(
             _model=model,
             id=model.id,

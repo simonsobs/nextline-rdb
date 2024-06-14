@@ -1,7 +1,7 @@
 from collections.abc import Sequence
 from typing import Any, NamedTuple, Optional, Type, TypeVar
 
-from sqlalchemy import func, select
+from sqlalchemy import ScalarResult, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import DeclarativeBase, aliased, selectinload
 from sqlalchemy.sql.selectable import Select
@@ -36,7 +36,7 @@ async def load_models(
     after: Optional[_Id] = None,
     first: Optional[int] = None,
     last: Optional[int] = None,
-):
+) -> ScalarResult[T]:
     sort = sort or []
 
     if id_field not in {s.field for s in sort}:

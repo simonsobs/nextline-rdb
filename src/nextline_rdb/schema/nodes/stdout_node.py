@@ -32,7 +32,7 @@ class StdoutNode:
         return TraceNode.from_model(self._model.trace)
 
     @classmethod
-    def from_model(cls: type['StdoutNode'], model: db_models.Stdout):
+    def from_model(cls: type['StdoutNode'], model: db_models.Stdout) -> 'StdoutNode':
         return cls(
             _model=model,
             id=model.id,

@@ -10,7 +10,7 @@ from nextline_rdb.utils import class_name_and_primary_keys_of, ensure_sync_url, 
 from .models import Bar, Foo, Model, register_session_events
 
 
-async def test_ensure_sync_url(tmp_url_factory: Callable[[], str]):
+async def test_ensure_sync_url(tmp_url_factory: Callable[[], str]) -> None:
     url = tmp_url_factory()
     sync_url = ensure_sync_url(url)
 
@@ -18,7 +18,7 @@ async def test_ensure_sync_url(tmp_url_factory: Callable[[], str]):
         assert db.url == url
 
 
-async def test_fields():
+async def test_fields() -> None:
     db = DB()
     assert db.url
     assert db.metadata
@@ -38,7 +38,9 @@ async def test_migration_revision(use_migration: bool) -> None:
 
 
 @given(st.lists(st.integers(min_value=0, max_value=4), min_size=0, max_size=4))
-async def test_session_nested(tmp_url_factory: Callable[[], str], sizes: list[int]):
+async def test_session_nested(
+    tmp_url_factory: Callable[[], str], sizes: list[int]
+) -> None:
     url = tmp_url_factory()
 
     objs = [Foo(bars=[Bar() for _ in range(size)]) for size in sizes]
@@ -68,7 +70,9 @@ async def test_session_nested(tmp_url_factory: Callable[[], str], sizes: list[in
 
 
 @given(st.lists(st.integers(min_value=0, max_value=4), min_size=0, max_size=4))
-async def test_session_begin(tmp_url_factory: Callable[[], str], sizes: list[int]):
+async def test_session_begin(
+    tmp_url_factory: Callable[[], str], sizes: list[int]
+) -> None:
     url = tmp_url_factory()
 
     objs = [Foo(bars=[Bar() for _ in range(size)]) for size in sizes]
