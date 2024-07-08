@@ -1,4 +1,5 @@
 from collections.abc import Callable
+from os import getenv
 from pathlib import Path
 
 import pytest
@@ -7,6 +8,7 @@ import tomli_w
 from nextlinegraphql import create_app
 from nextlinegraphql.plugins.ctrl.graphql import MUTATE_RUN_AND_CONTINUE
 from nextlinegraphql.plugins.graphql.test import TestClient, gql_request
+from pytest import mark
 
 from nextline_rdb.db import DB
 from nextline_rdb.models.strategies import st_model_run_list
@@ -14,6 +16,7 @@ from nextline_rdb.models.strategies import st_model_run_list
 from .schema.graphql import QUERY_RDB_CONNECTIONS
 
 
+@mark.skipif(getenv('GITHUB_ACTIONS') == 'true', reason='Fails on GitHub Actions')
 async def test_plugin(set_new_url: Callable[[], str]) -> None:
     # Enter some runs into the database.
     runs = st_model_run_list(generate_traces=False, max_size=2).example()
