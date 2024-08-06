@@ -4,7 +4,7 @@
 nextline==0.7.16
 nextline-graphql==0.7.9
 alembic==1.13.2
-SQLAlchemy[asyncio]==2.0.31
+SQLAlchemy[asyncio]==2.0.32
 aiosqlite==0.20.0
 hypothesis==6.105.1
 black==24.4.2
