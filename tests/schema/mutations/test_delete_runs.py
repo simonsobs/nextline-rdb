@@ -2,6 +2,7 @@ import strawberry
 from hypothesis import given, note
 from hypothesis import strategies as st
 from sqlalchemy import select
+from strawberry.types import ExecutionResult
 
 from nextline_rdb.db import DB
 from nextline_rdb.models import Run
@@ -60,6 +61,7 @@ async def test_delete_runs(data: st.DataObject) -> None:
         )
         note(f'resp: {resp}')
 
+        assert isinstance(resp, ExecutionResult)
         assert resp.data
 
         expected = {run.id for run in to_delete}

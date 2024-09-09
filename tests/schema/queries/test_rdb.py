@@ -1,5 +1,6 @@
 import strawberry
 from hypothesis import Phase, given, note, settings
+from strawberry.types import ExecutionResult
 
 from nextline_rdb.db import DB
 from nextline_rdb.models import Run
@@ -21,6 +22,7 @@ async def test_history(runs: list[Run]) -> None:
 
         resp = await schema.execute(QUERY_RDB_CONNECTIONS, context_value={'db': db})
 
+    assert isinstance(resp, ExecutionResult)
     assert resp.data
     rdb = resp.data['rdb']
     runs_ = rdb['runs']['edges']
