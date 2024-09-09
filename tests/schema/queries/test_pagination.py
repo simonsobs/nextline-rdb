@@ -5,6 +5,7 @@ import pytest
 import strawberry
 from hypothesis import given, note
 from hypothesis import strategies as st
+from strawberry.types import ExecutionResult
 
 from nextline_rdb.db import DB
 from nextline_rdb.models import Run
@@ -56,6 +57,7 @@ async def test_all(runs: list[Run]) -> None:
         note(f'nodes_saved: {nodes_saved}')
 
         resp = await schema.execute(QUERY_RDB_RUNS, context_value={'db': db})
+        assert isinstance(resp, ExecutionResult)
         assert resp.data
 
         all_runs = resp.data['rdb']['runs']
@@ -101,6 +103,7 @@ async def test_forward(runs: list[Run], first: int) -> None:
                 variable_values=dict(variables),
                 context_value={'db': db},
             )
+            assert isinstance(resp, ExecutionResult)
             assert resp.data
 
             all_runs = resp.data['rdb']['runs']
@@ -153,6 +156,7 @@ async def test_backward(runs: list[Run], last: int) -> None:
                 variable_values=dict(variables),
                 context_value={'db': db},
             )
+            assert isinstance(resp, ExecutionResult)
             assert resp.data
 
             all_runs = resp.data['rdb']['runs']
@@ -191,6 +195,7 @@ async def test_cursor(runs: list[Run]) -> None:
         note(f'nodes_saved: {nodes_saved}')
 
         resp = await schema.execute(QUERY_RDB_RUNS, context_value={'db': db})
+        assert isinstance(resp, ExecutionResult)
         assert resp.data
 
         all_runs = resp.data['rdb']['runs']
@@ -237,5 +242,6 @@ async def test_error(variables: Variables) -> None:
             context_value={'db': db},
         )
 
+        assert isinstance(resp, ExecutionResult)
         assert not resp.data
         assert resp.errors

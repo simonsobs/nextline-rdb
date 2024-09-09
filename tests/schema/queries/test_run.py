@@ -1,6 +1,7 @@
 import strawberry
 from hypothesis import Phase, given, note, settings
 from hypothesis import strategies as st
+from strawberry.types import ExecutionResult
 
 from nextline_rdb.db import DB
 from nextline_rdb.models import Run
@@ -66,7 +67,8 @@ async def test_run(data: st.DataObject) -> None:
             QUERY_RDB_RUN, variable_values=variables, context_value={'db': db}
         )
         note(f'resp: {resp}')
-
+        
+        assert isinstance(resp, ExecutionResult)
         assert resp.data
 
         run_ = resp.data['rdb']['run']
