@@ -3,7 +3,7 @@
 # latest versions of the dependencies. This file is monitored by Dependabot.
 nextline==0.7.16
 nextline-graphql==0.7.9
-alembic==1.13.2
+alembic==1.13.3
 SQLAlchemy[asyncio]==2.0.35
 aiosqlite==0.20.0
 hypothesis==6.112.1
