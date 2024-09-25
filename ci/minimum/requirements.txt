@@ -11,6 +11,7 @@ hypothesis==6.88.0
 black==23.10.0
 tomli==2.0.0
 tomli-w==1.0.0
+nextline-test-utils==0.1.0
 async-asgi-testclient==1.4.0
 pytest-asyncio==0.18.0
 pytest-cov==3.0.0
