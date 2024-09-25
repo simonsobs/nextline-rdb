@@ -8,7 +8,6 @@ alembic==1.9.0
 SQLAlchemy[asyncio]==2.0.0
 aiosqlite==0.16.0
 hypothesis==6.88.0
-black==23.10.0
 tomli==2.0.0
 tomli-w==1.0.0
 nextline-test-utils==0.1.0

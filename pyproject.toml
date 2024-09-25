@@ -28,7 +28,6 @@ dependencies = [
   "SQLAlchemy[asyncio]>=2.0",
   "aiosqlite>=0.16",
   "hypothesis>=6.88",
-  "black>=23.10",
   "tomli>=2.0",
   "tomli-w>=1.0",
 ]
