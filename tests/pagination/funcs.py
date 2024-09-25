@@ -4,7 +4,7 @@ from hypothesis import given
 from hypothesis import strategies as st
 
 from nextline_rdb.pagination import Sort, SortField
-from nextline_rdb.utils.strategies import st_graphql_ints, st_none_or
+from nextline_test_utils.strategies import st_graphql_ints, st_none_or
 
 from .models import Entity
 

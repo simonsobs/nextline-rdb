@@ -3,7 +3,7 @@ from typing import Optional
 
 from hypothesis import strategies as st
 
-from nextline_rdb.utils.strategies import st_datetimes, st_ranges
+from nextline_test_utils.strategies import st_datetimes, st_ranges
 
 
 def st_started_at_ended_at(

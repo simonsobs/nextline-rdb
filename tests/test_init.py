@@ -5,7 +5,7 @@ from nextline_rdb.db import DB
 from nextline_rdb.init import initialize_nextline
 from nextline_rdb.models import Run
 from nextline_rdb.models.strategies import st_model_run_list
-from nextline_rdb.utils.strategies import st_python_scripts
+from nextline_test_utils.strategies import st_python_scripts
 
 
 @given(
