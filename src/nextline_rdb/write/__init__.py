@@ -1,7 +1,6 @@
 __all__ = ['register']
 
 from nextline import Nextline
-
 from nextline_rdb.db import DB
 
 from .write_prompt_table import WritePromptTable

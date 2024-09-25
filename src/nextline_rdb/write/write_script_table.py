@@ -1,9 +1,9 @@
-from nextline.plugin.spec import Context, hookimpl
-from nextline.spawned import RunArg
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
+from nextline.plugin.spec import Context, hookimpl
+from nextline.spawned import RunArg
 from nextline_rdb.db import DB
 from nextline_rdb.models import CurrentScript, Script
 

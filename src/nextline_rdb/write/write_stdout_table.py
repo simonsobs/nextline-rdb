@@ -1,7 +1,7 @@
-from nextline.events import OnWriteStdout
-from nextline.plugin.spec import hookimpl
 from sqlalchemy import select
 
+from nextline.events import OnWriteStdout
+from nextline.plugin.spec import hookimpl
 from nextline_rdb.db import DB
 from nextline_rdb.models import Run, Stdout, Trace
 from nextline_rdb.utils import until_scalar_one

@@ -1,8 +1,8 @@
-from nextline.events import OnEndPrompt, OnStartPrompt
-from nextline.plugin.spec import hookimpl
 from sqlalchemy import select
 from sqlalchemy.orm import selectinload
 
+from nextline.events import OnEndPrompt, OnStartPrompt
+from nextline.plugin.spec import hookimpl
 from nextline_rdb.db import DB
 from nextline_rdb.models import Prompt, Run, Trace, TraceCall
 from nextline_rdb.utils import until_scalar_one

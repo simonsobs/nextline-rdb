@@ -5,6 +5,7 @@ from unittest.mock import Mock
 
 from apluggy import PluginManager
 from hypothesis import Phase, given, settings
+
 from nextline import Nextline
 from nextline.events import (
     OnEndPrompt,
@@ -28,7 +29,6 @@ from nextline.types import (
     TraceCallNo,
     TraceNo,
 )
-
 from nextline_rdb.db import DB
 from nextline_rdb.models import (
     CurrentScript,
