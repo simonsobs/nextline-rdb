@@ -3,7 +3,7 @@ from hypothesis import strategies as st
 from sqlalchemy import select
 
 from nextline_rdb.db import DB
-from nextline_rdb.utils.strategies import st_ranges
+from nextline_test_utils.strategies import st_ranges
 
 from ... import Model, Prompt, Run, Stdout, Trace
 from .. import st_model_run_list

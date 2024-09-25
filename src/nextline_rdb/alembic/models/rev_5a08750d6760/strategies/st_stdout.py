@@ -2,7 +2,7 @@ from typing import Optional
 
 from hypothesis import strategies as st
 
-from nextline_rdb.utils.strategies import st_datetimes
+from nextline_test_utils.strategies import st_datetimes
 
 from .. import Run, Stdout, Trace
 from .st_trace import st_model_trace

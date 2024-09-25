@@ -3,7 +3,7 @@ from hypothesis import strategies as st
 from sqlalchemy import select
 
 from nextline_rdb.db import DB
-from nextline_rdb.utils.strategies import st_none_or
+from nextline_test_utils.strategies import st_none_or
 
 from ... import Model, Script
 from .. import st_model_script

@@ -4,7 +4,7 @@ from typing import Callable, Optional, cast
 
 from hypothesis import strategies as st
 
-from nextline_rdb.utils.strategies import (
+from nextline_test_utils.strategies import (
     st_datetimes,
     st_graphql_ints,
     st_none_or,

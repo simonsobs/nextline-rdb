@@ -4,7 +4,7 @@ from sqlalchemy import select
 
 from nextline_rdb.db import DB
 from nextline_rdb.utils import class_name_and_primary_keys_of
-from nextline_rdb.utils.strategies import st_none_or
+from nextline_test_utils.strategies import st_none_or
 
 from ... import Model, Prompt
 from .. import (

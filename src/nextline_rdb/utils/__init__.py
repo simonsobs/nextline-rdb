@@ -5,9 +5,6 @@ __all__ = [
     'load_all',
     'primary_keys_of',
     'until_scalar_one',
-    'safe_compare',
-    'safe_max',
-    'safe_min',
     'until_not_none',
     'UntilNotNoneTimeout',
     'ensure_async_url',
@@ -24,7 +21,6 @@ from .sa import (
     primary_keys_of,
     until_scalar_one,
 )
-from .safe import safe_compare, safe_max, safe_min
 from .until import UntilNotNoneTimeout, until_not_none
 from .url import ensure_async_url, ensure_sync_url
 from .utc import is_timezone_aware, utc_timestamp

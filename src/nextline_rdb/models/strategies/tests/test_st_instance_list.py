@@ -3,7 +3,7 @@ from hypothesis import strategies as st
 
 from nextline_rdb.db import DB
 from nextline_rdb.utils import class_name_and_primary_keys_of, load_all
-from nextline_rdb.utils.strategies import st_ranges
+from nextline_test_utils.strategies import st_ranges
 
 from ... import Model, Run
 from .. import st_model_instance_list

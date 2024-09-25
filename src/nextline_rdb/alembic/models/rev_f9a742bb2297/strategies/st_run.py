@@ -5,7 +5,7 @@ from typing import Callable, Optional, cast
 from hypothesis import strategies as st
 
 from nextline_rdb.utils import mark_last
-from nextline_rdb.utils.strategies import st_datetimes, st_graphql_ints, st_none_or
+from nextline_test_utils.strategies import st_datetimes, st_graphql_ints, st_none_or
 
 from .. import Run, Script
 from .utils import st_started_at_ended_at

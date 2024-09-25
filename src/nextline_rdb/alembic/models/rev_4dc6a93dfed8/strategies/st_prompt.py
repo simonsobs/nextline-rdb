@@ -3,7 +3,7 @@ from typing import Callable, Optional, cast
 
 from hypothesis import strategies as st
 
-from nextline_rdb.utils.strategies import st_graphql_ints, st_none_or
+from nextline_test_utils.strategies import st_graphql_ints, st_none_or
 
 from .. import Prompt, Run, Trace
 from .st_trace import st_model_trace

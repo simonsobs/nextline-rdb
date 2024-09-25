@@ -4,8 +4,8 @@ from sqlalchemy import select
 from sqlalchemy.orm import selectinload
 
 from nextline_rdb.db import DB
-from nextline_rdb.utils import safe_compare as sc
-from nextline_rdb.utils.strategies import (
+from nextline_test_utils import safe_compare as sc
+from nextline_test_utils.strategies import (
     st_datetimes,
     st_graphql_ints,
     st_none_or,
