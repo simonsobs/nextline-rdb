@@ -1,6 +1,6 @@
 from hypothesis import given
-from nextline import Nextline
 
+from nextline import Nextline
 from nextline_rdb.db import DB
 from nextline_rdb.init import initialize_nextline
 from nextline_rdb.models import Run

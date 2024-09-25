@@ -1,9 +1,10 @@
 from logging import getLogger
 from typing import Optional
 
-from nextline import Nextline
 from sqlalchemy import func, select
 from sqlalchemy.orm import selectinload
+
+from nextline import Nextline
 
 from .db import DB
 from .models import CurrentScript, Run

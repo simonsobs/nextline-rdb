@@ -1,12 +1,12 @@
 from datetime import timezone
 from logging import getLogger
 
-from nextline.events import OnEndRun, OnStartRun
-from nextline.plugin.spec import hookimpl
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
+from nextline.events import OnEndRun, OnStartRun
+from nextline.plugin.spec import hookimpl
 from nextline_rdb.db import DB
 from nextline_rdb.models import CurrentScript, Run, Script
 from nextline_rdb.utils import until_scalar_one

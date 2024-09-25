@@ -4,6 +4,7 @@ from typing import Optional
 
 from apluggy import asynccontextmanager
 from dynaconf import Dynaconf, Validator
+
 from nextlinegraphql.hook import spec
 
 from . import write

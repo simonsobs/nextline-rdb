@@ -5,13 +5,13 @@ from pathlib import Path
 import pytest
 import tomli
 import tomli_w
-from nextlinegraphql import create_app
-from nextlinegraphql.plugins.ctrl.graphql import MUTATE_RUN_AND_CONTINUE
-from nextlinegraphql.plugins.graphql.test import TestClient, gql_request
 from pytest import mark
 
 from nextline_rdb.db import DB
 from nextline_rdb.models.strategies import st_model_run_list
+from nextlinegraphql import create_app
+from nextlinegraphql.plugins.ctrl.graphql import MUTATE_RUN_AND_CONTINUE
+from nextlinegraphql.plugins.graphql.test import TestClient, gql_request
 
 from .schema.graphql import QUERY_RDB_CONNECTIONS
 

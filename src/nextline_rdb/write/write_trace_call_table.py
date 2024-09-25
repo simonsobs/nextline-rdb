@@ -1,9 +1,9 @@
-from nextline.events import OnEndTraceCall, OnStartTraceCall
-from nextline.plugin.spec import hookimpl
-from nextline.types import TraceNo
 from sqlalchemy import select
 from sqlalchemy.orm import selectinload
 
+from nextline.events import OnEndTraceCall, OnStartTraceCall
+from nextline.plugin.spec import hookimpl
+from nextline.types import TraceNo
 from nextline_rdb.db import DB
 from nextline_rdb.models import Run, Trace, TraceCall
 from nextline_rdb.utils import until_scalar_one

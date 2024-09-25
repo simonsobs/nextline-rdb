@@ -5,8 +5,8 @@ from typing import NoReturn
 import pytest
 from hypothesis import given
 from hypothesis import strategies as st
-from nextline.utils import aiterable
 
+from nextline.utils import aiterable
 from nextline_rdb.utils import UntilNotNoneTimeout, until_not_none
 
 

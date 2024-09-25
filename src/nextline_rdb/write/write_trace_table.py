@@ -1,10 +1,10 @@
 from datetime import timezone
 
+from sqlalchemy import select
+
 from nextline.events import OnEndRun, OnEndTrace, OnStartTrace
 from nextline.plugin.spec import hookimpl
 from nextline.types import TraceNo
-from sqlalchemy import select
-
 from nextline_rdb.db import DB
 from nextline_rdb.models import Run, Trace
 from nextline_rdb.utils import until_scalar_one
