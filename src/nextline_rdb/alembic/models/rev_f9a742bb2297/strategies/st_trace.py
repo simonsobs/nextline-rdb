@@ -71,7 +71,7 @@ def st_thread_task_no() -> st.SearchStrategy[tuple[int, int | None]]:
 
 
 def sort_thread_task_nos(
-    thread_task_nos: Iterable[tuple[int, int | None]]
+    thread_task_nos: Iterable[tuple[int, int | None]],
 ) -> list[tuple[int, int | None]]:
     return sorted(thread_task_nos, key=lambda x: (x[0], x[1] or 0))
 

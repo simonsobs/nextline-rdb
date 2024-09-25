@@ -90,13 +90,13 @@ class TraceNode:
 
         return RunNode.from_model(self._model.run)
 
-    prompts: Connection[
-        Annotated['PromptNode', strawberry.lazy('.prompt_node')]
-    ] = strawberry.field(resolver=_resolve_prompts)
+    prompts: Connection[Annotated['PromptNode', strawberry.lazy('.prompt_node')]] = (
+        strawberry.field(resolver=_resolve_prompts)
+    )
 
-    stdouts: Connection[
-        Annotated['StdoutNode', strawberry.lazy('.stdout_node')]
-    ] = strawberry.field(resolver=_resolve_stdouts)
+    stdouts: Connection[Annotated['StdoutNode', strawberry.lazy('.stdout_node')]] = (
+        strawberry.field(resolver=_resolve_stdouts)
+    )
 
     @classmethod
     def from_model(cls: type['TraceNode'], model: db_models.Trace) -> 'TraceNode':

@@ -72,9 +72,9 @@ class TraceCallNode:
 
         return TraceNode.from_model(self._model.trace)
 
-    prompts: Connection[
-        Annotated['PromptNode', strawberry.lazy('.prompt_node')]
-    ] = strawberry.field(resolver=_resolve_prompts)
+    prompts: Connection[Annotated['PromptNode', strawberry.lazy('.prompt_node')]] = (
+        strawberry.field(resolver=_resolve_prompts)
+    )
 
     @classmethod
     def from_model(
