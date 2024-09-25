@@ -2,7 +2,7 @@ from typing import Optional
 
 from hypothesis import strategies as st
 
-from nextline_rdb.utils.strategies import st_python_scripts, st_none_or
+from nextline_rdb.utils.strategies import st_none_or, st_python_scripts
 
 from .. import Script
 

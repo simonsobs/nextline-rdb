@@ -14,8 +14,7 @@ T = TypeVar('T')
 class StMinMaxValuesFactory(Protocol[T]):
     def __call__(
         self, *, min_value: Optional[T] = None, max_value: Optional[T] = None
-    ) -> st.SearchStrategy[T]:
-        ...
+    ) -> st.SearchStrategy[T]: ...
 
 
 def st_none_or(st_: st.SearchStrategy[T]) -> st.SearchStrategy[Optional[T]]:

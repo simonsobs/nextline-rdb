@@ -67,7 +67,7 @@ async def test_run(data: st.DataObject) -> None:
             QUERY_RDB_RUN, variable_values=variables, context_value={'db': db}
         )
         note(f'resp: {resp}')
-        
+
         assert isinstance(resp, ExecutionResult)
         assert resp.data
 
