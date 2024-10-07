@@ -14,7 +14,7 @@ async def test_options(data: st.DataObject) -> None:
     # Generate options of the strategy to be tested
     min_size, max_size = data.draw(
         st_ranges(
-            st_=st.integers,
+            st.integers,
             min_start=0,
             max_end=8,
             allow_start_none=False,

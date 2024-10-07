@@ -21,13 +21,13 @@ from .. import st_model_run, st_model_script
 async def test_options(data: st.DataObject) -> None:
     run_no = data.draw(st_none_or(st_graphql_ints(min_value=1)))
     if run_no is None:
-        min_run_no, max_run_no = data.draw(st_ranges(st_=st_graphql_ints, min_start=1))
+        min_run_no, max_run_no = data.draw(st_ranges(st_graphql_ints, min_start=1))
     else:
         min_run_no, max_run_no = None, None
 
-    min_started_at, max_started_at = data.draw(st_ranges(st_=st_datetimes))
+    min_started_at, max_started_at = data.draw(st_ranges(st_datetimes))
     min_ended_at, max_ended_at = data.draw(
-        st_ranges(st_=st_datetimes, min_start=min_started_at)
+        st_ranges(st_datetimes, min_start=min_started_at)
     )
 
     script = data.draw(st_none_or(st_model_script()))

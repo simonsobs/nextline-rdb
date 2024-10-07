@@ -16,7 +16,7 @@ async def test_options(data: st.DataObject) -> None:
     generate_traces = data.draw(st.booleans())
     min_size, max_size = data.draw(
         st_ranges(
-            st_=st.integers,
+            st.integers,
             min_start=0,
             max_end=4,
             allow_start_none=False,
