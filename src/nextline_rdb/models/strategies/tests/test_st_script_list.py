@@ -13,7 +13,7 @@ from .. import st_model_script_list
 async def test_options(data: st.DataObject) -> None:
     min_size, max_size = data.draw(
         st_ranges(
-            st_=st.integers,
+            st.integers,
             min_start=0,
             max_end=5,
             allow_start_none=False,

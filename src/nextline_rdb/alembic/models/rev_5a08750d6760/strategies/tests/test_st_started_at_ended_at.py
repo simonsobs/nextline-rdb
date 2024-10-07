@@ -9,8 +9,8 @@ from .. import st_started_at_ended_at
 
 @given(st.data())
 def test_st_started_at_ended_at(data: st.DataObject) -> None:
-    min_start, max_start = data.draw(st_ranges(st_=st_datetimes))
-    min_end, max_end = data.draw(st_ranges(st_=st_datetimes, min_start=min_start))
+    min_start, max_start = data.draw(st_ranges(st_datetimes))
+    min_end, max_end = data.draw(st_ranges(st_datetimes, min_start=min_start))
     allow_start_none = data.draw(st.booleans())
     allow_end_none = data.draw(st.booleans())
     allow_equal = data.draw(st.booleans())
