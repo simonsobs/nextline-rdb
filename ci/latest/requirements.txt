@@ -8,7 +8,7 @@ SQLAlchemy[asyncio]==2.0.35
 aiosqlite==0.20.0
 hypothesis==6.112.4
 tomli==2.0.2
-tomli-w==1.0.0
+tomli-w==1.1.0
 nextline-test-utils==0.1.1
 async-asgi-testclient==1.4.11
 pytest-asyncio==0.24.0
