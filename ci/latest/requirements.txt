@@ -6,7 +6,7 @@ nextline-graphql==0.7.9
 alembic==1.13.3
 SQLAlchemy[asyncio]==2.0.35
 aiosqlite==0.20.0
-hypothesis==6.112.4
+hypothesis==6.115.2
 tomli==2.0.2
 tomli-w==1.0.0
 nextline-test-utils==0.1.1
