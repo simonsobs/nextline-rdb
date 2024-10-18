@@ -1,4 +1,5 @@
 import datetime
+import inspect
 from enum import Enum
 from string import ascii_lowercase, ascii_uppercase
 
@@ -67,7 +68,12 @@ def test_arbitrary_enum(data: st.DataObject) -> None:
     enum_type = data.draw(st_enum_type())
     item = data.draw(st.sampled_from(enum_type))
     repr_ = repr_val(item)
-    locals()[enum_type.__name__] = enum_type  # so eval can find the type
+
+    # Add as a local variable so `eval` can find it.
+    frame = inspect.currentframe()
+    assert frame
+    frame.f_locals[enum_type.__name__] = enum_type
+
     eval_ = eval(repr_)
     assert eval_ == item
 

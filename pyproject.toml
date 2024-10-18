@@ -25,7 +25,7 @@ dependencies = [
   "nextline>=0.7.13",
   "nextline-graphql>=0.7.9",
   "alembic>=1.9",
-  "SQLAlchemy[asyncio]>=2.0",
+  "SQLAlchemy[asyncio]>=2.0.31",
   "aiosqlite>=0.16",
   "hypothesis>=6.88",
   "tomli>=2.0",
@@ -36,7 +36,7 @@ dynamic = ["version"]
 [project.optional-dependencies]
 tests = [
   "nextline-test-utils>=0.1",
-  "async-asgi-testclient>=1.4",
+  "async-asgi-testclient>=1.4.10",
   "pytest-asyncio>=0.18",
   "pytest-cov>=3.0",
   "pytest-timeout>=2.1",
