@@ -100,10 +100,16 @@ known-first-party = ["nextline", "nextlinegraphql", "nextline_test_utils"]
 [tool.coverage.run]
 branch = true
 parallel = true
-omit = ["src/nextline_rdb/__about__.py"]
+source = ["src/nextline_rdb", "tests"]
+omit = ["tests/example_script/*"]
 
 [tool.coverage.report]
-exclude_lines = ["no cov", "if __name__ == .__main__.:", "if TYPE_CHECKING:"]
+exclude_lines = [
+  "pragma: no cover",
+  "if __name__ == .__main__.:",
+  "if TYPE_CHECKING:",
+  "^ *\\.\\.\\.$",
+]
 
 [tool.mypy]
 plugins = "strawberry.ext.mypy_plugin"
