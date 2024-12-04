@@ -87,7 +87,7 @@ def st_model_run_list(
     generate_traces: bool = False,
     min_size: int = 0,
     max_size: Optional[int] = None,
-    scripts: list[Script] | None = None,
+    scripts: Optional[list[Script]] = None,
     allow_started_at_none: bool = True,
 ) -> list[Run]:
     run_nos = draw(_st_run_nos(min_size=min_size, max_size=max_size))
