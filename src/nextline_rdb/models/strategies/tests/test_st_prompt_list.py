@@ -34,7 +34,6 @@ def st_st_model_prompt_list_kwargs(draw: st.DrawFn) -> StModelPromptListKwargs:
             draw(st_none_or(st_model_trace_list(run=run, min_size=0, max_size=3)))
             draw(st_none_or(st_model_trace_call_list(run=run, min_size=0, max_size=5)))
 
-    max_size: int | None = None
     if draw(st.booleans()) or 1:
         min_size, max_size = draw(
             st_ranges(
