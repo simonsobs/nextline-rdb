@@ -3,13 +3,12 @@ from typing import TypedDict
 from hypothesis import Phase, given, settings
 from hypothesis import strategies as st
 
-from nextline_rdb.db import DB
-from nextline_rdb.utils import class_name_and_primary_keys_of, load_all
 from nextline_test_utils import safe_compare as sc
 from nextline_test_utils.strategies import st_none_or, st_ranges
 
-from ... import Model, Run, Script
+from ... import Model, Script
 from .. import st_model_run_list, st_model_script_list
+from .funcs import assert_model_persistence
 
 
 class StModelRunListKwargs(TypedDict, total=False):
@@ -108,18 +107,6 @@ async def test_options(data: st.DataObject) -> None:
 
 
 @settings(phases=(Phase.generate,))  # Avoid shrinking
-@given(runs=st_model_run_list(generate_traces=True, min_size=0, max_size=3))
-async def test_db(runs: list[Run]) -> None:
-    async with DB(use_migration=False, model_base_class=Model) as db:
-        async with db.session.begin() as session:
-            session.add_all(runs)
-            added = list(session.new)
-            assert set(runs) <= set(added)
-        added = sorted(added, key=class_name_and_primary_keys_of)
-        repr_added = [repr(m) for m in added]
-
-        async with db.session() as session:
-            loaded = await load_all(session, Model)
-            repr_loaded = [repr(m) for m in loaded]
-
-    assert repr_added == repr_loaded
+@given(instances=st_model_run_list(generate_traces=True, max_size=3))
+async def test_db(instances: list[Model]) -> None:
+    await assert_model_persistence(instances)

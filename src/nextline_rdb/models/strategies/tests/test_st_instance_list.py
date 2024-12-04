@@ -3,13 +3,12 @@ from typing import Optional, TypedDict
 from hypothesis import Phase, given, settings
 from hypothesis import strategies as st
 
-from nextline_rdb.db import DB
-from nextline_rdb.utils import class_name_and_primary_keys_of, load_all
 from nextline_test_utils import safe_compare as sc
 from nextline_test_utils.strategies import st_ranges
 
 from ... import Model, Run
 from .. import st_model_instance_list
+from .funcs import assert_model_persistence
 
 
 class StModelInstanceListKwargs(TypedDict, total=False):
@@ -71,16 +70,4 @@ async def test_options(data: st.DataObject) -> None:
 @settings(phases=(Phase.generate,))  # Avoid shrinking
 @given(instances=st_model_instance_list(min_size=0, max_size=5))
 async def test_db(instances: list[Model]) -> None:
-    async with DB(use_migration=False, model_base_class=Model) as db:
-        async with db.session.begin() as session:
-            session.add_all(instances)
-            added = list(session.new)
-            assert set(instances) <= set(added)
-        added = sorted(added, key=class_name_and_primary_keys_of)
-        repr_added = [repr(m) for m in added]
-
-        async with db.session() as session:
-            loaded = await load_all(session, Model)
-            repr_loaded = [repr(m) for m in loaded]
-
-    assert repr_added == repr_loaded
+    await assert_model_persistence(instances)
