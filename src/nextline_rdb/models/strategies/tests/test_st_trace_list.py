@@ -1,35 +1,74 @@
+from typing import Optional, TypedDict
+
 from hypothesis import Phase, given, settings
 from hypothesis import strategies as st
-from sqlalchemy import select
 
-from nextline_rdb.db import DB
-from nextline_test_utils.strategies import st_none_or
+from nextline_test_utils import safe_compare as sc
+from nextline_test_utils.strategies import st_none_or, st_ranges
 
-from ... import Model, Trace
+from ... import Model, Run
 from .. import st_model_run, st_model_trace_list
+from .funcs import assert_model_persistence
 
 
-@settings(phases=(Phase.generate,))  # Avoid shrinking
+class StModelTraceListKwargs(TypedDict, total=False):
+    run: Optional[Run]
+    min_size: int
+    max_size: Optional[int]
+
+
+@st.composite
+def st_st_model_trace_list_kwargs(draw: st.DrawFn) -> StModelTraceListKwargs:
+    kwargs = StModelTraceListKwargs()
+
+    if draw(st.booleans()):
+        kwargs['run'] = draw(st_none_or(st_model_run(generate_traces=False)))
+
+    if draw(st.booleans()):
+        min_size, max_size = draw(
+            st_ranges(
+                st.integers,
+                min_start=0,
+                max_end=4,
+                allow_start_none=False,
+                allow_end_none=False,
+            )
+        )
+        assert isinstance(min_size, int)
+        kwargs['min_size'] = min_size
+        kwargs['max_size'] = max_size
+
+    return kwargs
+
+
+@given(kwargs=st_st_model_trace_list_kwargs())
+def test_st_model_trace_list_kwargs(kwargs: StModelTraceListKwargs) -> None:
+    assert sc(kwargs.get('min_size')) <= sc(kwargs.get('max_size'))
+
+
+@settings(max_examples=200, phases=(Phase.generate,))  # Avoid shrinking
 @given(st.data())
-async def test_db(data: st.DataObject) -> None:
-    run = data.draw(st_none_or(st_model_run(generate_traces=False)))
-    max_size = data.draw(st.integers(min_value=0, max_value=3))
-    traces = data.draw(st_model_trace_list(run=run, max_size=max_size))
+async def test_options(data: st.DataObject) -> None:
+    # Generate options of the strategy to be tested
+    kwargs = data.draw(st_st_model_trace_list_kwargs())
 
-    assert len(traces) <= max_size
+    # Call the strategy to be tested
+    traces = data.draw(st_model_trace_list(**kwargs))
+
+    # Assert the generated values
+    run = kwargs.get('run')
+    min_size = kwargs.get('min_size', 0)
+    max_size = kwargs.get('max_size')
+
+    assert min_size <= len(traces) <= sc(max_size)
 
     if traces:
         runs = set(trace.run for trace in traces)
         assert len(runs) == 1
         assert run is None or run is runs.pop()
 
-    async with DB(use_migration=False, model_base_class=Model) as db:
-        async with db.session.begin() as session:
-            session.add_all(traces)
 
-        async with db.session() as session:
-            stmt = select(Trace)
-            traces_ = (await session.scalars(stmt)).all()
-            session.expunge_all()
-
-    assert repr(traces) == repr(traces_)
+@settings(phases=(Phase.generate,))  # Avoid shrinking
+@given(instances=st_model_trace_list())
+async def test_db(instances: list[Model]) -> None:
+    await assert_model_persistence(instances)
