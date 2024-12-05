@@ -6,7 +6,7 @@ from hypothesis import strategies as st
 from nextline_test_utils import safe_compare as sc
 from nextline_test_utils.strategies import st_none_or, st_ranges
 
-from ... import Run, TraceCall
+from ... import Model, Run
 from .. import st_model_run, st_model_trace_call_list, st_model_trace_list
 from .funcs import assert_model_persistence
 
@@ -78,5 +78,5 @@ async def test_options(data: st.DataObject) -> None:
 
 @settings(phases=(Phase.generate,))  # Avoid shrinking
 @given(instances=st_model_trace_call_list(max_size=5))
-async def test_db(instances: list[TraceCall]) -> None:
+async def test_db(instances: list[Model]) -> None:
     await assert_model_persistence(instances)
