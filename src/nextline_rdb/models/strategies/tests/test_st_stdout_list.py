@@ -1,40 +1,83 @@
-from hypothesis import Phase, given, settings
+from typing import Optional, TypedDict
+
+from hypothesis import Phase, given, note, settings
 from hypothesis import strategies as st
-from sqlalchemy import select
 
-from nextline_rdb.db import DB
-from nextline_test_utils.strategies import st_none_or
+from nextline_test_utils import safe_compare as sc
+from nextline_test_utils.strategies import st_none_or, st_ranges
 
-from ... import Model, Stdout
+from ... import Model, Run
 from .. import st_model_run, st_model_stdout_list, st_model_trace_list
+from .funcs import assert_model_persistence
+
+
+class StModelStdoutListKwargs(TypedDict, total=False):
+    run: Optional[Run]
+    min_size: int
+    max_size: Optional[int]
+
+
+@st.composite
+def st_st_model_stdout_list_kwargs(draw: st.DrawFn) -> StModelStdoutListKwargs:
+    kwargs = StModelStdoutListKwargs()
+
+    if draw(st.booleans()):
+        # generate_traces=False because that would generate stdout with traces
+        run = draw(st_none_or(st_model_run(generate_traces=False)))
+        kwargs['run'] = run
+        if run:
+            draw(st_none_or(st_model_trace_list(run=run, min_size=0, max_size=3)))
+
+    if draw(st.booleans()):
+        min_size, max_size = draw(
+            st_ranges(
+                st.integers,
+                min_start=0,
+                max_end=5,
+                allow_start_none=False,
+                allow_end_none=False,
+            )
+        )
+        assert isinstance(min_size, int)
+        kwargs['min_size'] = min_size
+        kwargs['max_size'] = max_size
+
+    return kwargs
+
+
+@given(kwargs=st_st_model_stdout_list_kwargs())
+def test_st_model_stdout_list_kwargs(kwargs: StModelStdoutListKwargs) -> None:
+    assert sc(kwargs.get('min_size')) <= sc(kwargs.get('max_size'))
 
 
 @settings(phases=(Phase.generate,))  # Avoid shrinking
 @given(st.data())
-async def test_st_model_stdout_lists(data: st.DataObject) -> None:
-    # generate_traces=False because that would generate stdout with traces
-    if run := data.draw(st_none_or(st_model_run(generate_traces=False))):
-        data.draw(st_none_or(st_model_trace_list(run=run, min_size=0, max_size=3)))
-        assert run.traces is not None
+async def test_options(data: st.DataObject) -> None:
+    # Generate options of the strategy to be tested
+    kwargs = data.draw(st_st_model_stdout_list_kwargs())
+    note(kwargs)
 
-    max_size = data.draw(st.integers(min_value=0, max_value=5))
+    # Call the strategy to be tested
+    stdouts = data.draw(st_model_stdout_list(**kwargs))
 
-    stdouts = data.draw(st_model_stdout_list(run=run, max_size=max_size))
+    # Assert the generated values
+    run = kwargs.get('run')
+    min_size = kwargs.get('min_size', 0)
+    max_size = kwargs.get('max_size')
 
-    assert len(stdouts) <= max_size
+    if run and not run.traces:
+        # `stdout` is not generated if `run` with no `traces` is provided
+        assert not stdouts
+    else:
+        assert min_size <= len(stdouts) <= sc(max_size)
 
     if stdouts:
         runs = set(stdout.trace.run for stdout in stdouts)
         assert len(runs) == 1
         assert run is None or run is runs.pop()
 
-    async with DB(use_migration=False, model_base_class=Model) as db:
-        async with db.session.begin() as session:
-            session.add_all(stdouts)
 
-        async with db.session() as session:
-            select_stdout = select(Stdout)
-            stdouts_ = (await session.scalars(select_stdout)).all()
-            session.expunge_all()
-    stdouts = sorted(stdouts, key=lambda stdout: stdout.id)
-    assert repr(stdouts) == repr(sorted(stdouts_, key=lambda stdout: stdout.id))
+@settings(phases=(Phase.generate,))  # Avoid shrinking
+@given(instances=st_model_stdout_list(max_size=5))
+async def test_db(instances: list[Model]) -> None:
+    await assert_model_persistence(instances)
