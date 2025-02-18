@@ -23,7 +23,7 @@ classifiers = [
   "Programming Language :: Python :: 3.13",
 ]
 dependencies = [
-  "nextline>=0.7.13",
+  "nextline>=0.7.14",
   "nextline-graphql>=0.7.9",
   "alembic>=1.9",
   "SQLAlchemy[asyncio]>=2.0.31",
@@ -60,11 +60,11 @@ tag_sign = false
 
 [tool.pytest.ini_options]
 asyncio_mode = "auto"
+asyncio_default_fixture_loop_scope = "function"
 timeout = 300
 addopts = "--doctest-modules --durations=10"
 # doctest_optionflags = ["ELLIPSIS", "NORMALIZE_WHITESPACE",]
 doctest_optionflags = ["ELLIPSIS"]
-norecursedirs = "build"
 filterwarnings = ["ignore::hypothesis.errors.NonInteractiveExampleWarning"]
 log_cli = false
 log_cli_level = "INFO"
