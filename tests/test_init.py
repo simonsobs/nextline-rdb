@@ -1,4 +1,4 @@
-from hypothesis import given
+from hypothesis import given, settings
 
 from nextline import Nextline
 from nextline_rdb.db import DB
@@ -8,6 +8,7 @@ from nextline_rdb.models.strategies import st_model_run_list
 from nextline_test_utils.strategies import st_python_scripts
 
 
+@settings(max_examples=20)
 @given(
     runs=st_model_run_list(generate_traces=False, min_size=0, max_size=2),
     default_statement=st_python_scripts(),

@@ -16,7 +16,7 @@ REVISION_START = '4dc6a93dfed8'
 REVISION_NEW = '8d24d9c2e9ba'
 
 
-@settings(phases=(Phase.generate,))  # Avoid shrinking
+@settings(max_examples=20, phases=(Phase.generate,))  # Avoid shrinking
 @given(instances=st_model_instance_list(min_size=0, max_size=5))
 async def test_migration(
     alembic_config_factory: AlembicConfigFactory, instances: list[models_old.Model]

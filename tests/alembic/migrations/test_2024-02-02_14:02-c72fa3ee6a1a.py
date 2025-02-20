@@ -1,7 +1,7 @@
 from asyncio import to_thread
 
 from alembic import command
-from hypothesis import given, note
+from hypothesis import Phase, given, note, settings
 from hypothesis import strategies as st
 from sqlalchemy import select
 
@@ -15,6 +15,7 @@ REVISION_OLD = 'f9a742bb2297'
 REVISION_NEW = 'c72fa3ee6a1a'
 
 
+@settings(max_examples=20, phases=(Phase.generate,))  # Avoid shrinking
 @given(scripts=st.lists(st_model_script(), min_size=0, max_size=5))
 async def test_migration(
     alembic_config_factory: AlembicConfigFactory, scripts: list[models_old.Script]

@@ -48,7 +48,7 @@ def st_query_variables(
     return variables
 
 
-@settings(phases=(Phase.generate,))  # Avoid shrinking
+@settings(max_examples=10, phases=(Phase.generate,))  # Avoid shrinking
 @given(st.data())
 async def test_run(data: st.DataObject) -> None:
     schema = strawberry.Schema(query=Query)

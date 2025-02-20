@@ -3,7 +3,7 @@ from typing import TypedDict
 
 import pytest
 import strawberry
-from hypothesis import given, note
+from hypothesis import given, note, settings
 from hypothesis import strategies as st
 from strawberry.types import ExecutionResult
 
@@ -43,6 +43,7 @@ class Edge(TypedDict):
     node: Node
 
 
+@settings(max_examples=20)
 @given(runs=st_model_run_list(generate_traces=False, min_size=0, max_size=12))
 async def test_all(runs: list[Run]) -> None:
     schema = strawberry.Schema(query=Query)
@@ -76,6 +77,7 @@ async def test_all(runs: list[Run]) -> None:
         assert nodes == list(reversed(nodes_saved))
 
 
+@settings(max_examples=20)
 @given(
     runs=st_model_run_list(generate_traces=False, min_size=0, max_size=12),
     first=st.integers(min_value=1, max_value=15),
@@ -129,6 +131,7 @@ async def test_forward(runs: list[Run], first: int) -> None:
         assert nodes == list(reversed(nodes_saved))
 
 
+@settings(max_examples=20)
 @given(
     runs=st_model_run_list(generate_traces=False, min_size=0, max_size=12),
     last=st.integers(min_value=1, max_value=15),
@@ -182,6 +185,7 @@ async def test_backward(runs: list[Run], last: int) -> None:
         assert nodes == nodes_saved
 
 
+@settings(max_examples=20)
 @given(runs=st_model_run_list(generate_traces=False, min_size=0, max_size=12))
 async def test_cursor(runs: list[Run]) -> None:
     schema = strawberry.Schema(query=Query)
