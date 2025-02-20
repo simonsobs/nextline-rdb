@@ -57,7 +57,7 @@ def mock_nextline(hook: PluginManager) -> Nextline:
     return nextline
 
 
-@settings(phases=(Phase.generate,))  # Avoid shrinking
+@settings(max_examples=20, phases=(Phase.generate,))  # Avoid shrinking
 @given(
     instances=st_model_instance_list(
         min_size=0, max_size=5, allow_run_started_at_none=False

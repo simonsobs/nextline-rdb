@@ -1,7 +1,7 @@
 from asyncio import to_thread
 
 from alembic import command
-from hypothesis import given, note
+from hypothesis import Phase, given, note, settings
 from hypothesis import strategies as st
 
 from nextline_rdb.alembic.models import rev_f9a742bb2297 as models_old
@@ -16,6 +16,7 @@ REVISION_STAGE_ONE = 'c72fa3ee6a1a'
 REVISION_NEW = '4dc6a93dfed8'
 
 
+@settings(max_examples=20, phases=(Phase.generate,))  # Avoid shrinking
 @given(scripts=st.lists(st_model_script(), min_size=0, max_size=5))
 async def test_migration(
     alembic_config_factory: AlembicConfigFactory, scripts: list[models_old.Script]

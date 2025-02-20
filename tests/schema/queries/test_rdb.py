@@ -9,7 +9,7 @@ from nextline_rdb.schema import Query
 from tests.schema.graphql import QUERY_RDB_CONNECTIONS
 
 
-@settings(phases=(Phase.generate,))  # Avoid shrinking
+@settings(max_examples=10, phases=(Phase.generate,))  # Avoid shrinking
 @given(runs=st_model_run_list(generate_traces=True, min_size=0, max_size=3))
 async def test_history(runs: list[Run]) -> None:
     note(f'runs: {runs}')

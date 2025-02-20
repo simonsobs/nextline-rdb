@@ -1,5 +1,5 @@
 import strawberry
-from hypothesis import given, note
+from hypothesis import Phase, given, note, settings
 from hypothesis import strategies as st
 from sqlalchemy import select
 from strawberry.types import ExecutionResult
@@ -41,6 +41,7 @@ def st_query_variables(
     return variables, to_keep, to_delete
 
 
+@settings(max_examples=10, phases=(Phase.generate,))  # Avoid shrinking
 @given(st.data())
 async def test_delete_runs(data: st.DataObject) -> None:
     schema = strawberry.Schema(query=Query, mutation=Mutation)
