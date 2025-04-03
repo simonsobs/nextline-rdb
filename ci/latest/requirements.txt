@@ -12,6 +12,6 @@ tomli-w==1.2.0
 nextline-test-utils==0.1.2
 async-asgi-testclient==1.4.11
 pytest-asyncio==0.26.0
-pytest-cov==6.0.0
+pytest-cov==6.1.0
 pytest-timeout==2.3.1
 pytest==8.3.5
