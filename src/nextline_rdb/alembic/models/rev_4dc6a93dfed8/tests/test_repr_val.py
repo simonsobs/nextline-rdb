@@ -1,5 +1,6 @@
 import datetime
 import inspect
+import keyword
 from enum import Enum
 from string import ascii_lowercase, ascii_uppercase
 
@@ -58,7 +59,11 @@ def st_enum_type(draw: st.DrawFn) -> type[Enum]:
 
     '''
     names_ = st.text(ascii_lowercase, min_size=1)
-    names = st.builds(lambda x: x.capitalize(), names_).filter(str.isidentifier)
+    names = (
+        st.builds(lambda x: x.capitalize(), names_)
+        .filter(str.isidentifier)
+        .filter(lambda x: not keyword.iskeyword(x))
+    )
     values = st.lists(st.text(ascii_uppercase, min_size=1), min_size=1, unique=True)
     return draw(st.builds(Enum, names, values))  # type: ignore
 
