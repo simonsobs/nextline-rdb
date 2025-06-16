@@ -1,7 +1,3 @@
-import base64
-from typing import TypedDict
-
-import pytest
 import strawberry
 from hypothesis import given, note, settings
 from hypothesis import strategies as st
@@ -13,33 +9,7 @@ from nextline_rdb.models.strategies import st_model_run_list
 from nextline_rdb.schema import Query
 from tests.schema.graphql import QUERY_RDB_RUNS
 
-
-def Cursor(i: int) -> str:
-    return base64.b64encode(f'{i}'.encode()).decode()
-
-
-class Variables(TypedDict, total=False):
-    before: str | None
-    after: str | None
-    first: int | None
-    last: int | None
-
-
-class PageInfo(TypedDict):
-    hasPreviousPage: bool
-    hasNextPage: bool
-    startCursor: str | None
-    endCursor: str | None
-
-
-class Node(TypedDict):
-    id: int
-    runNo: int
-
-
-class Edge(TypedDict):
-    cursor: str
-    node: Node
+from .utils import Edge, Node, PageInfo, Variables
 
 
 @settings(max_examples=20)
@@ -182,69 +152,3 @@ async def test_backward(runs: list[Run], last: int) -> None:
             nodes.extend(edge['node'] for edge in reversed(edges))
 
         assert nodes == nodes_saved
-
-
-@settings(max_examples=20)
-@given(runs=st_model_run_list(generate_traces=False, min_size=0, max_size=12))
-async def test_cursor(runs: list[Run]) -> None:
-    schema = strawberry.Schema(query=Query)
-
-    async with DB() as db:
-        async with db.session.begin() as session:
-            session.add_all(runs)
-        note(f'runs: {runs}')
-
-        nodes_saved = [Node(id=run.id, runNo=run.run_no) for run in runs]
-        note(f'nodes_saved: {nodes_saved}')
-
-        resp = await schema.execute(QUERY_RDB_RUNS, context_value={'db': db})
-        assert isinstance(resp, ExecutionResult)
-        assert resp.data
-
-        all_runs = resp.data['rdb']['runs']
-        edges: list[Edge] = all_runs['edges']
-
-        nodes = [edge['node'] for edge in edges]
-        cursors = [edge['cursor'] for edge in edges]
-
-        assert cursors == [Cursor(node['id']) for node in nodes]
-
-
-params = [
-    pytest.param(
-        Variables(first=5, last=5),
-        id='first-and-last',
-    ),
-    pytest.param(
-        Variables(before=Cursor(31), first=5),
-        id='before-and-first',
-    ),
-    pytest.param(
-        Variables(after=Cursor(20), last=5),
-        id='after-and-last',
-    ),
-    pytest.param(
-        Variables(before=Cursor(31), after=Cursor(20)),
-        id='before-and-after',
-    ),
-    pytest.param(
-        Variables(before=Cursor(31), after=Cursor(20), first=5, last=5),
-        id='all',
-    ),
-]
-
-
-@pytest.mark.parametrize('variables', params)
-async def test_error(variables: Variables) -> None:
-    schema = strawberry.Schema(query=Query)
-
-    async with DB() as db:
-        resp = await schema.execute(
-            QUERY_RDB_RUNS,
-            variable_values=dict(variables),
-            context_value={'db': db},
-        )
-
-        assert isinstance(resp, ExecutionResult)
-        assert not resp.data
-        assert resp.errors
