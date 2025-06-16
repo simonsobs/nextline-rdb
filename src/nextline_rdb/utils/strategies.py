@@ -9,9 +9,30 @@ from hypothesis import strategies as st
 def st_enum_type(draw: st.DrawFn) -> type[Enum]:
     '''Generate an Enum type.
 
+    Examples
+    --------
+
+    Draw an Enum type with Hypothesis:
     >>> enum_type = st_enum_type().example()
-    >>> list(enum_type)
-    [...]
+
+    >>> import inspect
+    >>> inspect.isclass(enum_type)
+    True
+
+    >>> issubclass(enum_type, Enum)
+    True
+
+    >>> len(list(enum_type)) > 0
+    True
+
+    Draw an item.
+    >>> item = st.sampled_from(enum_type).example()
+    >>> item in enum_type
+    True
+
+    >>> isinstance(item, enum_type)
+    True
+
 
     Code based on:
     https://github.com/HypothesisWorks/hypothesis/issues/2693#issuecomment-823710924
