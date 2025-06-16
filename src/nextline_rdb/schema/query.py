@@ -160,8 +160,14 @@ class QueryRDB:
 
 @strawberry.type
 class Query:
-    @strawberry.field
-    async def history(self) -> QueryRDB:
+    @strawberry.field(
+        deprecation_reason=(
+            "This field will be removed in a future version."
+            "Use `rdb` field instead."
+            "This field is an old name for `rdb` and now is an alias for it."
+        )
+    )
+    async def history(self) -> QueryRDB:  # pragma: no cover
         # TODO: Remove this method.
         return QueryRDB()
 
