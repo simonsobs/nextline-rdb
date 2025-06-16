@@ -12,7 +12,7 @@ from tests.schema.graphql import QUERY_RDB_CONNECTIONS
 @settings(max_examples=10, phases=(Phase.generate,))  # Avoid shrinking
 @given(runs=st_model_run_list(generate_traces=True, min_size=0, max_size=3))
 async def test_property(runs: list[Run]) -> None:
-    '''Query `runs`, `traces`, etc, with `edges`.'''
+    '''Query `runs`, `traces`, etc, with `edges`, `pageInfo`, and `totalCount`.'''
     note(f'runs: {runs}')
 
     schema = strawberry.Schema(query=Query)

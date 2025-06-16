@@ -1,6 +1,13 @@
 query RDBConnections {
   rdb {
     runs {
+      pageInfo {
+        hasNextPage
+        hasPreviousPage
+        startCursor
+        endCursor
+      }
+      totalCount
       edges {
         cursor
         node {
@@ -15,6 +22,13 @@ query RDBConnections {
       }
     }
     traces {
+      pageInfo {
+        hasNextPage
+        hasPreviousPage
+        startCursor
+        endCursor
+      }
+      totalCount
       edges {
         cursor
         node {
@@ -30,6 +44,13 @@ query RDBConnections {
       }
     }
     traceCalls {
+      pageInfo {
+        hasNextPage
+        hasPreviousPage
+        startCursor
+        endCursor
+      }
+      totalCount
       edges {
         cursor
         node {
@@ -48,6 +69,13 @@ query RDBConnections {
       }
     }
     prompts {
+      pageInfo {
+        hasNextPage
+        hasPreviousPage
+        startCursor
+        endCursor
+      }
+      totalCount
       edges {
         cursor
         node {
@@ -66,6 +94,13 @@ query RDBConnections {
       }
     }
     stdouts {
+      pageInfo {
+        hasNextPage
+        hasPreviousPage
+        startCursor
+        endCursor
+      }
+      totalCount
       edges {
         cursor
         node {
