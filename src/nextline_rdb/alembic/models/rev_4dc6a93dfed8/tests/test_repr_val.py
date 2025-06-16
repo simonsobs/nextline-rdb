@@ -1,12 +1,11 @@
 import datetime
 import inspect
-import keyword
 from enum import Enum
-from string import ascii_lowercase, ascii_uppercase
 
 from hypothesis import given
 from hypothesis import strategies as st
 
+from nextline_rdb.utils.strategies import st_enum_type
 from nextline_rdb.utils.utc import is_timezone_aware
 
 from .. import repr_val
@@ -44,28 +43,6 @@ class Color(Enum):
 def test_enum(value: Color) -> None:
     repr_ = repr_val(value)
     assert eval(repr_) == value
-
-
-@st.composite
-def st_enum_type(draw: st.DrawFn) -> type[Enum]:
-    '''Generate an Enum type.
-
-    >>> enum_type = st_enum_type().example()
-    >>> list(enum_type)
-    [...]
-
-    Code based on:
-    https://github.com/HypothesisWorks/hypothesis/issues/2693#issuecomment-823710924
-
-    '''
-    names_ = st.text(ascii_lowercase, min_size=1)
-    names = (
-        st.builds(lambda x: x.capitalize(), names_)
-        .filter(str.isidentifier)
-        .filter(lambda x: not keyword.iskeyword(x))
-    )
-    values = st.lists(st.text(ascii_uppercase, min_size=1), min_size=1, unique=True)
-    return draw(st.builds(Enum, names, values))  # type: ignore
 
 
 @given(st.data())
