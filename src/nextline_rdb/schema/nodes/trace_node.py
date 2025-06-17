@@ -7,7 +7,7 @@ from strawberry.types import Info
 
 from nextline_rdb import models as db_models
 from nextline_rdb.db import DB
-from nextline_rdb.models import Prompt, Stdout
+from nextline_rdb.models import Prompt, Stdout, TraceCall
 from nextline_rdb.pagination import SortField
 
 from ..pagination import Connection, load_connection
@@ -16,6 +16,34 @@ if TYPE_CHECKING:
     from .prompt_node import PromptNode
     from .run_node import RunNode
     from .stdout_node import StdoutNode
+    from .trace_call_node import TraceCallNode
+
+
+async def _resolve_trace_calls(
+    info: Info,
+    root: 'TraceNode',
+    before: Optional[str] = None,
+    after: Optional[str] = None,
+    first: Optional[int] = None,
+    last: Optional[int] = None,
+) -> Connection['TraceCallNode']:
+    from .trace_call_node import TraceCallNode
+
+    sort = [SortField('trace_call_no')]
+    select_model = select(TraceCall).where(TraceCall.trace_id == root._model.id)
+    db = cast(DB, info.context['db'])
+    async with db.session() as session:
+        return await load_connection(
+            session,
+            TraceCall,
+            create_node_from_model=TraceCallNode.from_model,
+            select_model=select_model,
+            sort=sort,
+            before=before,
+            after=after,
+            first=first,
+            last=last,
+        )
 
 
 async def _resolve_prompts(
@@ -89,6 +117,10 @@ class TraceNode:
         from .run_node import RunNode
 
         return RunNode.from_model(self._model.run)
+
+    trace_calls: Connection[
+        Annotated['TraceCallNode', strawberry.lazy('.trace_call_node')]
+    ] = strawberry.field(resolver=_resolve_trace_calls)
 
     prompts: Connection[Annotated['PromptNode', strawberry.lazy('.prompt_node')]] = (
         strawberry.field(resolver=_resolve_prompts)
