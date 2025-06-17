@@ -29,7 +29,7 @@ async def _resolve_prompts(
     from .prompt_node import PromptNode
 
     sort = [SortField('prompt_no')]
-    select_model = select(Prompt).where(Prompt.trace_id == root._model.id)
+    select_model = select(Prompt).where(Prompt.trace_call_id == root._model.id)
     db = cast(DB, info.context['db'])
     async with db.session() as session:
         return await load_connection(
