@@ -55,13 +55,13 @@ async def resolve_runs(
     if filter:
         if filter.started_after:
             started_after = to_naive_utc(filter.started_after)
-            stmt = stmt.where(Run.started_at > started_after)
+            stmt = stmt.where(Run.started_at >= started_after)
         if filter.started_before:
             started_before = to_naive_utc(filter.started_before)
             stmt = stmt.where(Run.started_at < started_before)
         if filter.ended_after:
             ended_after = to_naive_utc(filter.ended_after)
-            stmt = stmt.where(Run.ended_at > ended_after)
+            stmt = stmt.where(Run.ended_at >= ended_after)
         if filter.ended_before:
             ended_before = to_naive_utc(filter.ended_before)
             stmt = stmt.where(Run.ended_at < ended_before)
