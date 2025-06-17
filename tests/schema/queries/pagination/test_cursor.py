@@ -8,7 +8,7 @@ from nextline_rdb.models.strategies import st_model_run_list
 from nextline_rdb.schema import Query
 from tests.schema.graphql import QUERY_RDB_RUNS
 
-from .utils import Cursor, Edge, Node
+from .utils import Cursor, Edge, to_node
 
 
 @settings(max_examples=20)
@@ -21,7 +21,7 @@ async def test_property(runs: list[Run]) -> None:
             session.add_all(runs)
         note(f'runs: {runs}')
 
-        nodes_saved = [Node(id=run.id, runNo=run.run_no) for run in runs]
+        nodes_saved = [to_node(run) for run in runs]
         note(f'nodes_saved: {nodes_saved}')
 
         resp = await schema.execute(QUERY_RDB_RUNS, context_value={'db': db})
