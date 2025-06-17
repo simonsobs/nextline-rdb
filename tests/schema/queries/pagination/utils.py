@@ -6,11 +6,19 @@ def Cursor(i: int) -> str:
     return base64.b64encode(f'{i}'.encode()).decode()
 
 
+class Filter(TypedDict, total=False):
+    startedAfter: str | None
+    startedBefore: str | None
+    endedAfter: str | None
+    endedBefore: str | None
+
+
 class Variables(TypedDict, total=False):
     before: str | None
     after: str | None
     first: int | None
     last: int | None
+    filter: Filter | None
 
 
 class PageInfo(TypedDict):
@@ -23,6 +31,8 @@ class PageInfo(TypedDict):
 class Node(TypedDict):
     id: int
     runNo: int
+    startedAt: str | None
+    endedAt: str | None
 
 
 class Edge(TypedDict):
