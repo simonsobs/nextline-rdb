@@ -23,6 +23,13 @@ query RDBRun($id: Int, $runNo: Int) {
             run {
               id
             }
+            traceCalls {
+              edges {
+                node {
+                  id
+                }
+              }
+            }
             prompts {
               edges {
                 node {
