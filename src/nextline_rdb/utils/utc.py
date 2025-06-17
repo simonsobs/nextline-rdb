@@ -28,3 +28,23 @@ def is_timezone_aware(dt: datetime) -> bool:
 
     '''
     return (dt.tzinfo and dt.tzinfo.utcoffset(dt)) is not None
+
+
+def to_naive_utc(dt: datetime) -> datetime:
+    '''Convert a datetime to a naive UTC datetime.
+
+    >>> to_naive_utc(datetime(2022, 10, 30, 17, 13, 20, tzinfo=timezone.utc))
+    datetime.datetime(2022, 10, 30, 17, 13, 20)
+
+    >>> to_naive_utc(datetime(2022, 10, 30, 17, 13, 20))
+    datetime.datetime(2022, 10, 30, 17, 13, 20)
+
+    >>> from datetime import timedelta, timezone
+    >>> est = timezone(timedelta(hours=-5))
+    >>> to_naive_utc(datetime(2022, 10, 30, 12, 13, 20, tzinfo=est))
+    datetime.datetime(2022, 10, 30, 17, 13, 20)
+
+    '''
+    if is_timezone_aware(dt):
+        return dt.astimezone(timezone.utc).replace(tzinfo=None)
+    return dt

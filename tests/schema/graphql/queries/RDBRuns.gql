@@ -3,9 +3,16 @@ query HistoryRuns(
   $after: String
   $first: Int
   $last: Int
+  $filter: RunFilter
 ) {
   rdb {
-    runs(before: $before, after: $after, first: $first, last: $last) {
+    runs(
+      before: $before
+      after: $after
+      first: $first
+      last: $last
+      filter: $filter
+    ) {
       pageInfo {
         startCursor
         endCursor
@@ -18,6 +25,8 @@ query HistoryRuns(
         node {
           id
           runNo
+          startedAt
+          endedAt
         }
       }
     }

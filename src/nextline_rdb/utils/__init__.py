@@ -10,6 +10,7 @@ __all__ = [
     'ensure_async_url',
     'ensure_sync_url',
     'is_timezone_aware',
+    'to_naive_utc',
     'utc_timestamp',
 ]
 
@@ -23,4 +24,4 @@ from .sa import (
 )
 from .until import UntilNotNoneTimeout, until_not_none
 from .url import ensure_async_url, ensure_sync_url
-from .utc import is_timezone_aware, utc_timestamp
+from .utc import is_timezone_aware, to_naive_utc, utc_timestamp
