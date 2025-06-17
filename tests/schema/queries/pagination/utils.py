@@ -1,5 +1,8 @@
 import base64
+import datetime as dt
 from typing import TypedDict
+
+from nextline_rdb.models import Run
 
 
 def Cursor(i: int) -> str:
@@ -38,3 +41,16 @@ class Node(TypedDict):
 class Edge(TypedDict):
     cursor: str
     node: Node
+
+
+def dt_to_iso(dt_: dt.datetime | None) -> str | None:
+    return dt_.isoformat() if dt_ else None
+
+
+def to_node(run: Run) -> Node:
+    return Node(
+        id=run.id,
+        runNo=run.run_no,
+        startedAt=dt_to_iso(run.started_at),
+        endedAt=dt_to_iso(run.ended_at),
+    )

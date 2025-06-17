@@ -15,11 +15,7 @@ from nextline_test_utils import safe_compare as sc
 from nextline_test_utils.strategies import st_none_or
 from tests.schema.graphql import QUERY_RDB_RUNS
 
-from .utils import Edge, Filter, Node, PageInfo, Variables
-
-
-def dt_to_iso(dt_: dt.datetime | None) -> str | None:
-    return dt_.isoformat() if dt_ else None
+from .utils import Edge, Filter, Node, PageInfo, Variables, dt_to_iso, to_node
 
 
 @dataclasses.dataclass
@@ -79,15 +75,6 @@ def in_range(
             return True
         return False
     return sc(after) <= at < sc(before)
-
-
-def to_node(run: Run) -> Node:
-    return Node(
-        id=run.id,
-        runNo=run.run_no,
-        startedAt=dt_to_iso(run.started_at),
-        endedAt=dt_to_iso(run.ended_at),
-    )
 
 
 @settings(max_examples=20, phases=(Phase.generate,))  # Avoid shrinking
