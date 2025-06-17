@@ -1,3 +1,4 @@
+from datetime import datetime
 from typing import Optional, cast
 
 import strawberry
@@ -9,6 +10,7 @@ import nextline_rdb
 from nextline_rdb.db import DB
 from nextline_rdb.models import Prompt, Run, Stdout, Trace, TraceCall
 from nextline_rdb.pagination import SortField
+from nextline_rdb.utils import to_naive_utc
 
 from .nodes import PromptNode, RunNode, StdoutNode, TraceCallNode, TraceNode
 from .pagination import Connection, load_connection
@@ -29,21 +31,48 @@ async def resolve_run(
     return RunNode.from_model(run) if run else None
 
 
+@strawberry.input
+class RunFilter:
+    started_after: Optional[datetime] = None
+    started_before: Optional[datetime] = None
+    ended_after: Optional[datetime] = None
+    ended_before: Optional[datetime] = None
+
+
 async def resolve_runs(
     info: Info,
     before: Optional[str] = None,
     after: Optional[str] = None,
     first: Optional[int] = None,
     last: Optional[int] = None,
+    filter: Optional[RunFilter] = None,
 ) -> Connection[RunNode]:
     sort = [SortField('run_no', desc=True)]
     db = cast(DB, info.context['db'])
+
+    stmt = select(Run)
+
+    if filter:
+        if filter.started_after:
+            started_after = to_naive_utc(filter.started_after)
+            stmt = stmt.where(Run.started_at > started_after)
+        if filter.started_before:
+            started_before = to_naive_utc(filter.started_before)
+            stmt = stmt.where(Run.started_at < started_before)
+        if filter.ended_after:
+            ended_after = to_naive_utc(filter.ended_after)
+            stmt = stmt.where(Run.ended_at > ended_after)
+        if filter.ended_before:
+            ended_before = to_naive_utc(filter.ended_before)
+            stmt = stmt.where(Run.ended_at < ended_before)
+
     async with db.session() as session:
         return await load_connection(
             session,
             Run,
             create_node_from_model=RunNode.from_model,
             sort=sort,
+            select_model=stmt,
             before=before,
             after=after,
             first=first,
