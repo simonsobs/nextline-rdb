@@ -5,14 +5,14 @@
 nextline==0.7.14
 nextline-graphql==0.7.9
 alembic==1.9.0
-SQLAlchemy[asyncio]==2.0.31
+SQLAlchemy[asyncio]==2.0.41
 aiosqlite==0.16.0
 hypothesis==6.88.0
 tomli==2.0.0
 tomli-w==1.0.0
 nextline-test-utils==0.1.0
 async-asgi-testclient==1.4.10
-pytest-asyncio==0.18.0
+pytest-asyncio==0.21.0
 pytest-cov==3.0.0
 pytest-timeout==2.1.0
-pytest==7.0.0
+pytest==8.0.0
