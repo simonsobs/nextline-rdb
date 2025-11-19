@@ -66,5 +66,5 @@ def primary_keys_of(instance: DeclarativeBase) -> tuple[Any, ...]:
     cls = type(instance)
     instance_mapper = inspect(cls)
     column_names = [attr.key for attr in instance_mapper.primary_key]
-    values = tuple(getattr(instance, name) for name in column_names)
+    values = tuple(getattr(instance, name) for name in column_names if name is not None)
     return values
