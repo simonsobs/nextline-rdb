@@ -4,6 +4,10 @@ on:
   push:
     tags:
       - "v*.*.*"
+
+env:
+  PIP_PROGRESS_BAR: "off"
+
 jobs:
   deploy:
     runs-on: ubuntu-latest

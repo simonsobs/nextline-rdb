@@ -34,7 +34,7 @@ dependencies = [
   "tomli-w>=1.0",
 ]
 
-[project.optional-dependencies]
+[dependency-groups]
 tests = [
   "nextline-test-utils>=0.1",
   "async-asgi-testclient>=1.4.10",
