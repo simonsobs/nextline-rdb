@@ -7,7 +7,7 @@
 [![Test Status](https://github.com/simonsobs/nextline-rdb/actions/workflows/type-check.yml/badge.svg)](https://github.com/simonsobs/nextline-rdb/actions/workflows/type-check.yml)
 [![codecov](https://codecov.io/gh/simonsobs/nextline-rdb/branch/main/graph/badge.svg)](https://codecov.io/gh/simonsobs/nextline-rdb)
 
-A plugin for [nextline-graphql](https://github.com/simonsobs/nextline-graphql).
+A plugin for [nextline-graphql](https://github.com/nextline-dev/nextline-graphql).
 A relational database for nextline-graphql.
 
 ---
