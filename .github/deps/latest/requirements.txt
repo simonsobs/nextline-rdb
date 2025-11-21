@@ -7,7 +7,7 @@ alembic==1.17.2
 SQLAlchemy[asyncio]==2.0.44
 aiosqlite==0.21.0
 hypothesis==6.148.2
-tomli==2.2.1
+tomli==2.3.0
 tomli-w==1.2.0
 nextline-test-utils==0.1.2
 async-asgi-testclient==1.4.11
