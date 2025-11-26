@@ -2,7 +2,7 @@
 # Used in GitHub Actions for testing compatibility.
 # Monitored by Dependabot.
 nextline==0.7.21
-nextline-graphql==0.9.0
+nextline-graphql==0.9.1
 alembic==1.17.2
 SQLAlchemy[asyncio]==2.0.44
 aiosqlite==0.21.0
