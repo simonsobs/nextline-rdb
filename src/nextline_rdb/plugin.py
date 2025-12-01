@@ -5,7 +5,7 @@ from typing import Optional
 
 from dynaconf import Dynaconf, Validator
 
-from nextlinegraphql.hook import spec
+from nextline_graphql.hook import spec
 
 from . import write
 from .db import DB

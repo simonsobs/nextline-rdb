@@ -59,7 +59,7 @@ export NEXTLINE_DB__URL="sqlite+aiosqlite:///db.sqlite3"
 Run on the port 8080.
 
 ```bash
-uvicorn --lifespan on --factory --port 8080 nextlinegraphql:create_app
+uvicorn --lifespan on --factory --port 8080 nextline_graphql:create_app
 ```
 
 Check with a web browser at <http://localhost:8080/>.
