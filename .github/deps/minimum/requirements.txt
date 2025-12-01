@@ -1,8 +1,7 @@
 # Pinned oldest supported versions of dependencies.
 # Used in GitHub Actions for testing compatibility.
 # Must be manually updated to align with `pyproject.toml`.
-nextline==0.7.14
-nextline-graphql==0.7.9
+nextline-graphql==0.9.1
 alembic==1.9.0
 SQLAlchemy[asyncio]==2.0.41
 aiosqlite==0.16.0
