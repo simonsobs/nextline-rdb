@@ -3,7 +3,7 @@
 # Monitored by Dependabot.
 nextline-graphql==0.9.1
 alembic==1.17.2
-SQLAlchemy[asyncio]==2.0.44
+SQLAlchemy[asyncio]==2.0.45
 aiosqlite==0.21.0
 hypothesis==6.148.2
 tomli==2.3.0
